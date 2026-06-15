@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+:root {
+  font-family: Inter, 'Noto Sans KR', sans-serif;
+  color: #0f172a;
+  background-color: #f8fafc;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
