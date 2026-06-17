@@ -1,9 +1,18 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
-import { useEffect, useState } from 'react';
+import { OrbitControls, Text, useGLTF } from '@react-three/drei';
+import { Suspense, useEffect, useState } from 'react';
 import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 
 type BuildingTwinProps = { buildingId: string };
+
+// 실측 건물 GLB가 있을 때만 셸을 불러오고, 없으면 절차적 박스 층만 표시
+const MODEL_URL = import.meta.env.VITE_BUILDING_MODEL_URL;
+if (MODEL_URL) useGLTF.preload(MODEL_URL);
+
+function BuildingShell({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} />;
+}
 
 const FALLBACK_FLOORS: Floor[] = [
   { level: 1, industry: '카페', vacant: false },
@@ -119,6 +128,13 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
 
           {/* 바닥 그리드 */}
           <gridHelper args={[60, 20, '#334155', '#1e293b']} position={[0, 0, 0]} />
+
+          {/* 실측 건물 셸 (GLB) — 있을 때만 */}
+          {MODEL_URL && (
+            <Suspense fallback={null}>
+              <BuildingShell url={MODEL_URL} />
+            </Suspense>
+          )}
 
           {/* 건물 층 */}
           {floors.map((floor, i) => (
