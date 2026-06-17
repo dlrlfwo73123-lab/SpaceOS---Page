@@ -1,9 +1,17 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 
-type Floor = { level: number; industry: string; vacant: boolean };
-type BuildingTwinProps = { floors: Floor[] };
+type BuildingTwinProps = { buildingId: string };
+
+const FALLBACK_FLOORS: Floor[] = [
+  { level: 1, industry: '카페', vacant: false },
+  { level: 2, industry: '미용실', vacant: true },
+  { level: 3, industry: '편의점', vacant: false },
+  { level: 4, industry: '의류', vacant: true },
+  { level: 5, industry: '음식점', vacant: false },
+];
 
 // 1:1000 스케일 — 실제 1m = Three.js 0.001 units
 // 건물 폭/깊이: 실제 20m → 0.020 units  (단위: 3D unit = 1m 로 편의상 1 unit = 1m)
@@ -64,8 +72,20 @@ function ScaleBar() {
   );
 }
 
-export default function BuildingTwin({ floors }: BuildingTwinProps) {
+export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
+  const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+
+  useEffect(() => {
+    setSelectedFloor(null);
+    getBuildingFloors(buildingId)
+      .then((data) => setFloors(data.length ? data : FALLBACK_FLOORS))
+      .catch((err) => {
+        console.warn('층 데이터 로드 실패, fallback 사용', err);
+        setFloors(FALLBACK_FLOORS);
+      });
+  }, [buildingId]);
+
   const totalH = floors.length * (FLOOR_H + GAP);
   const camY   = totalH / 2;
   const camDist = Math.max(BLD_W, totalH) * 1.8;

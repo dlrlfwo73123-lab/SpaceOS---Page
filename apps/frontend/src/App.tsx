@@ -6,15 +6,6 @@ import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
 
-// TODO: 선택된 건물 ID로 실제 층별 데이터 fetch (GET /api/v1/buildings/{id}/floors)
-const DEMO_FLOORS = [
-  { level: 1, industry: '카페', vacant: false },
-  { level: 2, industry: '미용실', vacant: true },
-  { level: 3, industry: '편의점', vacant: false },
-  { level: 4, industry: '의류', vacant: true },
-  { level: 5, industry: '음식점', vacant: false },
-];
-
 export default function App() {
   const [guCode, setGuCode] = useState(SEOUL_GU[0].code);         // 강남구
   const [dongCode, setDongCode] = useState(SEOUL_GU[0].dongs[0].code);
@@ -118,7 +109,7 @@ export default function App() {
             </p>
             <NaverMap guCode={guCode} onSelectBuilding={setSelectedBuildingId} />
           </div>
-          <BuildingTwin floors={DEMO_FLOORS} />
+          <BuildingTwin buildingId={selectedBuildingId} />
         </section>
 
         {/* 상권 공실 히트맵 */}

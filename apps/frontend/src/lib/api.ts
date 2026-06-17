@@ -19,6 +19,12 @@ export type BuildingHistoryPoint = {
   vacant: boolean;
 };
 
+export type BuildingFloor = {
+  level: number;
+  industry: string;
+  vacant: boolean;
+};
+
 const baseUrl = '/api/v1';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -39,4 +45,8 @@ export async function fetchHeatmap(district = 'lapesta'): Promise<HeatmapFeature
 
 export async function getBuildingHistory(id: string): Promise<BuildingHistoryPoint[]> {
   return request<BuildingHistoryPoint[]>(`/buildings/${encodeURIComponent(id)}/history`);
+}
+
+export async function getBuildingFloors(id: string): Promise<BuildingFloor[]> {
+  return request<BuildingFloor[]>(`/buildings/${encodeURIComponent(id)}/floors`);
 }
