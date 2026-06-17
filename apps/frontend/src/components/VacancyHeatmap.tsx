@@ -9,7 +9,9 @@ const METRIC_LABELS: Record<Metric, string> = {
   predicted_rate: '예측 공실율',
 };
 
-const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
+const RAW_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
+// "pk.xxxx" 같은 안내문 그대로 붙여넣은 placeholder는 토큰이 없는 것과 동일하게 취급한다.
+const TOKEN = RAW_TOKEN && /^pk\.[A-Za-z0-9_-]{20,}$/.test(RAW_TOKEN) ? RAW_TOKEN : undefined;
 mapboxgl.accessToken = TOKEN ?? '';
 
 type VacancyHeatmapProps = {
@@ -42,16 +44,24 @@ const fallback: HeatmapFeatureCollection = {
 export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: VacancyHeatmapProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [metric, setMetric] = useState<Metric>('vacancy_rate');
+  const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
     if (!ref.current || !TOKEN) return;
 
-    const map = new mapboxgl.Map({
-      container: ref.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: districtCenters[district] ?? districtCenters.default,
-      zoom: 14,
-    });
+    let map: mapboxgl.Map;
+    try {
+      map = new mapboxgl.Map({
+        container: ref.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: districtCenters[district] ?? districtCenters.default,
+        zoom: 14,
+      });
+    } catch (err) {
+      console.warn('Mapbox 지도 초기화 실패, fallback 사용', err);
+      setMapError(true);
+      return;
+    }
 
     function renderHeatmap(data: HeatmapFeatureCollection) {
       map.addSource('vacancy', {
@@ -133,13 +143,15 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
     </div>
   );
 
-  if (!TOKEN) {
+  if (!TOKEN || mapError) {
     return (
       <div>
         {metricToggle}
         <div className="flex h-[600px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-100 text-slate-500">
           <span className="text-4xl">🗺️</span>
-          <p className="text-sm font-medium">지도를 표시하려면 Mapbox 토큰이 필요합니다</p>
+          <p className="text-sm font-medium">
+            {mapError ? '지도를 불러오지 못했습니다 (Mapbox 토큰을 확인하세요)' : '지도를 표시하려면 Mapbox 토큰이 필요합니다'}
+          </p>
           <code className="rounded bg-slate-200 px-2 py-1 text-xs">
             VITE_MAPBOX_TOKEN=pk.xxx 를 .env.local 에 추가하세요
           </code>

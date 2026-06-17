@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text, useGLTF } from '@react-three/drei';
 import { Suspense, useEffect, useState } from 'react';
 import { getBuildingFloors, getBuildingModel, type BuildingFloor as Floor } from '@/lib/api';
+import { ErrorBoundary } from './ErrorBoundary';
 
 type BuildingTwinProps = { buildingId: string };
 
@@ -134,11 +135,13 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
           {/* 바닥 그리드 */}
           <gridHelper args={[60, 20, '#334155', '#1e293b']} position={[0, 0, 0]} />
 
-          {/* 실측 건물 셸 (GLB) — 있을 때만 */}
+          {/* 실측 건물 셸 (GLB) — 있을 때만. 손상/누락된 모델은 박스 층만 표시 */}
           {modelUrl && (
-            <Suspense fallback={null}>
-              <BuildingShell url={modelUrl} />
-            </Suspense>
+            <ErrorBoundary fallback={null}>
+              <Suspense fallback={null}>
+                <BuildingShell url={modelUrl} />
+              </Suspense>
+            </ErrorBoundary>
           )}
 
           {/* 건물 층 */}
