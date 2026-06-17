@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import BuildingTwin from './components/BuildingTwin';
 import { DistrictMap } from './components/DistrictMap';
+import HistoryTimeline from './components/HistoryTimeline';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
@@ -117,6 +118,9 @@ export default function App() {
           <p className="mb-3 text-sm font-semibold">상권 공실 히트맵</p>
           <DistrictMap onSelectBuilding={setSelectedBuildingId} />
         </section>
+
+        {/* 공실 히스토리 타임라인 */}
+        <HistoryTimeline buildingId={selectedBuildingId} />
 
         {/* 점포 이력 */}
         <StoreHistory buildingId={selectedBuildingId} />

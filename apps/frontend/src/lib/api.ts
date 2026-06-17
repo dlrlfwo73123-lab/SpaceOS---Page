@@ -13,10 +13,17 @@ export type HeatmapFeatureCollection = {
   features: HeatmapFeature[];
 };
 
-export type BuildingHistoryPoint = {
-  level: number;
+export type BuildingHistoryEvent = {
+  date: string;
+  store_name: string;
+  floor: number;
   industry: string;
-  vacant: boolean;
+  event: '신규입점' | '폐업' | '업종변경';
+  open_date: string;
+  close_date: string | null;
+  op_months: number | null;
+  rent_monthly: number;
+  close_reason_summary: string | null;
 };
 
 export type BuildingFloor = {
@@ -48,8 +55,8 @@ export async function fetchHeatmap(district = 'lapesta'): Promise<HeatmapFeature
   return getHeatmap(district);
 }
 
-export async function getBuildingHistory(id: string): Promise<BuildingHistoryPoint[]> {
-  return request<BuildingHistoryPoint[]>(`/buildings/${encodeURIComponent(id)}/history`);
+export async function getBuildingHistory(id: string): Promise<BuildingHistoryEvent[]> {
+  return request<BuildingHistoryEvent[]>(`/buildings/${encodeURIComponent(id)}/history`);
 }
 
 export async function getBuildingFloors(id: string): Promise<BuildingFloor[]> {

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.data.buildings import get_building_floors, get_building_model
+from app.data.buildings import get_building_floors, get_building_history, get_building_model
 
 router = APIRouter()
 
@@ -18,3 +18,9 @@ def get_model(id: str) -> dict:
     if model is None:
         raise HTTPException(status_code=404, detail=f"No 3D model for building: {id}")
     return model
+
+
+@router.get("/buildings/{id}/history")
+def get_history(id: str) -> list[dict]:
+    """Store-occupancy timeline for a building's vacancy history."""
+    return get_building_history(id)

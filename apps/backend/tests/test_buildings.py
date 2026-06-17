@@ -39,3 +39,23 @@ def test_model_returns_url_for_known_building():
 def test_model_404_for_building_without_model():
     response = client.get("/api/v1/buildings/no-such-building/model")
     assert response.status_code == 404
+
+
+def test_history_returns_nonempty_list():
+    response = client.get("/api/v1/buildings/demo-building/history")
+    assert response.status_code == 200
+    history = response.json()
+    assert len(history) > 0
+    for event in history:
+        assert event["event"] in {"신규입점", "폐업", "업종변경"}
+        if event["event"] == "폐업":
+            assert event["close_reason_summary"]
+            assert event["close_date"] is not None
+        else:
+            assert event["close_reason_summary"] is None
+
+
+def test_history_deterministic_for_same_building_id():
+    first = client.get("/api/v1/buildings/gangnam-1/history").json()
+    second = client.get("/api/v1/buildings/gangnam-1/history").json()
+    assert first == second
