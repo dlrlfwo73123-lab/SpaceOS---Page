@@ -1,8 +1,16 @@
-export type HeatmapPoint = {
-  grid_id: string;
-  lng: number;
-  lat: number;
-  vacancy_rate: number;
+export type HeatmapFeature = {
+  type: 'Feature';
+  geometry: { type: 'Point'; coordinates: [number, number] };
+  properties: {
+    grid_id: string;
+    vacancy_rate: number;
+    predicted_rate: number;
+  };
+};
+
+export type HeatmapFeatureCollection = {
+  type: 'FeatureCollection';
+  features: HeatmapFeature[];
 };
 
 export type BuildingHistoryPoint = {
@@ -21,11 +29,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function getHeatmap(district = 'lapesta'): Promise<HeatmapPoint[]> {
-  return request<HeatmapPoint[]>(`/heatmap?district=${encodeURIComponent(district)}`);
+export async function getHeatmap(district = 'lapesta'): Promise<HeatmapFeatureCollection> {
+  return request<HeatmapFeatureCollection>(`/heatmap?district=${encodeURIComponent(district)}`);
 }
 
-export async function fetchHeatmap(district = 'lapesta'): Promise<HeatmapPoint[]> {
+export async function fetchHeatmap(district = 'lapesta'): Promise<HeatmapFeatureCollection> {
   return getHeatmap(district);
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { fetchHeatmap, type HeatmapPoint } from '@/lib/api';
+import { fetchHeatmap, type HeatmapFeatureCollection } from '@/lib/api';
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 mapboxgl.accessToken = TOKEN ?? '';
@@ -18,12 +18,19 @@ const districtCenters: Record<string, [number, number]> = {
   default: [126.978, 37.5665],
 };
 
-const fallbackPoints: HeatmapPoint[] = [
-  { grid_id: 'g1', lng: 126.978, lat: 37.5665, vacancy_rate: 0.82 },
-  { grid_id: 'g2', lng: 126.979, lat: 37.567, vacancy_rate: 0.64 },
-  { grid_id: 'g3', lng: 126.977, lat: 37.5658, vacancy_rate: 0.51 },
-  { grid_id: 'g4', lng: 126.9802, lat: 37.5652, vacancy_rate: 0.73 },
-];
+const fallback: HeatmapFeatureCollection = {
+  type: 'FeatureCollection',
+  features: [
+    { grid_id: 'g1', lng: 126.978, lat: 37.5665, vacancy_rate: 0.82, predicted_rate: 0.78 },
+    { grid_id: 'g2', lng: 126.979, lat: 37.567, vacancy_rate: 0.64, predicted_rate: 0.69 },
+    { grid_id: 'g3', lng: 126.977, lat: 37.5658, vacancy_rate: 0.51, predicted_rate: 0.55 },
+    { grid_id: 'g4', lng: 126.9802, lat: 37.5652, vacancy_rate: 0.73, predicted_rate: 0.7 },
+  ].map(({ grid_id, lng, lat, vacancy_rate, predicted_rate }) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [lng, lat] },
+    properties: { grid_id, vacancy_rate, predicted_rate },
+  })),
+};
 
 export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: VacancyHeatmapProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -39,14 +46,16 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
         </code>
         {/* TODO: 공식 Mapbox 토큰 발급 후 .env.local에 설정 */}
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          {fallbackPoints.map((p) => (
+          {fallback.features.map((f) => (
             <button
-              key={p.grid_id}
-              onClick={() => onSelectBuilding?.(p.grid_id)}
+              key={f.properties.grid_id}
+              onClick={() => onSelectBuilding?.(f.properties.grid_id)}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-indigo-400"
             >
-              <span className="font-medium">{p.grid_id}</span>
-              <span className="ml-2 text-amber-600">공실율 {Math.round(p.vacancy_rate * 100)}%</span>
+              <span className="font-medium">{f.properties.grid_id}</span>
+              <span className="ml-2 text-amber-600">
+                공실율 {Math.round(f.properties.vacancy_rate * 100)}%
+              </span>
             </button>
           ))}
         </div>
@@ -66,17 +75,21 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
 
     map.on('load', async () => {
       try {
-        const cells = await fetchHeatmap(district);
-        const points = cells.length ? cells : fallbackPoints;
+        const collection = await fetchHeatmap(district);
+        const data = collection.features.length ? collection : fallback;
 
         map.addSource('vacancy', {
           type: 'geojson',
           data: {
             type: 'FeatureCollection',
-            features: points.map((c) => ({
+            features: data.features.map((f) => ({
               type: 'Feature',
-              properties: { w: c.vacancy_rate, grid_id: c.grid_id },
-              geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
+              properties: {
+                w: f.properties.vacancy_rate,
+                grid_id: f.properties.grid_id,
+                predicted_rate: f.properties.predicted_rate,
+              },
+              geometry: f.geometry,
             })),
           },
         });
