@@ -35,7 +35,79 @@ const fallback: HeatmapFeatureCollection = {
 export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: VacancyHeatmapProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Mapbox 토큰 없으면 fallback UI
+  useEffect(() => {
+    if (!ref.current || !TOKEN) return;
+
+    const map = new mapboxgl.Map({
+      container: ref.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: districtCenters[district] ?? districtCenters.default,
+      zoom: 14,
+    });
+
+    function renderHeatmap(data: HeatmapFeatureCollection) {
+      map.addSource('vacancy', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: data.features.map((f) => ({
+            type: 'Feature',
+            properties: {
+              w: f.properties.vacancy_rate,
+              grid_id: f.properties.grid_id,
+              predicted_rate: f.properties.predicted_rate,
+            },
+            geometry: f.geometry,
+          })),
+        },
+      });
+
+      map.addLayer({
+        id: 'vacancy-heat',
+        type: 'heatmap',
+        source: 'vacancy',
+        paint: {
+          'heatmap-weight': ['get', 'w'],
+          'heatmap-radius': 28,
+          'heatmap-color': [
+            'interpolate', ['linear'], ['heatmap-density'],
+            0, 'rgba(0,0,0,0)', 0.4, '#fde68a', 0.7, '#fb923c', 1, '#dc2626',
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: 'vacancy-point',
+        type: 'circle',
+        source: 'vacancy',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['get', 'w'], 0, 4, 1, 10],
+          'circle-color': ['step', ['get', 'w'], '#4f46e5', 0.5, '#f59e0b', 0.8, '#dc2626'],
+          'circle-opacity': 0.8,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fff',
+        },
+      });
+
+      map.on('click', 'vacancy-point', (e) => {
+        const id = e.features?.[0]?.properties?.grid_id ?? 'demo-building';
+        onSelectBuilding?.(String(id));
+      });
+    }
+
+    map.on('load', async () => {
+      try {
+        const collection = await fetchHeatmap(district);
+        renderHeatmap(collection.features.length ? collection : fallback);
+      } catch (err) {
+        console.warn('Heatmap load failed, fallback 사용', err);
+        renderHeatmap(fallback);
+      }
+    });
+
+    return () => map.remove();
+  }, [district, onSelectBuilding]);
+
   if (!TOKEN) {
     return (
       <div className="flex h-[600px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-100 text-slate-500">
@@ -62,76 +134,6 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    const map = new mapboxgl.Map({
-      container: ref.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: districtCenters[district] ?? districtCenters.default,
-      zoom: 14,
-    });
-
-    map.on('load', async () => {
-      try {
-        const collection = await fetchHeatmap(district);
-        const data = collection.features.length ? collection : fallback;
-
-        map.addSource('vacancy', {
-          type: 'geojson',
-          data: {
-            type: 'FeatureCollection',
-            features: data.features.map((f) => ({
-              type: 'Feature',
-              properties: {
-                w: f.properties.vacancy_rate,
-                grid_id: f.properties.grid_id,
-                predicted_rate: f.properties.predicted_rate,
-              },
-              geometry: f.geometry,
-            })),
-          },
-        });
-
-        map.addLayer({
-          id: 'vacancy-heat',
-          type: 'heatmap',
-          source: 'vacancy',
-          paint: {
-            'heatmap-weight': ['get', 'w'],
-            'heatmap-radius': 28,
-            'heatmap-color': [
-              'interpolate', ['linear'], ['heatmap-density'],
-              0, 'rgba(0,0,0,0)', 0.4, '#fde68a', 0.7, '#fb923c', 1, '#dc2626',
-            ],
-          },
-        });
-
-        map.addLayer({
-          id: 'vacancy-point',
-          type: 'circle',
-          source: 'vacancy',
-          paint: {
-            'circle-radius': ['interpolate', ['linear'], ['get', 'w'], 0, 4, 1, 10],
-            'circle-color': ['step', ['get', 'w'], '#4f46e5', 0.5, '#f59e0b', 0.8, '#dc2626'],
-            'circle-opacity': 0.8,
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#fff',
-          },
-        });
-
-        map.on('click', 'vacancy-point', (e) => {
-          const id = e.features?.[0]?.properties?.grid_id ?? 'demo-building';
-          onSelectBuilding?.(String(id));
-        });
-      } catch (err) {
-        console.warn('Heatmap load failed, fallback 사용', err);
-      }
-    });
-
-    return () => map.remove();
-  }, [district, onSelectBuilding]);
 
   return <div ref={ref} className="h-[600px] w-full rounded-xl" />;
 }
