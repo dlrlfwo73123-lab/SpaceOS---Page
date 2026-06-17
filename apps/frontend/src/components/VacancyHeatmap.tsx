@@ -1,6 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { fetchHeatmap, type HeatmapFeatureCollection } from '@/lib/api';
+
+type Metric = 'vacancy_rate' | 'predicted_rate';
+
+const METRIC_LABELS: Record<Metric, string> = {
+  vacancy_rate: '현재 공실율',
+  predicted_rate: '예측 공실율',
+};
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 mapboxgl.accessToken = TOKEN ?? '';
@@ -34,6 +41,7 @@ const fallback: HeatmapFeatureCollection = {
 
 export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: VacancyHeatmapProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [metric, setMetric] = useState<Metric>('vacancy_rate');
 
   useEffect(() => {
     if (!ref.current || !TOKEN) return;
@@ -53,8 +61,9 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
           features: data.features.map((f) => ({
             type: 'Feature',
             properties: {
-              w: f.properties.vacancy_rate,
+              w: f.properties[metric],
               grid_id: f.properties.grid_id,
+              vacancy_rate: f.properties.vacancy_rate,
               predicted_rate: f.properties.predicted_rate,
             },
             geometry: f.geometry,
@@ -106,36 +115,60 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
     });
 
     return () => map.remove();
-  }, [district, onSelectBuilding]);
+  }, [district, metric, onSelectBuilding]);
+
+  const metricToggle = (
+    <div className="mb-2 flex gap-1.5">
+      {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
+        <button
+          key={m}
+          onClick={() => setMetric(m)}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            metric === m ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          {METRIC_LABELS[m]}
+        </button>
+      ))}
+    </div>
+  );
 
   if (!TOKEN) {
     return (
-      <div className="flex h-[600px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-100 text-slate-500">
-        <span className="text-4xl">🗺️</span>
-        <p className="text-sm font-medium">지도를 표시하려면 Mapbox 토큰이 필요합니다</p>
-        <code className="rounded bg-slate-200 px-2 py-1 text-xs">
-          VITE_MAPBOX_TOKEN=pk.xxx 를 .env.local 에 추가하세요
-        </code>
-        {/* TODO: 공식 Mapbox 토큰 발급 후 .env.local에 설정 */}
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          {fallback.features.map((f) => (
-            <button
-              key={f.properties.grid_id}
-              onClick={() => onSelectBuilding?.(f.properties.grid_id)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-indigo-400"
-            >
-              <span className="font-medium">{f.properties.grid_id}</span>
-              <span className="ml-2 text-amber-600">
-                공실율 {Math.round(f.properties.vacancy_rate * 100)}%
-              </span>
-            </button>
-          ))}
+      <div>
+        {metricToggle}
+        <div className="flex h-[600px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-100 text-slate-500">
+          <span className="text-4xl">🗺️</span>
+          <p className="text-sm font-medium">지도를 표시하려면 Mapbox 토큰이 필요합니다</p>
+          <code className="rounded bg-slate-200 px-2 py-1 text-xs">
+            VITE_MAPBOX_TOKEN=pk.xxx 를 .env.local 에 추가하세요
+          </code>
+          {/* TODO: 공식 Mapbox 토큰 발급 후 .env.local에 설정 */}
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            {fallback.features.map((f) => (
+              <button
+                key={f.properties.grid_id}
+                onClick={() => onSelectBuilding?.(f.properties.grid_id)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-indigo-400"
+              >
+                <span className="font-medium">{f.properties.grid_id}</span>
+                <span className="ml-2 text-amber-600">
+                  {METRIC_LABELS[metric]} {Math.round(f.properties[metric] * 100)}%
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  return <div ref={ref} className="h-[600px] w-full rounded-xl" />;
+  return (
+    <div>
+      {metricToggle}
+      <div ref={ref} className="h-[600px] w-full rounded-xl" />
+    </div>
+  );
 }
 
 export default VacancyHeatmap;
