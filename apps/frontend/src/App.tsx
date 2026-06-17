@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BuildingTwin from './components/BuildingTwin';
+import { DistrictMap } from './components/DistrictMap';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
@@ -118,6 +119,12 @@ export default function App() {
             <NaverMap guCode={guCode} onSelectBuilding={setSelectedBuildingId} />
           </div>
           <BuildingTwin floors={DEMO_FLOORS} />
+        </section>
+
+        {/* 상권 공실 히트맵 */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="mb-3 text-sm font-semibold">상권 공실 히트맵</p>
+          <DistrictMap onSelectBuilding={setSelectedBuildingId} />
         </section>
 
         {/* 점포 이력 */}
