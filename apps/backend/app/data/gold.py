@@ -55,3 +55,18 @@ def get_district_grid(district: str) -> list[dict]:
             }
         )
     return cells
+
+
+def get_grid_cell(grid_id: str) -> dict | None:
+    """Look up a single Gold-layer grid cell by its id (e.g. "gangnam-2").
+
+    The district is recovered from the id's prefix, so this stays a plain
+    lookup against `get_district_grid` rather than a separate data path.
+    """
+    district, _, _ = grid_id.rpartition("-")
+    if not district:
+        return None
+    for cell in get_district_grid(district):
+        if cell["grid_id"] == grid_id:
+            return cell
+    return None

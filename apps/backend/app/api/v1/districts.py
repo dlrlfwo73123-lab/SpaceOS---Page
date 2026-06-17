@@ -1,8 +1,20 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from app.data.gold import get_district_grid
+from app.data.gold import get_district_grid, get_grid_cell
 
 router = APIRouter()
+
+
+def _cell_to_feature(cell: dict) -> dict:
+    return {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [cell["lng"], cell["lat"]]},
+        "properties": {
+            "grid_id": cell["grid_id"],
+            "vacancy_rate": cell["vacancy_rate"],
+            "predicted_rate": cell["predicted_rate"],
+        },
+    }
 
 
 @router.get("/heatmap")
@@ -15,16 +27,14 @@ def get_heatmap(district: str = "lapesta") -> dict:
     cells = get_district_grid(district)
     return {
         "type": "FeatureCollection",
-        "features": [
-            {
-                "type": "Feature",
-                "geometry": {"type": "Point", "coordinates": [cell["lng"], cell["lat"]]},
-                "properties": {
-                    "grid_id": cell["grid_id"],
-                    "vacancy_rate": cell["vacancy_rate"],
-                    "predicted_rate": cell["predicted_rate"],
-                },
-            }
-            for cell in cells
-        ],
+        "features": [_cell_to_feature(cell) for cell in cells],
     }
+
+
+@router.get("/heatmap/{id}")
+def get_heatmap_cell(id: str) -> dict:
+    """A single heatmap grid cell as a GeoJSON Feature, by grid_id."""
+    cell = get_grid_cell(id)
+    if cell is None:
+        raise HTTPException(status_code=404, detail=f"Unknown grid_id: {id}")
+    return _cell_to_feature(cell)
