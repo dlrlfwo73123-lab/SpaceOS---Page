@@ -37,6 +37,12 @@ export type BuildingModel = {
   model_url: string;
 };
 
+export type DistrictTrendPoint = {
+  month: string;
+  vacancy_rate: number;
+  predicted: boolean;
+};
+
 const baseUrl = '/api/v1';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -65,4 +71,8 @@ export async function getBuildingFloors(id: string): Promise<BuildingFloor[]> {
 
 export async function getBuildingModel(id: string): Promise<BuildingModel> {
   return request<BuildingModel>(`/buildings/${encodeURIComponent(id)}/model`);
+}
+
+export async function getDistrictTrend(guCode: string): Promise<DistrictTrendPoint[]> {
+  return request<DistrictTrendPoint[]>(`/districts/${encodeURIComponent(guCode)}/trend`);
 }

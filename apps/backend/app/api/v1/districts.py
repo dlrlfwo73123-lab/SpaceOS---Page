@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from app.data.districts import get_district_trend
 from app.data.gold import get_district_grid, get_grid_cell
 
 router = APIRouter()
@@ -38,3 +39,9 @@ def get_heatmap_cell(id: str) -> dict:
     if cell is None:
         raise HTTPException(status_code=404, detail=f"Unknown grid_id: {id}")
     return _cell_to_feature(cell)
+
+
+@router.get("/districts/{gu_code}/trend")
+def get_trend(gu_code: str) -> list[dict]:
+    """Monthly vacancy-rate trend for a Seoul gu, plus one predicted point."""
+    return get_district_trend(gu_code)

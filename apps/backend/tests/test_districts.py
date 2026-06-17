@@ -45,3 +45,32 @@ def test_heatmap_cell_returns_matching_feature():
 def test_heatmap_cell_404_for_unknown_id():
     response = client.get("/api/v1/heatmap/not-a-real-id")
     assert response.status_code == 404
+
+
+def test_trend_returns_twelve_months_plus_one_predicted_point():
+    response = client.get("/api/v1/districts/11680/trend")
+    assert response.status_code == 200
+    points = response.json()
+    assert len(points) == 13
+    assert [p["predicted"] for p in points] == [False] * 12 + [True]
+    for p in points:
+        assert p["vacancy_rate"] >= 2.0
+
+
+def test_trend_months_are_sequential():
+    points = client.get("/api/v1/districts/11680/trend").json()
+    months = [p["month"] for p in points]
+    assert months == sorted(months)
+    assert len(set(months)) == len(months)
+
+
+def test_trend_deterministic_for_same_gu_code():
+    first = client.get("/api/v1/districts/11680/trend").json()
+    second = client.get("/api/v1/districts/11680/trend").json()
+    assert first == second
+
+
+def test_trend_differs_across_gu_codes():
+    a = client.get("/api/v1/districts/11680/trend").json()
+    b = client.get("/api/v1/districts/11305/trend").json()
+    assert a != b
