@@ -1,13 +1,9 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text, useGLTF } from '@react-three/drei';
 import { Suspense, useEffect, useState } from 'react';
-import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
+import { getBuildingFloors, getBuildingModel, type BuildingFloor as Floor } from '@/lib/api';
 
 type BuildingTwinProps = { buildingId: string };
-
-// 실측 건물 GLB가 있을 때만 셸을 불러오고, 없으면 절차적 박스 층만 표시
-const MODEL_URL = import.meta.env.VITE_BUILDING_MODEL_URL;
-if (MODEL_URL) useGLTF.preload(MODEL_URL);
 
 function BuildingShell({ url }: { url: string }) {
   const { scene } = useGLTF(url);
@@ -84,6 +80,7 @@ function ScaleBar() {
 export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [modelUrl, setModelUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedFloor(null);
@@ -93,6 +90,14 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
         console.warn('층 데이터 로드 실패, fallback 사용', err);
         setFloors(FALLBACK_FLOORS);
       });
+
+    // 실측 GLB가 캡처된 건물만 셸을 불러옴 — 대부분 404가 정상이며 박스 층만 표시
+    getBuildingModel(buildingId)
+      .then((model) => {
+        useGLTF.preload(model.model_url);
+        setModelUrl(model.model_url);
+      })
+      .catch(() => setModelUrl(null));
   }, [buildingId]);
 
   const totalH = floors.length * (FLOOR_H + GAP);
@@ -130,9 +135,9 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
           <gridHelper args={[60, 20, '#334155', '#1e293b']} position={[0, 0, 0]} />
 
           {/* 실측 건물 셸 (GLB) — 있을 때만 */}
-          {MODEL_URL && (
+          {modelUrl && (
             <Suspense fallback={null}>
-              <BuildingShell url={MODEL_URL} />
+              <BuildingShell url={modelUrl} />
             </Suspense>
           )}
 

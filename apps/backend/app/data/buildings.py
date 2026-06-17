@@ -43,3 +43,18 @@ def get_building_floors(building_id: str) -> list[dict]:
         }
         for level in range(1, count + 1)
     ]
+
+
+# Buildings with a captured/scanned 3D model. Unlike floor occupancy, most
+# buildings won't have one, so this is a registry rather than a generator.
+_BUILDING_MODELS: dict[str, str] = {
+    "demo-building": "/models/demo-building.glb",
+}
+
+
+def get_building_model(building_id: str) -> dict | None:
+    """Return the GLB model URL for a building, or None if none is captured."""
+    model_url = _BUILDING_MODELS.get(building_id)
+    if model_url is None:
+        return None
+    return {"building_id": building_id, "model_url": model_url}

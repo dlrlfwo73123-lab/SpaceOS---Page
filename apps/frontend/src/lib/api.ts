@@ -25,6 +25,11 @@ export type BuildingFloor = {
   vacant: boolean;
 };
 
+export type BuildingModel = {
+  building_id: string;
+  model_url: string;
+};
+
 const baseUrl = '/api/v1';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -49,4 +54,8 @@ export async function getBuildingHistory(id: string): Promise<BuildingHistoryPoi
 
 export async function getBuildingFloors(id: string): Promise<BuildingFloor[]> {
   return request<BuildingFloor[]>(`/buildings/${encodeURIComponent(id)}/floors`);
+}
+
+export async function getBuildingModel(id: string): Promise<BuildingModel> {
+  return request<BuildingModel>(`/buildings/${encodeURIComponent(id)}/model`);
 }

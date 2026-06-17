@@ -26,3 +26,16 @@ def test_floors_differ_across_buildings():
     a = client.get("/api/v1/buildings/building-a/floors").json()
     b = client.get("/api/v1/buildings/building-b/floors").json()
     assert a != b
+
+
+def test_model_returns_url_for_known_building():
+    response = client.get("/api/v1/buildings/demo-building/model")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["building_id"] == "demo-building"
+    assert body["model_url"] == "/models/demo-building.glb"
+
+
+def test_model_404_for_building_without_model():
+    response = client.get("/api/v1/buildings/no-such-building/model")
+    assert response.status_code == 404
