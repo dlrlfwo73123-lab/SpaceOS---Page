@@ -33,7 +33,7 @@ export default function App() {
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             SpaceOS Platform
           </p>
-          <h1 className="text-3xl font-semibold">서울 상권 공실 시각화</h1>
+          <h1 className="text-3xl font-semibold">서울 상권분석 현황</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-500">
             서울 25개 자치구 · 동별 필터로 공실 현황을 확인하고,
             건물을 선택하면 3D 디지털 트윈과 점포 이력을 볼 수 있습니다.
@@ -99,11 +99,10 @@ export default function App() {
           </span>
           <span>·</span>
           <span>{INDUSTRY_CODES.find((i) => i.code === industryCode)?.name ?? '전체'}</span>
-          {/* TODO: 선택된 구/동/업종 기준으로 API 호출 연동 */}
         </div>
 
-        {/* 통계 카드 — 구별 10대 지표 */}
-        <StatsPanel guCode={guCode} />
+        {/* 통계 카드 — 구/동/업종별 10대 지표, 클릭 시 3년 추이 그래프 */}
+        <StatsPanel guCode={guCode} dongCode={dongCode} industryCode={industryCode} />
 
         {/* 공실율 추이 차트 */}
         <Suspense fallback={<div className="h-[340px] rounded-2xl border border-slate-200 bg-white" />}>
@@ -130,8 +129,15 @@ export default function App() {
         {/* 공실 히스토리 타임라인 */}
         <HistoryTimeline buildingId={selectedBuildingId} />
 
-        {/* 점포 이력 */}
-        <StoreHistory buildingId={selectedBuildingId} />
+        {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
+        <StoreHistory
+          buildingId={selectedBuildingId}
+          guCode={guCode}
+          dongCode={dongCode}
+          industryCode={industryCode}
+          guName={selectedGu.name}
+          dongName={selectedGu.dongs.find((d) => d.code === dongCode)?.name ?? ''}
+        />
 
       </div>
     </main>

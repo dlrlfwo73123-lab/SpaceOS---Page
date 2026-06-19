@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // TODO: Naver Maps JS API v3 타입 선언 — @types/naver-maps 패키지 없음, 직접 최소 선언
 declare global {
@@ -8,12 +8,17 @@ declare global {
         Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
         LatLng: new (lat: number, lng: number) => unknown;
         Marker: new (opts: Record<string, unknown>) => NaverMarker;
+        Event: { addListener: (target: unknown, eventName: string, handler: (e: { coord: unknown }) => void) => void };
+        panorama: {
+          Panorama: new (el: HTMLElement, opts: Record<string, unknown>) => NaverPanoramaInstance;
+        };
       };
     };
   }
 }
-interface NaverMapInstance { setCenter(latlng: unknown): void }
+interface NaverMapInstance { setCenter(latlng: unknown): void; getCenter(): unknown }
 interface NaverMarker { setMap(map: NaverMapInstance | null): void }
+interface NaverPanoramaInstance { setPosition(latlng: unknown): void }
 
 // 서울 25개 구 중심 좌표 (WGS84)
 // TODO: 동별 중심 좌표는 행정안전부 공간정보 API로 교체
@@ -54,20 +59,28 @@ type NaverMapProps = {
 
 export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
+  const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
+  const [streetView, setStreetView] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  // TODO: VITE_NAVER_CLIENT_ID를 Naver Cloud Console에서 발급받아 .env.local에 설정
-  const clientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
+  // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
+  // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
+  const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
+  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
 
   useEffect(() => {
-    if (!clientId || clientId === 'YOUR_NAVER_CLIENT_ID') return;
     if (scriptRef.current) return; // 이미 로드 중
 
     const script = document.createElement('script');
-    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`;
+    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=panorama`;
     script.async = true;
-    script.onload = () => initMap();
+    script.onload = () => {
+      setScriptLoaded(true);
+      initMap();
+    };
     document.head.appendChild(script);
     scriptRef.current = script;
 
@@ -80,12 +93,25 @@ export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
-  // 구 선택 시 지도 중심 이동
+  // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
   useEffect(() => {
-    if (!mapRef.current || !window.naver) return;
+    if (!window.naver) return;
     const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    mapRef.current.setCenter(new window.naver.maps.LatLng(lat, lng));
+    const latlng = new window.naver.maps.LatLng(lat, lng);
+    if (mapRef.current) mapRef.current.setCenter(latlng);
+    if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
   }, [guCode]);
+
+  // 거리뷰 토글 시 Panorama 인스턴스 생성
+  useEffect(() => {
+    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps.panorama) return;
+    const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+    panoramaRef.current = new window.naver.maps.panorama.Panorama(panoramaContainerRef.current, {
+      position: new window.naver.maps.LatLng(lat, lng),
+      pov: { pan: 0, tilt: 0, fov: 100 },
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streetView]);
 
   function initMap() {
     if (!containerRef.current || !window.naver) return;
@@ -95,20 +121,20 @@ export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
       zoom: 14,
     });
 
+    // 지도 클릭 시 해당 좌표를 거리뷰 중심으로 사용할 수 있도록 마지막 클릭 위치 저장
+    window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
+      if (panoramaRef.current) panoramaRef.current.setPosition(e.coord);
+      onSelectBuilding?.('demo-building');
+    });
+
     // TODO: 공실 히트맵 오버레이 — GET /api/v1/heatmap?gu={guCode} 연동 후 추가
-    // TODO: 클릭된 마커에서 onSelectBuilding 호출
   }
 
-  if (!clientId || clientId === 'YOUR_NAVER_CLIENT_ID') {
+  if (!scriptLoaded) {
     return (
       <div className="flex h-[420px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
         <span className="text-2xl">🗺️</span>
-        <p className="text-sm font-semibold text-slate-700">Naver Maps API 키 미설정</p>
-        <p className="max-w-xs text-xs text-slate-400">
-          {/* TODO: Naver Cloud Console (https://console.ncloud.com) 에서 ncpClientId 발급 후 */}
-          <code className="rounded bg-slate-200 px-1 py-0.5">.env.local</code>에{' '}
-          <code className="rounded bg-slate-200 px-1 py-0.5">VITE_NAVER_CLIENT_ID=...</code> 설정
-        </p>
+        <p className="text-sm font-semibold text-slate-700">네이버 지도 불러오는 중…</p>
         <div className="mt-2 w-64 rounded-lg border border-slate-200 bg-white p-3 text-left text-xs text-slate-500">
           <p className="mb-1 font-semibold text-slate-700">선택된 구 (미리보기)</p>
           <p>구 코드: <span className="font-mono">{guCode}</span></p>
@@ -118,5 +144,31 @@ export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
     );
   }
 
-  return <div ref={containerRef} className="h-[420px] w-full rounded-xl overflow-hidden" />;
+  return (
+    <div>
+      <div className="mb-2 flex gap-1.5">
+        <button
+          onClick={() => setStreetView(false)}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            !streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          지도
+        </button>
+        <button
+          onClick={() => setStreetView(true)}
+          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+            streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          🔭 거리뷰
+        </button>
+        <span className="ml-auto self-center text-[11px] text-slate-400">
+          지도를 클릭하면 해당 위치의 거리뷰로 이동합니다
+        </span>
+      </div>
+      <div ref={containerRef} className="h-[420px] w-full rounded-xl overflow-hidden" style={{ display: streetView ? 'none' : 'block' }} />
+      <div ref={panoramaContainerRef} className="h-[420px] w-full rounded-xl overflow-hidden" style={{ display: streetView ? 'block' : 'none' }} />
+    </div>
+  );
 }
