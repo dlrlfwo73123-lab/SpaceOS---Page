@@ -3,11 +3,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-// GitHub Pages에서 /SpaceOS---Page/ 경로로 호스팅됨
+// GitHub Pages에서 /spaceos2/ 경로로 호스팅됨
 const isGHPages = process.env.GITHUB_PAGES === 'true';
 
 export default defineConfig({
-  base: isGHPages ? '/SpaceOS---Page/' : '/',
+  base: isGHPages ? '/spaceos2/' : '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
