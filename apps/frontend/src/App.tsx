@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import BuildingTwin from './components/BuildingTwin';
-import { DistrictMap } from './components/DistrictMap';
-import HistoryTimeline from './components/HistoryTimeline';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
@@ -111,15 +109,6 @@ export default function App() {
           </div>
           <BuildingTwin buildingId={selectedBuildingId} />
         </section>
-
-        {/* 상권 공실 히트맵 */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-semibold">상권 공실 히트맵</p>
-          <DistrictMap onSelectBuilding={setSelectedBuildingId} />
-        </section>
-
-        {/* 공실 히스토리 타임라인 */}
-        <HistoryTimeline buildingId={selectedBuildingId} />
 
         {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
         <StoreHistory
