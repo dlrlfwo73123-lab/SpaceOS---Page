@@ -132,15 +132,17 @@ export function getMarketStats(guCode: string, dongCode: string, industryCode: s
   return result;
 }
 
-// 36개월(3년) 시계열 — 마지막 값이 getMarketStats() 스냅샷과 일치하도록 역산
+// 분기별(3년=12분기) 시계열 — 마지막 값이 getMarketStats() 스냅샷과 일치하도록 역산
 export type TrendPoint = { month: string; value: number; predicted: boolean };
+
+const QUARTERS_BACK = 12; // 3년치 분기 수
 
 export function getMetricTrend(
   guCode: string,
   dongCode: string,
   industryCode: string,
   metric: keyof MarketStats,
-  months = 36,
+  quarters = QUARTERS_BACK,
 ): TrendPoint[] {
   const current = getMarketStats(guCode, dongCode, industryCode)[metric];
   const rng = rngFor(guCode, dongCode, industryCode, metric, 'trend');
@@ -150,29 +152,47 @@ export function getMetricTrend(
   const noiseAmp = current * 0.015;
 
   const now = new Date();
+  const currentQuarterStart = Math.floor(now.getMonth() / 3) * 3;
   const points: TrendPoint[] = [];
-  for (let i = months - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const progress = (months - 1 - i) / (months - 1); // 0 (36개월 전) → 1 (현재)
+  for (let i = quarters - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), currentQuarterStart - i * 3, 1);
+    const progress = (quarters - 1 - i) / (quarters - 1); // 0 (3년 전) → 1 (현재 분기)
     const trendBase = current * (1 - driftPct * (1 - progress));
-    const seasonal = Math.sin((months - 1 - i) / 3) * seasonAmp;
+    const seasonal = Math.sin((quarters - 1 - i) / 2) * seasonAmp;
     const noise = (rng() - 0.5) * 2 * noiseAmp;
     points.push({
-      month: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      month: `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`,
       value: Math.round((trendBase + seasonal + noise) * 100) / 100,
       predicted: false,
     });
   }
-  // 마지막 관측치를 스냅샷 값으로 고정 + 다음 달 예측치 1개 추가
+  // 마지막 관측치(현재 분기)를 스냅샷 값으로 고정 + 다음 달 예측치 1개 추가
   points[points.length - 1] = { ...points[points.length - 1], value: Math.round(current * 100) / 100 };
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const predictedDrift = current * (driftPct / months) * 2;
+  const predictedDrift = current * (driftPct / quarters) * 0.7;
   points.push({
-    month: `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`,
+    month: `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')} (예측)`,
     value: Math.round((current + predictedDrift) * 100) / 100,
     predicted: true,
   });
   return points;
+}
+
+// 최근 2개 관측 분기를 비교해 상승/하락/유지 판정 (lowerIsBetter=true면 의미상 반대로 좋은 방향 표시는 호출 측에서 처리)
+export function getMetricQoQTrend(
+  guCode: string,
+  dongCode: string,
+  industryCode: string,
+  metric: keyof MarketStats,
+): 'up' | 'down' | 'neutral' {
+  const points = getMetricTrend(guCode, dongCode, industryCode, metric);
+  const observed = points.filter((p) => !p.predicted);
+  const lastQ = observed[observed.length - 1].value;
+  const prevQ = observed[observed.length - 2].value;
+  if (prevQ === 0) return 'neutral';
+  const pctChange = (lastQ - prevQ) / Math.abs(prevQ);
+  if (Math.abs(pctChange) < 0.005) return 'neutral';
+  return pctChange > 0 ? 'up' : 'down';
 }
 
 // ── 점포 이력 (필터별 생성) ──
