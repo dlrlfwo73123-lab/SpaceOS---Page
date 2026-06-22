@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { getMarketStats } from '@/lib/marketData';
+import { SEOUL_GU } from '@/lib/seoul';
 
 // TODO: Naver Maps JS API v3 타입 선언 — @types/naver-maps 패키지 없음, 직접 최소 선언
 declare global {
@@ -7,7 +9,9 @@ declare global {
       maps: {
         Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
         LatLng: new (lat: number, lng: number) => unknown;
+        Point: new (x: number, y: number) => unknown;
         Marker: new (opts: Record<string, unknown>) => NaverMarker;
+        InfoWindow: new (opts: Record<string, unknown>) => NaverInfoWindow;
         Event: { addListener: (target: unknown, eventName: string, handler: (e: { coord: unknown }) => void) => void };
         panorama: {
           Panorama: new (el: HTMLElement, opts: Record<string, unknown>) => NaverPanoramaInstance;
@@ -16,8 +20,9 @@ declare global {
     };
   }
 }
-interface NaverMapInstance { setCenter(latlng: unknown): void; getCenter(): unknown }
-interface NaverMarker { setMap(map: NaverMapInstance | null): void }
+interface NaverMapInstance { setCenter(latlng: unknown): void; getCenter(): unknown; setZoom(zoom: number): void }
+interface NaverMarker { setMap(map: NaverMapInstance | null): void; setPosition(latlng: unknown): void; setIcon(icon: unknown): void }
+interface NaverInfoWindow { open(map: NaverMapInstance, marker: NaverMarker): void; close(): void; setContent(html: string): void }
 interface NaverPanoramaInstance { setPosition(latlng: unknown): void }
 
 // 서울 25개 구 중심 좌표 (WGS84)
@@ -52,16 +57,44 @@ const GU_CENTER: Record<string, [number, number]> = {
 
 const DEFAULT_CENTER: [number, number] = [37.5665, 126.9780]; // 서울 시청
 
+// 동 코드를 시드로 구 중심에서 ±0.6~1.4km 범위의 결정적(deterministic) 오프셋을 생성
+// TODO: 실제 동 중심 좌표는 행정안전부 공간정보 API로 교체
+function hashDong(code: string): number {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function dongOffset(guCode: string, dongCode: string): [number, number] {
+  if (!dongCode) return [0, 0];
+  const h = hashDong(`${guCode}|${dongCode}`);
+  const angle = (h % 360) * (Math.PI / 180);
+  const radiusKm = 0.6 + ((h >>> 8) % 100) / 100; // 0.6~1.6km
+  const dLat = (radiusKm / 111) * Math.cos(angle);
+  const dLng = (radiusKm / (111 * Math.cos(37.55 * Math.PI / 180))) * Math.sin(angle);
+  return [dLat, dLng];
+}
+
+function vacancyColor(rate: number): string {
+  if (rate >= 15) return '#dc2626'; // 적색: 고공실
+  if (rate >= 12) return '#f59e0b'; // 주황: 중간
+  return '#16a34a'; // 녹색: 저공실
+}
+
 type NaverMapProps = {
   guCode: string;
+  dongCode?: string;
+  industryCode?: string;
   onSelectBuilding?: (id: string) => void;
 };
 
-export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
+export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelectBuilding }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
   const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
+  const dongMarkerRef = useRef<NaverMarker | null>(null);
+  const infoWindowRef = useRef<NaverInfoWindow | null>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
   const [streetView, setStreetView] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -95,12 +128,57 @@ export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
 
   // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
   useEffect(() => {
-    if (!window.naver) return;
-    const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+    if (!window.naver || !scriptLoaded) return;
+    const [gLat, gLng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+    const [oLat, oLng] = dongOffset(guCode, dongCode);
+    const lat = gLat + oLat;
+    const lng = gLng + oLng;
     const latlng = new window.naver.maps.LatLng(lat, lng);
-    if (mapRef.current) mapRef.current.setCenter(latlng);
+
+    if (mapRef.current) {
+      mapRef.current.setCenter(latlng);
+      mapRef.current.setZoom(dongCode ? 16 : 14);
+    }
     if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
-  }, [guCode]);
+
+    if (!dongCode) {
+      dongMarkerRef.current?.setMap(null);
+      infoWindowRef.current?.close();
+      return;
+    }
+
+    const gu = SEOUL_GU.find((g) => g.code === guCode);
+    const dong = gu?.dongs.find((d) => d.code === dongCode);
+    const stats = getMarketStats(guCode, dongCode, industryCode);
+    const color = vacancyColor(stats.vacancyRate);
+
+    if (!dongMarkerRef.current) {
+      dongMarkerRef.current = new window.naver.maps.Marker({
+        position: latlng,
+        map: mapRef.current,
+      });
+    } else {
+      dongMarkerRef.current.setPosition(latlng);
+      dongMarkerRef.current.setMap(mapRef.current);
+    }
+    dongMarkerRef.current.setIcon({
+      content: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.4);"></div>`,
+      anchor: new window.naver.maps.Point(9, 9),
+    });
+
+    if (!infoWindowRef.current) {
+      infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+    }
+    infoWindowRef.current.setContent(`
+      <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.5;">
+        <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${dong?.name ?? ''}</p>
+        <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
+        <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
+        <p>매출지수: ${Math.round(stats.revenueIdx)}</p>
+      </div>
+    `);
+    infoWindowRef.current.open(mapRef.current!, dongMarkerRef.current);
+  }, [guCode, dongCode, industryCode, scriptLoaded]);
 
   // 거리뷰 토글 시 Panorama 인스턴스 생성
   useEffect(() => {
