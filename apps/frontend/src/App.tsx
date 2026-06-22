@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import BuildingTwin from './components/BuildingTwin';
+import { lazy, Suspense, useState } from 'react';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
+
+const BuildingTwin = lazy(() => import('./components/BuildingTwin'));
 
 export default function App() {
   const [guCode, setGuCode] = useState(SEOUL_GU[0].code);         // 강남구
@@ -107,7 +108,9 @@ export default function App() {
             </p>
             <NaverMap guCode={guCode} dongCode={dongCode} industryCode={industryCode} onSelectBuilding={setSelectedBuildingId} />
           </div>
-          <BuildingTwin buildingId={selectedBuildingId} />
+          <Suspense fallback={<div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">3D 트윈 불러오는 중…</div>}>
+            <BuildingTwin buildingId={selectedBuildingId} />
+          </Suspense>
         </section>
 
         {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
