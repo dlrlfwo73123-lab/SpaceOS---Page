@@ -1,14 +1,9 @@
-import { lazy, Suspense, useState } from 'react';
+import { useState } from 'react';
 import BuildingTwin from './components/BuildingTwin';
-import { DistrictMap } from './components/DistrictMap';
-import HistoryTimeline from './components/HistoryTimeline';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
-
-// Plotly가 무거워(~5MB) 메인 번들에서 분리해 필요할 때만 로드
-const VacancyTrendChart = lazy(() => import('./components/VacancyTrendChart'));
 
 export default function App() {
   const [guCode, setGuCode] = useState(SEOUL_GU[0].code);         // 강남구
@@ -104,11 +99,6 @@ export default function App() {
         {/* 통계 카드 — 구/동/업종별 10대 지표, 클릭 시 3년 추이 그래프 */}
         <StatsPanel guCode={guCode} dongCode={dongCode} industryCode={industryCode} />
 
-        {/* 공실율 추이 차트 */}
-        <Suspense fallback={<div className="h-[340px] rounded-2xl border border-slate-200 bg-white" />}>
-          <VacancyTrendChart guCode={guCode} guName={selectedGu.name} />
-        </Suspense>
-
         {/* 지도 + 3D 트윈 */}
         <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -119,15 +109,6 @@ export default function App() {
           </div>
           <BuildingTwin buildingId={selectedBuildingId} />
         </section>
-
-        {/* 상권 공실 히트맵 */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-semibold">상권 공실 히트맵</p>
-          <DistrictMap onSelectBuilding={setSelectedBuildingId} />
-        </section>
-
-        {/* 공실 히스토리 타임라인 */}
-        <HistoryTimeline buildingId={selectedBuildingId} />
 
         {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
         <StoreHistory

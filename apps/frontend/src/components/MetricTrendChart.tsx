@@ -16,7 +16,7 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
   const observed = points.filter((p) => !p.predicted);
   const last = observed[observed.length - 1];
   const predicted = points.find((p) => p.predicted);
-  const [selected, setSelected] = useState<TrendPoint | null>(null);
+  const [selected, setSelected] = useState<TrendPoint | null>(last ?? null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
@@ -25,10 +25,20 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-sm font-bold text-slate-800">{label} · 3년 추이</p>
+          <p className="text-sm font-bold text-slate-800">{label} · 분기별 추이</p>
           <button onClick={onClose} className="rounded-full px-2 py-1 text-xs text-slate-400 hover:bg-slate-100">✕ 닫기</button>
         </div>
         <p className="mb-3 text-xs text-slate-400">오늘 기준 3년 전부터 분기별 + 다음 달 AI 예측 1개월</p>
+
+        {selected && (
+          <div className="mb-3 flex items-baseline gap-2 rounded-xl bg-indigo-50 px-4 py-2.5">
+            <span className="text-xs font-semibold text-indigo-500">{selected.month}</span>
+            <span className="text-lg font-bold text-indigo-700">
+              {selected.value.toLocaleString()} {unit}
+            </span>
+            {selected.predicted && <span className="text-xs font-semibold text-amber-600">AI 예측</span>}
+          </div>
+        )}
 
         <Plot
           data={[
@@ -87,6 +97,12 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: '100%' }}
           useResizeHandler
+          onClick={(e) => {
+            const pt = e.points?.[0];
+            if (!pt) return;
+            const match = points.find((p) => p.month === pt.x);
+            if (match) setSelected(match);
+          }}
         />
 
         <p className="mt-3 mb-1 text-[11px] font-bold text-slate-400">분기 값 클릭 시 그래프에 표시</p>

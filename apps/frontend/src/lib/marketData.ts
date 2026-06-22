@@ -132,17 +132,20 @@ export function getMarketStats(guCode: string, dongCode: string, industryCode: s
   return result;
 }
 
-// 분기별(3년=12분기) 시계열 — 마지막 값이 getMarketStats() 스냅샷과 일치하도록 역산
+// 분기별(3년, 12분기) 시계열 — 마지막 값이 getMarketStats() 스냅샷과 일치하도록 역산
 export type TrendPoint = { month: string; value: number; predicted: boolean };
 
-const QUARTERS_BACK = 12; // 3년치 분기 수
+function quarterLabel(d: Date): string {
+  const q = Math.floor(d.getMonth() / 3) + 1;
+  return `${d.getFullYear()}-Q${q}`;
+}
 
 export function getMetricTrend(
   guCode: string,
   dongCode: string,
   industryCode: string,
   metric: keyof MarketStats,
-  quarters = QUARTERS_BACK,
+  quarters = 12,
 ): TrendPoint[] {
   const current = getMarketStats(guCode, dongCode, industryCode)[metric];
   const rng = rngFor(guCode, dongCode, industryCode, metric, 'trend');
@@ -152,26 +155,26 @@ export function getMetricTrend(
   const noiseAmp = current * 0.015;
 
   const now = new Date();
-  const currentQuarterStart = Math.floor(now.getMonth() / 3) * 3;
+  const currentQuarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
   const points: TrendPoint[] = [];
   for (let i = quarters - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), currentQuarterStart - i * 3, 1);
-    const progress = (quarters - 1 - i) / (quarters - 1); // 0 (3년 전) → 1 (현재 분기)
+    const d = new Date(currentQuarterStart.getFullYear(), currentQuarterStart.getMonth() - i * 3, 1);
+    const progress = (quarters - 1 - i) / (quarters - 1); // 0 (12분기 전) → 1 (현재 분기)
     const trendBase = current * (1 - driftPct * (1 - progress));
     const seasonal = Math.sin((quarters - 1 - i) / 2) * seasonAmp;
     const noise = (rng() - 0.5) * 2 * noiseAmp;
     points.push({
-      month: `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`,
+      month: quarterLabel(d),
       value: Math.round((trendBase + seasonal + noise) * 100) / 100,
       predicted: false,
     });
   }
-  // 마지막 관측치(현재 분기)를 스냅샷 값으로 고정 + 다음 달 예측치 1개 추가
+  // 마지막 관측치를 스냅샷 값으로 고정 + 1개월 후 예측치 1개 추가
   points[points.length - 1] = { ...points[points.length - 1], value: Math.round(current * 100) / 100 };
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const predictedDrift = current * (driftPct / quarters) * 0.7;
   points.push({
-    month: `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')} (예측)`,
+    month: `${quarterLabel(nextMonth)} (+1M 예측)`,
     value: Math.round((current + predictedDrift) * 100) / 100,
     predicted: true,
   });
