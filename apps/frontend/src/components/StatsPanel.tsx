@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { getMarketStats, getMetricTrend, METRIC_LABELS, type MarketStats } from '@/lib/marketData';
+import { getMarketStats, getMetricTrend, getMetricQoQTrend, METRIC_LABELS, type MarketStats } from '@/lib/marketData';
 
 const MetricTrendChart = lazy(() => import('./MetricTrendChart'));
 
@@ -45,6 +45,10 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
     setActiveMetric(key);
   }
 
+  function qoq(key: keyof MarketStats) {
+    return getMetricQoQTrend(guCode, dongCode, industryCode, key);
+  }
+
   return (
     <div className="space-y-3">
       {/* 주요 4대 지표 */}
@@ -54,7 +58,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={Math.round(s.floatingPop).toLocaleString()}
           sub="일평균 (명)"
           color="text-indigo-600"
-          trend="up"
+          trend={qoq('floatingPop')}
           trendGood="up"
           onClick={() => openMetric('floatingPop')}
         />
@@ -63,6 +67,8 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={Math.round(s.totalStores).toLocaleString()}
           sub="등록 점포"
           color="text-violet-600"
+          trend={qoq('totalStores')}
+          trendGood="up"
           onClick={() => openMetric('totalStores')}
         />
         <StatCard
@@ -70,7 +76,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${s.vacancyRate.toFixed(1)}%`}
           sub="점포 공실 비율"
           color={s.vacancyRate >= 15 ? 'text-red-600' : s.vacancyRate >= 12 ? 'text-amber-600' : 'text-emerald-600'}
-          trend={s.vacancyRate >= 15 ? 'up' : 'down'}
+          trend={qoq('vacancyRate')}
           trendGood="down"
           onClick={() => openMetric('vacancyRate')}
         />
@@ -79,7 +85,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={Math.round(s.revenueIdx).toString()}
           sub="전국 평균 = 100"
           color={s.revenueIdx >= 130 ? 'text-emerald-600' : s.revenueIdx >= 100 ? 'text-indigo-600' : 'text-slate-600'}
-          trend={s.revenueIdx >= 100 ? 'up' : 'down'}
+          trend={qoq('revenueIdx')}
           trendGood="up"
           onClick={() => openMetric('revenueIdx')}
         />
@@ -92,7 +98,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${s.openRate.toFixed(1)}%`}
           sub="분기 기준"
           color="text-emerald-600"
-          trend="up"
+          trend={qoq('openRate')}
           trendGood="up"
           onClick={() => openMetric('openRate')}
         />
@@ -101,7 +107,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${s.closeRate.toFixed(1)}%`}
           sub="분기 기준"
           color={s.closeRate >= 3.0 ? 'text-red-600' : 'text-amber-600'}
-          trend={s.closeRate >= 3.0 ? 'up' : 'neutral'}
+          trend={qoq('closeRate')}
           trendGood="down"
           onClick={() => openMetric('closeRate')}
         />
@@ -110,6 +116,8 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${s.survivalRate3y.toFixed(1)}%`}
           sub="신규 개업 점포"
           color={s.survivalRate3y >= 55 ? 'text-emerald-600' : s.survivalRate3y >= 50 ? 'text-indigo-600' : 'text-amber-600'}
+          trend={qoq('survivalRate3y')}
+          trendGood="up"
           onClick={() => openMetric('survivalRate3y')}
         />
         <StatCard
@@ -117,6 +125,8 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${Math.round(s.avgOpMonths)}개월`}
           sub={`약 ${(s.avgOpMonths / 12).toFixed(1)}년`}
           color="text-slate-700"
+          trend={qoq('avgOpMonths')}
+          trendGood="up"
           onClick={() => openMetric('avgOpMonths')}
         />
         <StatCard
@@ -124,6 +134,8 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={Math.round(s.popDensity).toLocaleString()}
           sub="명 / km²"
           color="text-slate-600"
+          trend={qoq('popDensity')}
+          trendGood="up"
           onClick={() => openMetric('popDensity')}
         />
         <StatCard
@@ -131,6 +143,8 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           value={`${s.rentPer33.toFixed(1)}만원`}
           sub="3.3㎡ 기준"
           color="text-violet-600"
+          trend={qoq('rentPer33')}
+          trendGood="down"
           onClick={() => openMetric('rentPer33')}
         />
       </div>

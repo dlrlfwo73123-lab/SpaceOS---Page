@@ -69,7 +69,7 @@ export function NaverMap({ guCode, onSelectBuilding }: NaverMapProps) {
   // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
   // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
-  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '3a91WbDxtOPaPehOXqhl';
+  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
 
   useEffect(() => {
     if (scriptRef.current) return; // 이미 로드 중
