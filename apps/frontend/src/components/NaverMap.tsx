@@ -110,10 +110,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     const script = document.createElement('script');
     script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=panorama`;
     script.async = true;
-    script.onload = () => {
-      setScriptLoaded(true);
-      initMap();
-    };
+    script.onload = () => setScriptLoaded(true);
     document.head.appendChild(script);
     scriptRef.current = script;
 
@@ -126,19 +123,25 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
+  // 스크립트 로드 완료 + containerRef가 실제로 DOM에 렌더링된 후에만 지도 초기화
+  // (script.onload 시점에는 로딩 placeholder가 표시 중이라 containerRef.current가 아직 null)
+  useEffect(() => {
+    if (!scriptLoaded || mapRef.current) return;
+    initMap();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scriptLoaded]);
+
   // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
   useEffect(() => {
-    if (!window.naver || !scriptLoaded) return;
+    if (!window.naver || !scriptLoaded || !mapRef.current) return;
     const [gLat, gLng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
     const [oLat, oLng] = dongOffset(guCode, dongCode);
     const lat = gLat + oLat;
     const lng = gLng + oLng;
     const latlng = new window.naver.maps.LatLng(lat, lng);
 
-    if (mapRef.current) {
-      mapRef.current.setCenter(latlng);
-      mapRef.current.setZoom(dongCode ? 16 : 14);
-    }
+    mapRef.current.setCenter(latlng);
+    mapRef.current.setZoom(dongCode ? 16 : 14);
     if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
 
     if (!dongCode) {
@@ -177,7 +180,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
         <p>매출지수: ${Math.round(stats.revenueIdx)}</p>
       </div>
     `);
-    infoWindowRef.current.open(mapRef.current!, dongMarkerRef.current);
+    infoWindowRef.current.open(mapRef.current, dongMarkerRef.current);
   }, [guCode, dongCode, industryCode, scriptLoaded]);
 
   // 거리뷰 토글 시 Panorama 인스턴스 생성
