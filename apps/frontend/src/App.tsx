@@ -105,7 +105,7 @@ export default function App() {
             <p className="mb-3 text-sm font-semibold">
               네이버 지도 · {selectedGu.name}
             </p>
-            <NaverMap guCode={guCode} onSelectBuilding={setSelectedBuildingId} />
+            <NaverMap guCode={guCode} dongCode={dongCode} industryCode={industryCode} onSelectBuilding={setSelectedBuildingId} />
           </div>
           <BuildingTwin buildingId={selectedBuildingId} />
         </section>
