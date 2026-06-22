@@ -102,13 +102,16 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
   // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
-  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '3a91WbDxtOPaPehOXqhl';
+  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9fd005bf-6a22-4f5e-8105-b7b22d5bfd31';
 
   useEffect(() => {
     if (scriptRef.current) return; // 이미 로드 중
 
     const script = document.createElement('script');
-    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}&submodules=panorama`;
+    // 신규 발급(UUID 형식) 키는 ncpKeyId, 구버전 키는 ncpClientId 파라미터를 사용
+    const isNewKeyFormat = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
+    const keyParam = isNewKeyFormat ? 'ncpKeyId' : 'ncpClientId';
+    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?${keyParam}=${clientId}&submodules=panorama`;
     script.async = true;
     script.onload = () => setScriptLoaded(true);
     document.head.appendChild(script);
