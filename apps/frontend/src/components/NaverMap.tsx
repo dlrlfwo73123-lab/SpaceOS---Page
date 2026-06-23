@@ -1,27 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { getMarketStats } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
-
-// TODO: Naver Maps JS API v3 타입 선언 — @types/naver-maps 패키지 없음, 직접 최소 선언
-declare global {
-  interface Window {
-    naver: {
-      maps: {
-        Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
-        LatLng: new (lat: number, lng: number) => unknown;
-        Point: new (x: number, y: number) => unknown;
-        Marker: new (opts: Record<string, unknown>) => NaverMarker;
-        InfoWindow: new (opts: Record<string, unknown>) => NaverInfoWindow;
-        Event: { addListener: (target: unknown, eventName: string, handler: (e: { coord: unknown }) => void) => void };
-        Panorama: new (el: HTMLElement, opts: Record<string, unknown>) => NaverPanoramaInstance;
-      };
-    };
-  }
-}
-interface NaverMapInstance { setCenter(latlng: unknown): void; getCenter(): unknown; setZoom(zoom: number): void }
-interface NaverMarker { setMap(map: NaverMapInstance | null): void; setPosition(latlng: unknown): void; setIcon(icon: unknown): void }
-interface NaverInfoWindow { open(map: NaverMapInstance, marker: NaverMarker): void; close(): void; setContent(html: string): void }
-interface NaverPanoramaInstance { setPosition(latlng: unknown): void }
+import { loadNaverMaps } from '@/lib/loadNaverMaps';
+import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPanoramaInstance } from '@/types/naver-maps';
 
 // 서울 25개 구 중심 좌표 (WGS84)
 // TODO: 동별 중심 좌표는 행정안전부 공간정보 API로 교체
@@ -93,7 +74,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
   const dongMarkerRef = useRef<NaverMarker | null>(null);
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
   const [streetView, setStreetView] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
@@ -103,22 +83,11 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
 
   useEffect(() => {
-    if (scriptRef.current) return; // 이미 로드 중
-
-    const script = document.createElement('script');
-    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=panorama`;
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
-    document.head.appendChild(script);
-    scriptRef.current = script;
-
-    return () => {
-      if (scriptRef.current) {
-        document.head.removeChild(scriptRef.current);
-        scriptRef.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    loadNaverMaps(clientId)
+      .then(() => { if (!cancelled) setScriptLoaded(true); })
+      .catch((err) => console.error(err));
+    return () => { cancelled = true; };
   }, [clientId]);
 
   // 스크립트 로드 완료 + containerRef가 실제로 DOM에 렌더링된 후에만 지도 초기화
