@@ -35,7 +35,7 @@ jobs:
         working-directory: apps/frontend
         env:
           GITHUB_PAGES: 'true'
-          VITE_NAVER_CLIENT_ID: '9fd005bf-6a22-4f5e-8105-b7b22d5bfd31'
+          VITE_NAVER_CLIENT_ID: '9nbzrvj8qj'
         run: npm run build
 
       - name: Upload artifact

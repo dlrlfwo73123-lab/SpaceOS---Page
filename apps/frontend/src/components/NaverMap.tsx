@@ -13,9 +13,7 @@ declare global {
         Marker: new (opts: Record<string, unknown>) => NaverMarker;
         InfoWindow: new (opts: Record<string, unknown>) => NaverInfoWindow;
         Event: { addListener: (target: unknown, eventName: string, handler: (e: { coord: unknown }) => void) => void };
-        panorama: {
-          Panorama: new (el: HTMLElement, opts: Record<string, unknown>) => NaverPanoramaInstance;
-        };
+        Panorama: new (el: HTMLElement, opts: Record<string, unknown>) => NaverPanoramaInstance;
       };
     };
   }
@@ -102,16 +100,13 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
   // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
-  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9fd005bf-6a22-4f5e-8105-b7b22d5bfd31';
+  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
 
   useEffect(() => {
     if (scriptRef.current) return; // 이미 로드 중
 
     const script = document.createElement('script');
-    // 신규 발급(UUID 형식) 키는 ncpKeyId, 구버전 키는 ncpClientId 파라미터를 사용
-    const isNewKeyFormat = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId);
-    const keyParam = isNewKeyFormat ? 'ncpKeyId' : 'ncpClientId';
-    script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?${keyParam}=${clientId}&submodules=panorama`;
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}&submodules=panorama`;
     script.async = true;
     script.onload = () => setScriptLoaded(true);
     document.head.appendChild(script);
@@ -127,11 +122,26 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   }, [clientId]);
 
   // 스크립트 로드 완료 + containerRef가 실제로 DOM에 렌더링된 후에만 지도 초기화
-  // (script.onload 시점에는 로딩 placeholder가 표시 중이라 containerRef.current가 아직 null)
+  // (script.onload 시점에는 로딩 placeholder가 표시 중이라 containerRef.current가 아직 null이므로,
+  //  레이아웃 완료 후 ref가 채워졌는지 재확인하는 폴링으로 초기화 순서를 보장)
   useEffect(() => {
     if (!scriptLoaded || mapRef.current) return;
-    initMap();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (containerRef.current) {
+      initMap();
+      return;
+    }
+    let cancelled = false;
+    const id = window.setInterval(() => {
+      if (cancelled || mapRef.current) return;
+      if (containerRef.current) {
+        initMap();
+        window.clearInterval(id);
+      }
+    }, 50);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
   }, [scriptLoaded]);
 
   // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
@@ -188,9 +198,9 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
 
   // 거리뷰 토글 시 Panorama 인스턴스 생성
   useEffect(() => {
-    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps.panorama) return;
+    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps.Panorama) return;
     const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    panoramaRef.current = new window.naver.maps.panorama.Panorama(panoramaContainerRef.current, {
+    panoramaRef.current = new window.naver.maps.Panorama(panoramaContainerRef.current, {
       position: new window.naver.maps.LatLng(lat, lng),
       pov: { pan: 0, tilt: 0, fov: 100 },
     });
