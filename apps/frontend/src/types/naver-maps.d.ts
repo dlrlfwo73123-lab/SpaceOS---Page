@@ -18,5 +18,6 @@ declare global {
       };
     };
     __spaceOSNaverMapsReady?: () => void;
+    navermap_authFailure?: () => void;
   }
 }
