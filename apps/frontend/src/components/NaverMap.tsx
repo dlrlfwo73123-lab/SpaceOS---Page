@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getMarketStats } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
-import { loadNaverMaps } from '@/lib/loadNaverMaps';
+import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
 import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPanoramaInstance } from '@/types/naver-maps';
 
 // 서울 25개 구 중심 좌표 (WGS84)
@@ -76,6 +76,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
   const [streetView, setStreetView] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
   // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
@@ -83,11 +84,15 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
 
   useEffect(() => {
+    const unsubscribe = onNaverMapsAuthFailure((message) => setAuthError(message));
     let cancelled = false;
     loadNaverMaps(clientId)
       .then(() => { if (!cancelled) setScriptLoaded(true); })
       .catch((err) => console.error(err));
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [clientId]);
 
   // 스크립트 로드 완료 + containerRef가 실제로 DOM에 렌더링된 후에만 지도 초기화
@@ -114,55 +119,61 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   }, [scriptLoaded]);
 
   // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
+  // SDK 내부 오류(인증 실패로 인한 타일/오버레이 처리 실패 등)가 React 렌더 트리를 무너뜨리지 않도록 try/catch로 격리
   useEffect(() => {
     if (!window.naver || !scriptLoaded || !mapRef.current) return;
-    const [gLat, gLng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    const [oLat, oLng] = dongOffset(guCode, dongCode);
-    const lat = gLat + oLat;
-    const lng = gLng + oLng;
-    const latlng = new window.naver.maps.LatLng(lat, lng);
+    try {
+      const [gLat, gLng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+      const [oLat, oLng] = dongOffset(guCode, dongCode);
+      const lat = gLat + oLat;
+      const lng = gLng + oLng;
+      const latlng = new window.naver.maps.LatLng(lat, lng);
 
-    mapRef.current.setCenter(latlng);
-    mapRef.current.setZoom(dongCode ? 16 : 14);
-    if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
+      mapRef.current.setCenter(latlng);
+      mapRef.current.setZoom(dongCode ? 16 : 14);
+      if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
 
-    if (!dongCode) {
-      dongMarkerRef.current?.setMap(null);
-      infoWindowRef.current?.close();
-      return;
-    }
+      if (!dongCode) {
+        dongMarkerRef.current?.setMap(null);
+        infoWindowRef.current?.close();
+        return;
+      }
 
-    const gu = SEOUL_GU.find((g) => g.code === guCode);
-    const dong = gu?.dongs.find((d) => d.code === dongCode);
-    const stats = getMarketStats(guCode, dongCode, industryCode);
-    const color = vacancyColor(stats.vacancyRate);
+      const gu = SEOUL_GU.find((g) => g.code === guCode);
+      const dong = gu?.dongs.find((d) => d.code === dongCode);
+      const stats = getMarketStats(guCode, dongCode, industryCode);
+      const color = vacancyColor(stats.vacancyRate);
 
-    if (!dongMarkerRef.current) {
-      dongMarkerRef.current = new window.naver.maps.Marker({
-        position: latlng,
-        map: mapRef.current,
+      if (!dongMarkerRef.current) {
+        dongMarkerRef.current = new window.naver.maps.Marker({
+          position: latlng,
+          map: mapRef.current,
+        });
+      } else {
+        dongMarkerRef.current.setPosition(latlng);
+        dongMarkerRef.current.setMap(mapRef.current);
+      }
+      dongMarkerRef.current.setIcon({
+        content: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.4);"></div>`,
+        anchor: new window.naver.maps.Point(9, 9),
       });
-    } else {
-      dongMarkerRef.current.setPosition(latlng);
-      dongMarkerRef.current.setMap(mapRef.current);
-    }
-    dongMarkerRef.current.setIcon({
-      content: `<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,0.4);"></div>`,
-      anchor: new window.naver.maps.Point(9, 9),
-    });
 
-    if (!infoWindowRef.current) {
-      infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+      if (!infoWindowRef.current) {
+        infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+      }
+      infoWindowRef.current.setContent(`
+        <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.5;">
+          <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${dong?.name ?? ''}</p>
+          <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
+          <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
+          <p>매출지수: ${Math.round(stats.revenueIdx)}</p>
+        </div>
+      `);
+      infoWindowRef.current.open(mapRef.current, dongMarkerRef.current);
+    } catch (err) {
+      console.error('네이버 지도 마커 갱신 실패', err);
+      setAuthError('지도를 갱신하는 중 오류가 발생했습니다. 네이버 지도 Open API 인증 상태를 확인하세요.');
     }
-    infoWindowRef.current.setContent(`
-      <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.5;">
-        <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${dong?.name ?? ''}</p>
-        <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
-        <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
-        <p>매출지수: ${Math.round(stats.revenueIdx)}</p>
-      </div>
-    `);
-    infoWindowRef.current.open(mapRef.current, dongMarkerRef.current);
   }, [guCode, dongCode, industryCode, scriptLoaded]);
 
   // 거리뷰 토글 시 Panorama 인스턴스 생성
@@ -178,19 +189,36 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
 
   function initMap() {
     if (!containerRef.current || !window.naver) return;
-    const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    mapRef.current = new window.naver.maps.Map(containerRef.current, {
-      center: new window.naver.maps.LatLng(lat, lng),
-      zoom: 14,
-    });
+    try {
+      const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+      mapRef.current = new window.naver.maps.Map(containerRef.current, {
+        center: new window.naver.maps.LatLng(lat, lng),
+        zoom: 14,
+      });
 
-    // 지도 클릭 시 해당 좌표를 거리뷰 중심으로 사용할 수 있도록 마지막 클릭 위치 저장
-    window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
-      if (panoramaRef.current) panoramaRef.current.setPosition(e.coord);
-      onSelectBuilding?.('demo-building');
-    });
+      // 지도 클릭 시 해당 좌표를 거리뷰 중심으로 사용할 수 있도록 마지막 클릭 위치 저장
+      window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
+        if (panoramaRef.current) panoramaRef.current.setPosition(e.coord);
+        onSelectBuilding?.('demo-building');
+      });
 
-    // TODO: 공실 히트맵 오버레이 — GET /api/v1/heatmap?gu={guCode} 연동 후 추가
+      // TODO: 공실 히트맵 오버레이 — GET /api/v1/heatmap?gu={guCode} 연동 후 추가
+    } catch (err) {
+      console.error('네이버 지도 초기화 실패', err);
+      setAuthError('지도를 초기화하는 중 오류가 발생했습니다. 네이버 지도 Open API 인증 상태를 확인하세요.');
+    }
+  }
+
+  if (authError) {
+    return (
+      <div className="flex h-[420px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
+        <span className="text-2xl">⚠️</span>
+        <p className="text-sm font-semibold text-red-700">{authError}</p>
+        <p className="text-xs text-red-500">
+          NCP 콘솔 &gt; AI·NAVER API &gt; Maps &gt; 인증 정보에서 Client ID와 Web 서비스 URL 등록을 확인하세요.
+        </p>
+      </div>
+    );
   }
 
   if (!scriptLoaded) {
