@@ -256,6 +256,11 @@ export default function StoreHistory({
   return (
     <div className="space-y-5">
 
+      {/* 점포 이력 전체가 더미 데이터임을 명시 — 폐업 원인 등 추정 불가 항목 포함 */}
+      <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-xs font-medium text-orange-700">
+        ⚠ 이하 점포 이력·폐업 원인·임차비는 데모 데이터입니다. 실제 폐업 사유는 확인된 바 없으며, 실제 영업 정보가 아닙니다.
+      </div>
+
       {/* ── 점포 이력 테이블 ── */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* 헤더 */}
@@ -338,7 +343,7 @@ export default function StoreHistory({
                     <tr className="bg-red-50/40">
                       <td colSpan={9} className="px-4 pb-2.5 pt-1">
                         <p className="text-[11px] text-red-600">
-                          <span className="font-bold mr-1">폐업 원인:</span>
+                          <span className="font-bold mr-1">폐업 원인 (데모 예시, 실제 사유 아님):</span>
                           {row.closeReason}
                         </p>
                       </td>

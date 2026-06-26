@@ -8,6 +8,7 @@ import { RecommendationMap } from '@/components/map/RecommendationMap';
 import { BuildingDetailDrawer } from '@/components/map/BuildingDetailDrawer';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorState } from '@/components/common/ErrorState';
+import { DataSourcePanel } from '@/components/common/DataSourcePanel';
 import type { RegionAnalysisInput, IndustryAnalysisInput } from '@/types/analysis';
 import type { RecommendationItem } from '@/types/recommendation';
 
@@ -48,6 +49,7 @@ export default function AnalysisResultPage() {
         {data && (
           <>
             <RecommendationSummary result={data} />
+            <DataSourcePanel />
 
             <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
               <div className="space-y-3">

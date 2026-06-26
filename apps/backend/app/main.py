@@ -7,6 +7,7 @@ from app.api.v1.buildings import router as buildings_router
 from app.api.v1.data_sources import router as data_sources_router
 from app.api.v1.districts import router as districts_router
 from app.api.v1.recommendations import router as recommendations_router
+from app.api.v1.reference import router as reference_router
 
 app = FastAPI(title="SpaceOS API")
 
@@ -36,3 +37,4 @@ app.include_router(districts_router, prefix="/api/v1")
 app.include_router(buildings_router, prefix="/api/v1")
 app.include_router(recommendations_router, prefix="/api/v1")
 app.include_router(data_sources_router, prefix="/api/v1")
+app.include_router(reference_router, prefix="/api/v1")

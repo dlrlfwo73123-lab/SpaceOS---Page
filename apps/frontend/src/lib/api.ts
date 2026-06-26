@@ -24,6 +24,7 @@ export type BuildingHistoryEvent = {
   op_months: number | null;
   rent_monthly: number;
   close_reason_summary: string | null;
+  is_demo: boolean;
 };
 
 export type BuildingFloor = {
@@ -188,6 +189,61 @@ export async function fetchRegionRecommendation(input: RegionAnalysisInput): Pro
 }
 
 // 업종 → 지역 추천: 선택된 업종 조건에 가장 적합한 구/동 상위 N개
+// ── 데이터 출처/신선도/품질 — 모든 항목이 mock 소스임을 명시적으로 노출 ──
+export type DataSourceInfo = {
+  id: string;
+  label: string;
+  intendedSource: string;
+  refreshCadence: string;
+  status: 'mock' | 'live';
+  liveAdapterImplemented: boolean;
+};
+
+export type DataFreshnessInfo = {
+  sourceId: string;
+  isDemo: boolean;
+  asOf: string | null;
+  staleness: string;
+};
+
+type BackendDataSourceInfo = {
+  id: string;
+  label: string;
+  intended_source: string;
+  refresh_cadence: string;
+  status: 'mock' | 'live';
+  live_adapter_implemented: boolean;
+};
+
+type BackendDataFreshnessInfo = {
+  source_id: string;
+  is_demo: boolean;
+  as_of: string | null;
+  staleness: string;
+};
+
+export async function fetchDataSources(): Promise<DataSourceInfo[]> {
+  const body = await request<BackendDataSourceInfo[]>('/data-sources');
+  return body.map((s) => ({
+    id: s.id,
+    label: s.label,
+    intendedSource: s.intended_source,
+    refreshCadence: s.refresh_cadence,
+    status: s.status,
+    liveAdapterImplemented: s.live_adapter_implemented,
+  }));
+}
+
+export async function fetchDataFreshness(): Promise<DataFreshnessInfo[]> {
+  const body = await request<BackendDataFreshnessInfo[]>('/data-freshness');
+  return body.map((f) => ({
+    sourceId: f.source_id,
+    isDemo: f.is_demo,
+    asOf: f.as_of,
+    staleness: f.staleness,
+  }));
+}
+
 export async function fetchIndustryRecommendation(input: IndustryAnalysisInput): Promise<RecommendationResult> {
   const body = await request<BackendRecommendationResult>('/recommendations/by-industry', {
     method: 'POST',

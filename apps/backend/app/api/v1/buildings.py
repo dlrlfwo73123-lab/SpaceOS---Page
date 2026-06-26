@@ -22,5 +22,10 @@ def get_model(id: str) -> dict:
 
 @router.get("/buildings/{id}/history")
 def get_history(id: str) -> list[dict]:
-    """Store-occupancy timeline for a building's vacancy history."""
-    return get_building_history(id)
+    """Store-occupancy timeline for a building's vacancy history.
+
+    Deterministic mock data — every entry is explicitly marked `is_demo`
+    and `close_reason_summary` is a placeholder example, never a real
+    confirmed closure reason, per the project's no-fabrication rule.
+    """
+    return [{**event, "is_demo": True} for event in get_building_history(id)]
