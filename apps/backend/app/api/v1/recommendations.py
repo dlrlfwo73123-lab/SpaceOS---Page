@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.data import seoul
-from app.data.mock_market import get_market_stats
+from app.repositories.market_repository import MockMarketRepository
 from app.schemas.recommendation import (
     IndustryRecommendationRequest,
     RecommendationItem,
@@ -26,6 +26,7 @@ from app.services.confidence import mock_confidence
 router = APIRouter()
 
 _REGION_CANDIDATE_INDUSTRIES = [i for i in seoul.INDUSTRY_CODES if i["code"] != "ALL"]
+_market_repository = MockMarketRepository()
 
 
 def _build_item(gu_code: str, dong_code: str, industry_code: str) -> RecommendationItem:
@@ -34,7 +35,7 @@ def _build_item(gu_code: str, dong_code: str, industry_code: str) -> Recommendat
     industry_name = seoul.industry_name_of(industry_code)
     dong_count = seoul.dong_count_of(gu_code)
 
-    stats = get_market_stats(gu_code, dong_code, industry_code, dong_count=dong_count)
+    stats = _market_repository.get_stats(gu_code, dong_code, industry_code, dong_count=dong_count)
     breakdown = scoring.score_breakdown(stats)
     total_score = scoring.total_score_of(breakdown)
     confidence = mock_confidence()
