@@ -13,12 +13,21 @@ export type HeatmapFeatureCollection = {
   features: HeatmapFeature[];
 };
 
+export type BuildingHistoryStatus =
+  | 'confirmed-open'
+  | 'confirmed-closed'
+  | 'observed-open'
+  | 'temporarily-closed'
+  | 'inferred-closed'
+  | 'unknown';
+
 export type BuildingHistoryEvent = {
   date: string;
   store_name: string;
   floor: number;
   industry: string;
   event: '신규입점' | '폐업' | '업종변경';
+  status: BuildingHistoryStatus;
   open_date: string;
   close_date: string | null;
   op_months: number | null;

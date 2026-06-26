@@ -112,6 +112,9 @@ def get_building_history(building_id: str) -> list[dict]:
 
         cursor_year, cursor_month = _shift_month(cursor_year, cursor_month, -(1 + h % 3))
         is_closed = event == "폐업"
+        # Mock data never confirms anything against a live registry — only
+        # "observed" / "inferred" statuses are ever produced, never "confirmed-*".
+        status = "inferred-closed" if is_closed else "observed-open"
 
         if is_closed:
             open_year, open_month = _shift_month(cursor_year, cursor_month, -op_months)
@@ -127,6 +130,7 @@ def get_building_history(building_id: str) -> list[dict]:
                 "floor": floor,
                 "industry": industry,
                 "event": event,
+                "status": status,
                 "open_date": f"{open_year:04d}-{open_month:02d}-01",
                 "close_date": close_date,
                 "op_months": op_months if is_closed else None,
