@@ -342,6 +342,38 @@ export async function fetchPlans(): Promise<Plan[]> {
   }));
 }
 
+// ── 업종 대/중/소분류 — 현재는 대분류만 실제 데이터, 중/소분류는 매핑 데이터 없어 null ──
+import type { IndustryCategory } from '@/types/reference';
+
+type BackendIndustryCategory = {
+  industry_code: string;
+  classification_version: string;
+  large_code: string;
+  large_name: string;
+  medium_code: string | null;
+  medium_name: string | null;
+  small_code: string | null;
+  small_name: string | null;
+  effective_from: string;
+  effective_to: string | null;
+};
+
+export async function fetchIndustryCategory(industryCode: string): Promise<IndustryCategory> {
+  const c = await request<BackendIndustryCategory>(`/industries/${encodeURIComponent(industryCode)}/category`);
+  return {
+    industryCode: c.industry_code,
+    classificationVersion: c.classification_version,
+    largeCode: c.large_code,
+    largeName: c.large_name,
+    mediumCode: c.medium_code,
+    mediumName: c.medium_name,
+    smallCode: c.small_code,
+    smallName: c.small_name,
+    effectiveFrom: c.effective_from,
+    effectiveTo: c.effective_to,
+  };
+}
+
 export async function fetchEntitlements(): Promise<Entitlements> {
   const e = await request<BackendEntitlements>('/entitlements');
   return {
