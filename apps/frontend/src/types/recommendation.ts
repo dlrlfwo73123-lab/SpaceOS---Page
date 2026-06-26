@@ -25,8 +25,12 @@ export type RecommendationItem = {
   survivalRate3y: number;
 };
 
+export type RecommendationStatus = 'success' | 'partial' | 'insufficient_data' | 'stale' | 'error';
+
 export type RecommendationResult = {
+  analysisId: string;
   mode: 'region' | 'industry';
+  status: RecommendationStatus;
   generatedAt: string;
   isDemo: boolean;
   query: {
@@ -38,4 +42,6 @@ export type RecommendationResult = {
     industryName?: string;
   };
   items: RecommendationItem[];
+  missingMetrics: string[];
+  warnings: string[];
 };

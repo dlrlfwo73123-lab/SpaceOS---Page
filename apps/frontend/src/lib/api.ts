@@ -121,7 +121,9 @@ type BackendRecommendationItem = {
   survival_rate_3y: number;
 };
 type BackendRecommendationResult = {
+  analysis_id: string;
   mode: 'region' | 'industry';
+  status: 'success' | 'partial' | 'insufficient_data' | 'stale' | 'error';
   is_demo: boolean;
   query: {
     gu_code?: string;
@@ -132,6 +134,8 @@ type BackendRecommendationResult = {
     industry_name?: string;
   };
   items: BackendRecommendationItem[];
+  missing_metrics: string[];
+  warnings: string[];
 };
 
 function toCondition(condition: BusinessCondition) {
@@ -168,7 +172,9 @@ function toRecommendationItem(item: BackendRecommendationItem): RecommendationIt
 
 function toRecommendationResult(result: BackendRecommendationResult): RecommendationResult {
   return {
+    analysisId: result.analysis_id,
     mode: result.mode,
+    status: result.status,
     generatedAt: new Date().toISOString(),
     isDemo: result.is_demo,
     query: {
@@ -180,6 +186,8 @@ function toRecommendationResult(result: BackendRecommendationResult): Recommenda
       industryName: result.query.industry_name,
     },
     items: result.items.map(toRecommendationItem),
+    missingMetrics: result.missing_metrics,
+    warnings: result.warnings,
   };
 }
 

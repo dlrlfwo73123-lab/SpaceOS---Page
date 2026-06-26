@@ -10,6 +10,8 @@ the data-fetch call below, not the scoring/explanation pipeline.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from fastapi import APIRouter
 
 from app.data import seoul
@@ -77,7 +79,9 @@ def recommend_by_region(payload: RegionRecommendationRequest) -> RecommendationR
     ]
     ranked = _rank(items)[:5]
     return RecommendationResult(
+        analysis_id=str(uuid4()),
         mode="region",
+        status="success",
         is_demo=True,
         query={
             "gu_code": payload.gu_code,
@@ -86,6 +90,7 @@ def recommend_by_region(payload: RegionRecommendationRequest) -> RecommendationR
             "dong_name": seoul.dong_name_of(payload.gu_code, payload.dong_code),
         },
         items=ranked,
+        warnings=["전체 데이터가 mock 소스 기반입니다 — 실제 분석 결과가 아닙니다."],
     )
 
 
@@ -98,11 +103,14 @@ def recommend_by_industry(payload: IndustryRecommendationRequest) -> Recommendat
     ]
     ranked = _rank(items)[:6]
     return RecommendationResult(
+        analysis_id=str(uuid4()),
         mode="industry",
+        status="success",
         is_demo=True,
         query={
             "industry_code": payload.industry_code,
             "industry_name": seoul.industry_name_of(payload.industry_code),
         },
         items=ranked,
+        warnings=["전체 데이터가 mock 소스 기반입니다 — 실제 분석 결과가 아닙니다."],
     )

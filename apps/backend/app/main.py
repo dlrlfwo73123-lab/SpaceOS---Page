@@ -28,9 +28,19 @@ app.add_middleware(
 )
 
 
+API_VERSION = "0.1.0"
+
+
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    # DATA_MODE: every data path in this codebase is mock-only today (no live
+    # adapter is wired up) — see app/adapters/market_adapter.py. This is not
+    # yet a real env-driven toggle since there is nothing to switch to.
+    return {
+        "status": "ok",
+        "data_mode": os.getenv("DATA_MODE", "mock"),
+        "version": API_VERSION,
+    }
 
 
 app.include_router(districts_router, prefix="/api/v1")

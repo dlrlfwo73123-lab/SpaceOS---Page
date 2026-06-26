@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+RecommendationStatus = Literal["success", "partial", "insufficient_data", "stale", "error"]
 
 
 class BusinessCondition(BaseModel):
@@ -74,7 +78,14 @@ class RecommendationQuery(BaseModel):
 
 
 class RecommendationResult(BaseModel):
+    analysis_id: str
     mode: str
+    status: RecommendationStatus
     is_demo: bool
     query: RecommendationQuery
     items: list[RecommendationItem]
+    # Every metric in the mock generator is always populated, so this is
+    # always empty today — kept as a real field so a live adapter that can
+    # produce partial coverage doesn't require a response-shape change.
+    missing_metrics: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)

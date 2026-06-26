@@ -44,10 +44,27 @@ def test_by_industry_returns_ranked_items_marked_as_demo():
 
 
 def test_by_region_is_deterministic():
+    # analysis_id is a fresh UUID per run by design (each call is a new
+    # analysis run) — everything else must be byte-for-byte identical for
+    # the same input and data version.
     payload = {"gu_code": "11440", "dong_code": "11440101", "condition": _CONDITION}
     first = client.post("/api/v1/recommendations/by-region", json=payload).json()
     second = client.post("/api/v1/recommendations/by-region", json=payload).json()
+    first.pop("analysis_id")
+    second.pop("analysis_id")
     assert first == second
+
+
+def test_response_has_analysis_id_status_and_warnings():
+    response = client.post(
+        "/api/v1/recommendations/by-region",
+        json={"gu_code": "11680", "dong_code": "11680108", "condition": _CONDITION},
+    )
+    body = response.json()
+    assert len(body["analysis_id"]) > 0
+    assert body["status"] == "success"
+    assert body["missing_metrics"] == []
+    assert len(body["warnings"]) > 0
 
 
 def test_explanation_never_claims_real_data_when_demo():
