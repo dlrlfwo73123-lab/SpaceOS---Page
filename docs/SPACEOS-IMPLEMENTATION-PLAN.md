@@ -7,24 +7,20 @@ be honest about what is **code-complete**, what is **mock-verified only**,
 and what is **out of scope for this pass** — per the project's no-fabrication
 rule, nothing here should be read as "done" unless it actually is.
 
-## 0. Naver Map Client ID — flagged discrepancy
+## 0. Naver Map Client ID — resolved
 
-Three different Client ID values have appeared across this project's history:
+Three different Client ID values appeared across this project's history
+(`3a91WbDxtOPaPehOXqhl` in an earlier workflow version, `9nbzrvj8qj` from an
+earlier spec request, `x8gtogoy1i` from PR #16's NCP console screenshot).
+**The user has explicitly confirmed `x8gtogoy1i` as the value to use** —
+this supersedes the earlier two.
 
-| Source | Value |
-|---|---|
-| `.github/workflows/deploy.yml` (live, pre-this-change) | `3a91WbDxtOPaPehOXqhl` |
-| PR #16 (user-confirmed from NCP console screenshot) | `x8gtogoy1i` |
-| Latest spec request | `9nbzrvj8qj` |
-
-**This change does not pick one.** Instead, `VITE_NAVER_CLIENT_ID` is now
+The value is still never hardcoded in source. `VITE_NAVER_CLIENT_ID` is
 sourced entirely from the `NAVER_MAP_CLIENT_ID` GitHub Repository Variable
 (see Phase 8), and `NaverMap.tsx` shows an explicit error state if it is
-unset rather than silently hardcoding any of the three values. **Action
-required from the user:** set the `NAVER_MAP_CLIENT_ID` repository variable
-to whichever value is actually registered in the NCP console alongside the
-deployed GitHub Pages URL as an allowed Web 서비스 URL — only the user can
-confirm which one that is.
+unset. **Action required from the user:** set the `NAVER_MAP_CLIENT_ID`
+GitHub Repository Variable to `x8gtogoy1i` — this agent cannot modify
+repository variables/secrets itself.
 
 ## 1. Done in this pass (code-complete)
 
@@ -157,8 +153,9 @@ reporting the whole spec as "done."
 - Deterministic scoring engine, confidence formula, AI-explanation-only
   service with deterministic fallback, `/recommendations/by-region` /
   `by-industry`, `isDemo`/`데모 데이터` badge end-to-end.
-- Naver Client ID is env-driven (§0) — the user has since stated the
-  confirmed value is `9nbzrvj8qj`; **still requires the user/owner to set
+- Naver Client ID is env-driven (§0) — the user has since confirmed the
+  value to use is `x8gtogoy1i` (superseding earlier `9nbzrvj8qj` /
+  `3a91WbDxtOPaPehOXqhl` mentions); **still requires the user/owner to set
   the `NAVER_MAP_CLIENT_ID` GitHub Repository Variable**, since this agent
   has no access to repository settings, only to repo file contents.
 
