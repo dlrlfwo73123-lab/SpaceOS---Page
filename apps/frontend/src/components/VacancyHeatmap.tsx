@@ -109,8 +109,8 @@ export function VacancyHeatmap({ district = 'lapesta', onSelectBuilding }: Vacan
       });
 
       map.on('click', 'vacancy-point', (e) => {
-        const id = e.features?.[0]?.properties?.grid_id ?? 'demo-building';
-        onSelectBuilding?.(String(id));
+        const id = e.features?.[0]?.properties?.grid_id;
+        if (id != null) onSelectBuilding?.(String(id));
       });
     }
 

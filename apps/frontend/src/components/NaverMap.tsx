@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getMarketStats } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
-import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPanoramaInstance } from '@/types/naver-maps';
+import type { NaverMapInstance, NaverMarker, NaverInfoWindow } from '@/types/naver-maps';
 
 // 서울 25개 구 중심 좌표 (WGS84)
 // TODO: 동별 중심 좌표는 행정안전부 공간정보 API로 교체
@@ -69,21 +69,20 @@ type NaverMapProps = {
 
 export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelectBuilding }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
-  const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
   const dongMarkerRef = useRef<NaverMarker | null>(null);
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
-  const [streetView, setStreetView] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // 네이버 클라우드 플랫폼 Maps API Client ID — 서울특별시 전역 지도·거리뷰에 사용
-  // .env.local의 VITE_NAVER_CLIENT_ID가 설정되어 있으면 그 값을 우선 사용
-  const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
-  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '9nbzrvj8qj';
+  // 네이버 클라우드 플랫폼 Maps API Client ID — Repository Variable NAVER_MAP_CLIENT_ID로 주입
+  const clientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
 
   useEffect(() => {
+    if (!clientId) {
+      setAuthError('네이버 지도 Client ID가 설정되지 않았습니다. VITE_NAVER_CLIENT_ID 환경변수를 확인하세요.');
+      return;
+    }
     const unsubscribe = onNaverMapsAuthFailure((message) => setAuthError(message));
     let cancelled = false;
     loadNaverMaps(clientId)
@@ -118,7 +117,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     };
   }, [scriptLoaded]);
 
-  // 구 선택 시 지도/거리뷰 중심 이동 — 서울 전역 어디든 지도와 거리뷰 모두 지원
+  // 구 선택 시 지도 중심 이동 — 서울 전역 어디든 지원
   // SDK 내부 오류(인증 실패로 인한 타일/오버레이 처리 실패 등)가 React 렌더 트리를 무너뜨리지 않도록 try/catch로 격리
   useEffect(() => {
     if (!window.naver || !scriptLoaded || !mapRef.current) return;
@@ -131,7 +130,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
 
       mapRef.current.setCenter(latlng);
       mapRef.current.setZoom(dongCode ? 16 : 14);
-      if (panoramaRef.current) panoramaRef.current.setPosition(latlng);
 
       if (!dongCode) {
         dongMarkerRef.current?.setMap(null);
@@ -176,17 +174,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     }
   }, [guCode, dongCode, industryCode, scriptLoaded]);
 
-  // 거리뷰 토글 시 Panorama 인스턴스 생성
-  useEffect(() => {
-    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps.Panorama) return;
-    const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    panoramaRef.current = new window.naver.maps.Panorama(panoramaContainerRef.current, {
-      position: new window.naver.maps.LatLng(lat, lng),
-      pov: { pan: 0, tilt: 0, fov: 100 },
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streetView]);
-
   function initMap() {
     if (!containerRef.current || !window.naver) return;
     try {
@@ -196,12 +183,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
         zoom: 14,
       });
 
-      // 지도 클릭 시 해당 좌표를 거리뷰 중심으로 사용할 수 있도록 마지막 클릭 위치 저장
-      window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
-        if (panoramaRef.current) panoramaRef.current.setPosition(e.coord);
-        onSelectBuilding?.('demo-building');
-      });
-
+      // TODO: 실제 건물 마커 클릭 연동 — GET /api/v1/buildings 연동 후 onSelectBuilding(building.id) 호출
       // TODO: 공실 히트맵 오버레이 — GET /api/v1/heatmap?gu={guCode} 연동 후 추가
     } catch (err) {
       console.error('네이버 지도 초기화 실패', err);
@@ -237,29 +219,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
 
   return (
     <div>
-      <div className="mb-2 flex gap-1.5">
-        <button
-          onClick={() => setStreetView(false)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            !streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`}
-        >
-          지도
-        </button>
-        <button
-          onClick={() => setStreetView(true)}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`}
-        >
-          🔭 거리뷰
-        </button>
-        <span className="ml-auto self-center text-[11px] text-slate-400">
-          지도를 클릭하면 해당 위치의 거리뷰로 이동합니다
-        </span>
-      </div>
-      <div ref={containerRef} className="h-[420px] w-full rounded-xl overflow-hidden" style={{ display: streetView ? 'none' : 'block' }} />
-      <div ref={panoramaContainerRef} className="h-[420px] w-full rounded-xl overflow-hidden" style={{ display: streetView ? 'block' : 'none' }} />
+      <div ref={containerRef} className="h-[420px] w-full rounded-xl overflow-hidden" />
     </div>
   );
 }

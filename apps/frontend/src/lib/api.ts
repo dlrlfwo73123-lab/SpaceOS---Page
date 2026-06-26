@@ -43,7 +43,10 @@ export type DistrictTrendPoint = {
   predicted: boolean;
 };
 
-const baseUrl = '/api/v1';
+// VITE_API_BASE_URL points at the deployed backend origin (e.g. https://api.example.com).
+// Falls back to a relative path for local dev, where vite.config.ts proxies /api to the dev backend.
+const apiOrigin = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+const baseUrl = `${apiOrigin}/api/v1`;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, init);

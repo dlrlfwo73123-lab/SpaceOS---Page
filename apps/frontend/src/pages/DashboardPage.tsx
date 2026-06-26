@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const [guCode, setGuCode] = useState(SEOUL_GU[0].code);         // 강남구
   const [dongCode, setDongCode] = useState(SEOUL_GU[0].dongs[0].code);
   const [industryCode, setIndustryCode] = useState('ALL');
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string>('demo-building');
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode) ?? SEOUL_GU[0];
 
@@ -115,13 +115,19 @@ export default function DashboardPage() {
             <NaverMap guCode={guCode} dongCode={dongCode} industryCode={industryCode} onSelectBuilding={setSelectedBuildingId} />
           </div>
           <Suspense fallback={<div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">3D 트윈 불러오는 중…</div>}>
-            <BuildingTwin buildingId={selectedBuildingId} />
+            {selectedBuildingId ? (
+              <BuildingTwin buildingId={selectedBuildingId} />
+            ) : (
+              <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">
+                지도에서 건물을 선택하면 3D 트윈이 표시됩니다
+              </div>
+            )}
           </Suspense>
         </section>
 
         {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
         <StoreHistory
-          buildingId={selectedBuildingId}
+          buildingId={selectedBuildingId ?? undefined}
           guCode={guCode}
           dongCode={dongCode}
           industryCode={industryCode}
