@@ -2,57 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { getMarketStats } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
+import { GU_CENTER, DEFAULT_CENTER, dongOffset, mockBuildingsInDong } from '@/lib/seoulCoords';
 import type { NaverMapInstance, NaverMarker, NaverInfoWindow } from '@/types/naver-maps';
-
-// 서울 25개 구 중심 좌표 (WGS84)
-// TODO: 동별 중심 좌표는 행정안전부 공간정보 API로 교체
-const GU_CENTER: Record<string, [number, number]> = {
-  '11680': [37.5172, 127.0473], // 강남구
-  '11740': [37.5301, 127.1238], // 강동구
-  '11305': [37.6396, 127.0255], // 강북구
-  '11500': [37.5509, 126.8495], // 강서구
-  '11620': [37.4784, 126.9516], // 관악구
-  '11215': [37.5385, 127.0823], // 광진구
-  '11530': [37.4954, 126.8874], // 구로구
-  '11545': [37.4569, 126.8955], // 금천구
-  '11350': [37.6542, 127.0568], // 노원구
-  '11320': [37.6688, 127.0471], // 도봉구
-  '11230': [37.5744, 127.0396], // 동대문구
-  '11590': [37.5124, 126.9393], // 동작구
-  '11440': [37.5663, 126.9018], // 마포구
-  '11410': [37.5791, 126.9368], // 서대문구
-  '11650': [37.4837, 127.0324], // 서초구
-  '11200': [37.5633, 127.0371], // 성동구
-  '11290': [37.5894, 127.0167], // 성북구
-  '11710': [37.5145, 127.1059], // 송파구
-  '11470': [37.5270, 126.8561], // 양천구
-  '11560': [37.5264, 126.8963], // 영등포구
-  '11170': [37.5311, 126.9810], // 용산구
-  '11380': [37.6026, 126.9291], // 은평구
-  '11110': [37.5735, 126.9788], // 종로구
-  '11140': [37.5640, 126.9975], // 중구
-  '11260': [37.5953, 127.0951], // 중랑구
-};
-
-const DEFAULT_CENTER: [number, number] = [37.5665, 126.9780]; // 서울 시청
-
-// 동 코드를 시드로 구 중심에서 ±0.6~1.4km 범위의 결정적(deterministic) 오프셋을 생성
-// TODO: 실제 동 중심 좌표는 행정안전부 공간정보 API로 교체
-function hashDong(code: string): number {
-  let h = 0;
-  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) >>> 0;
-  return h;
-}
-
-function dongOffset(guCode: string, dongCode: string): [number, number] {
-  if (!dongCode) return [0, 0];
-  const h = hashDong(`${guCode}|${dongCode}`);
-  const angle = (h % 360) * (Math.PI / 180);
-  const radiusKm = 0.6 + ((h >>> 8) % 100) / 100; // 0.6~1.6km
-  const dLat = (radiusKm / 111) * Math.cos(angle);
-  const dLng = (radiusKm / (111 * Math.cos(37.55 * Math.PI / 180))) * Math.sin(angle);
-  return [dLat, dLng];
-}
 
 function vacancyColor(rate: number): string {
   if (rate >= 15) return '#dc2626'; // 적색: 고공실
@@ -72,6 +23,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   const mapRef = useRef<NaverMapInstance | null>(null);
   const dongMarkerRef = useRef<NaverMarker | null>(null);
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
+  const buildingMarkersRef = useRef<NaverMarker[]>([]);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -174,6 +126,35 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     }
   }, [guCode, dongCode, industryCode, scriptLoaded]);
 
+  // 동 선택 시 건물 단위 마커 표시 — 실제 건물 등록부가 없어 동 중심에서
+  // 결정적으로 흩뿌린 mock 좌표(lib/seoulCoords.mockBuildingsInDong)를 사용한다.
+  // mock-building-N 형태의 id로, 실데이터인 것처럼 보이는 주소/건물명을 만들지 않는다.
+  useEffect(() => {
+    if (!window.naver || !scriptLoaded || !mapRef.current) return;
+    buildingMarkersRef.current.forEach((m) => m.setMap(null));
+    buildingMarkersRef.current = [];
+    if (!dongCode) return;
+
+    try {
+      const buildings = mockBuildingsInDong(guCode, dongCode);
+      buildingMarkersRef.current = buildings.map((b) => {
+        const marker = new window.naver.maps.Marker({
+          position: new window.naver.maps.LatLng(b.lat, b.lng),
+          map: mapRef.current!,
+          icon: {
+            content: `<div style="width:12px;height:12px;border-radius:3px;background:#2563eb;border:1.5px solid white;box-shadow:0 0 3px rgba(0,0,0,0.4);cursor:pointer;"></div>`,
+            anchor: new window.naver.maps.Point(6, 6),
+          },
+          title: b.name,
+        });
+        window.naver.maps.Event.addListener(marker, 'click', () => onSelectBuilding?.(b.id));
+        return marker;
+      });
+    } catch (err) {
+      console.error('건물 마커 표시 실패', err);
+    }
+  }, [guCode, dongCode, scriptLoaded, onSelectBuilding]);
+
   function initMap() {
     if (!containerRef.current || !window.naver) return;
     try {
@@ -183,7 +164,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
         zoom: 14,
       });
 
-      // TODO: 실제 건물 마커 클릭 연동 — GET /api/v1/buildings 연동 후 onSelectBuilding(building.id) 호출
       // TODO: 공실 히트맵 오버레이 — GET /api/v1/heatmap?gu={guCode} 연동 후 추가
     } catch (err) {
       console.error('네이버 지도 초기화 실패', err);
