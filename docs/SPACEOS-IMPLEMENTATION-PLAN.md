@@ -80,17 +80,38 @@ Implementing all of it correctly in one pass was not realistic without
 either fabricating untested code or silently cutting corners on the
 no-fabrication rule. What remains, explicitly:
 
-- **Backend recommendation engine** (`services/scoring.py`,
-  `services/confidence.py`, `adapters/mock.py`,
-  `api/v1/recommendations.py` with `POST /by-region` / `POST /by-industry`,
-  weight/confidence formulas, pytest coverage) — **not implemented**. The
-  frontend's region/industry recommendation flow (`LandingPage` →
-  `RegionAnalysisPage`/`IndustryAnalysisPage` → `AnalysisResultPage`) still
-  calls the seeded-PRNG synthetic generator in `lib/api.ts`/`lib/marketData.ts`
-  directly from the browser, with no server-side scoring and no demo-data
-  banner distinguishing it from real output. This is a direct violation of
-  the "never silently present mock data as real" rule as it stands today —
-  flagging it here rather than leaving it unstated.
+- **Backend recommendation engine** — **implemented in this pass**:
+  `app/services/scoring.py` (deterministic, non-AI weighted scoring —
+  `demand 22%, competition_opportunity 15%, survival 15%, growth 12%,
+  rent_efficiency 12%, closure_stability 10%, accessibility 7%,
+  building_fit 7%`), `app/services/confidence.py` (confidence formula with
+  `mock_confidence()` forcing `is_demo=true`/`confidence=0` for the
+  mock-sourced path, plus an unused-but-ready `live_confidence()` for a
+  future real adapter), `app/services/ai_explainer.py` (explanation-only —
+  never ranks/scores; deterministic template fallback since no `AI_API_KEY`
+  is configured), `app/schemas/recommendation.py` (Pydantic request/response
+  shapes), `app/api/v1/recommendations.py` (`POST /api/v1/recommendations/by-region`
+  and `POST /api/v1/recommendations/by-industry`, wired into `main.py`), and
+  `app/data/seoul.py` (backend port of the frontend's gu/dong/industry
+  reference data). Data source is still `app/data/mock_market.py` (explicitly
+  mock — see its docstring), so every response sets `is_demo=true` and
+  `confidence=0`. 5 new tests in `tests/test_recommendations.py` cover
+  weight-sum, ranking order, determinism (identical request → identical
+  response), and that `is_demo`/`confidence=0` are always enforced; all 21
+  backend tests pass.
+  The frontend's `fetchRegionRecommendation`/`fetchIndustryRecommendation`
+  (`lib/api.ts`) now call these endpoints over HTTP instead of generating
+  data in-browser via seeded PRNG; `types/recommendation.ts` gained
+  `isDemo`/`dataLimitations` fields, and `RecommendationCard.tsx` shows an
+  explicit "데모 데이터" badge whenever `isDemo` is true. The previous
+  fabricated `startupCostMin`/`startupCostMax`/`paybackMonths` fields (random
+  numbers with no basis) were dropped from this flow rather than ported, per
+  the no-fabrication rule — replaced with the real `rentPer33` figure already
+  in the mock dataset.
+  **Still not implemented**: dong/building-level map polygon rendering for
+  recommended locations (needs an external administrative-boundary GeoJSON
+  source — none exists in the repo), and any live (non-mock) data adapter
+  wired to a real source.
 - **Data provenance / store-history / building-matching schemas**
   (`DataProvenance`, vacancy-status enum, building/floor/unit model) — not
   implemented as TypeScript/Pydantic types yet.

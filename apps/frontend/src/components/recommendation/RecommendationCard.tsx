@@ -39,23 +39,26 @@ export function RecommendationCard({ item, mode, selected, onSelect }: Props) {
         <ScoreBreakdown items={item.breakdown} />
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-slate-50 p-2 text-center text-xs">
+      <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-2 text-center text-xs">
         <div>
           <p className="font-semibold text-slate-700">{formatWon(item.expectedMonthlyRevenue)}</p>
           <p className="text-slate-400">예상 월매출</p>
         </div>
         <div>
-          <p className="font-semibold text-slate-700">{formatWon(item.startupCostMin)}~{formatWon(item.startupCostMax)}</p>
-          <p className="text-slate-400">창업비용</p>
-        </div>
-        <div>
-          <p className="font-semibold text-slate-700">{item.paybackMonths}개월</p>
-          <p className="text-slate-400">예상 회수기간</p>
+          <p className="font-semibold text-slate-700">{item.rentPer33.toFixed(1)}만원</p>
+          <p className="text-slate-400">3.3㎡당 임대시세</p>
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <DataConfidenceBadge level={item.dataConfidence} />
+        <div className="flex items-center gap-2">
+          <DataConfidenceBadge level={item.dataConfidence} />
+          {item.isDemo && (
+            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+              데모 데이터
+            </span>
+          )}
+        </div>
         <span className="text-[11px] text-slate-400">3년 생존율 {item.survivalRate3y}%</span>
       </div>
 

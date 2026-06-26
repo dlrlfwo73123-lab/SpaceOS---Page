@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.buildings import router as buildings_router
 from app.api.v1.districts import router as districts_router
+from app.api.v1.recommendations import router as recommendations_router
 
 app = FastAPI(title="SpaceOS API")
 
@@ -32,3 +33,4 @@ def health() -> dict:
 
 app.include_router(districts_router, prefix="/api/v1")
 app.include_router(buildings_router, prefix="/api/v1")
+app.include_router(recommendations_router, prefix="/api/v1")

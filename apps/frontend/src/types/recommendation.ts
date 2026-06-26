@@ -17,17 +17,18 @@ export type RecommendationItem = {
   breakdown: ScoreBreakdownItem[];
   evidences: string[];
   risks: string[];
+  dataLimitations: string[];
   dataConfidence: 'high' | 'medium' | 'low';
+  isDemo: boolean;
   expectedMonthlyRevenue: number;
-  startupCostMin: number;
-  startupCostMax: number;
-  paybackMonths: number;
+  rentPer33: number;
   survivalRate3y: number;
 };
 
 export type RecommendationResult = {
   mode: 'region' | 'industry';
   generatedAt: string;
+  isDemo: boolean;
   query: {
     guCode?: string;
     guName?: string;
