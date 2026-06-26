@@ -139,3 +139,68 @@ no-fabrication rule. What remains, explicitly:
    call it instead of the in-browser PRNG, with an explicit demo-mode banner
    for as long as `DATA_MODE=mock`.
 3. Everything else in §3, roughly in the order listed.
+
+## 5. Assessment against the 2025-06 "38-section master spec"
+
+A later request supplied a much larger specification (PostGIS-backed data
+model, multi-source ingestion adapters, store-history/building ledger
+schemas, dong/building map rendering, pricing/entitlements, full test
+suites, etc). Implementing all of it in one pass is not realistic — most of
+it requires infrastructure (a Postgres+PostGIS instance, live API keys for
+서울 열린데이터광장/소상공인시장진흥공단/건물 대장, a payment provider,
+administrative-boundary GeoJSON) that doesn't exist in this repo or this
+environment, and faking it would violate the no-fabrication rule. Per
+CLAUDE.md, this section separates what's actually true rather than
+reporting the whole spec as "done."
+
+**Already done (§1/§3 above), unchanged by the new spec:**
+- Deterministic scoring engine, confidence formula, AI-explanation-only
+  service with deterministic fallback, `/recommendations/by-region` /
+  `by-industry`, `isDemo`/`데모 데이터` badge end-to-end.
+- Naver Client ID is env-driven (§0) — the user has since stated the
+  confirmed value is `9nbzrvj8qj`; **still requires the user/owner to set
+  the `NAVER_MAP_CLIENT_ID` GitHub Repository Variable**, since this agent
+  has no access to repository settings, only to repo file contents.
+
+**Newly added in this pass, codeable without external infrastructure:**
+- `app/data/data_sources.py` — a registry describing, per metric group
+  (유동인구/공실률/개업폐업률/매출지수/생존율/임대시세), what the *intended*
+  live source is and that `status` is currently `"mock"` for all of them
+  (`live_adapter_implemented: false` for every entry — no live adapter
+  exists yet).
+- `app/schemas/provenance.py` + `app/api/v1/data_sources.py` — new
+  `GET /api/v1/data-sources`, `/data-sources/{id}`, `/data-freshness`,
+  `/data-quality` endpoints. `/data-freshness` always reports `is_demo=true`
+  and `as_of=null` (no fabricated ingestion timestamp); `/data-quality`
+  always reports `null` completeness/coverage scores rather than inventing
+  numbers. 3 new tests in `tests/test_data_sources.py`; 24/24 backend tests
+  pass.
+
+**Explicitly NOT done — blocked on infrastructure this environment doesn't
+have, not attempted, not faked:**
+- PostgreSQL+PostGIS schema and any of the ~15 tables in the new spec
+  (regions, businesses, buildings, recommendation_runs, subscriptions, etc).
+  This repo currently has no database at all; the backend is stateless and
+  computes everything on request from the in-memory mock dataset.
+- Any live data adapter (서울 열린데이터광장, 소상공인시장진흥공단, 건물
+  대장 API) — no API keys are configured, and per CLAUDE.md, missing keys
+  don't block building schemas/mocks, but they do block anything claiming
+  to be "live."
+- Dong-polygon and building-marker map rendering — needs an administrative
+  boundary GeoJSON source and real building coordinates, neither present in
+  the repo (already flagged in §3 before this pass).
+- Store-history/building ledger expanded data models (40+ fields each) —
+  not added; the existing `BuildingHistoryEvent`/`BuildingFloor` types are
+  the original simpler shape. Adding the full new shape without a backing
+  live source would just be more typed mock data, which doesn't materially
+  improve reliability, so it was deprioritized in favor of the
+  provenance/freshness endpoints above.
+- Pricing/entitlements/subscription schema and `PRICING_HYPOTHESIS_V1` —
+  not implemented this pass.
+- Frontend Vitest/RTL test tooling — not installed.
+
+**Honest status line:** code-complete and tested = recommendation engine +
+data-source/freshness/quality registry (mock-labeled throughout); requires
+user action = `NAVER_MAP_CLIENT_ID` repo variable; requires infrastructure
+not present here = database, live data adapters, map polygon layer,
+pricing/payments, ledger data models.
