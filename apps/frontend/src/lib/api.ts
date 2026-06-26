@@ -244,6 +244,41 @@ export async function fetchDataFreshness(): Promise<DataFreshnessInfo[]> {
   }));
 }
 
+type BackendDataProvenance = {
+  metric_key: string;
+  source_id: string;
+  is_demo: boolean;
+  as_of: string | null;
+  confidence: number;
+  confidence_label: 'high' | 'medium' | 'low';
+  source_reliability: number | null;
+  freshness_score: number | null;
+  completeness_score: number | null;
+  coverage_score: number | null;
+  spatial_accuracy_score: number | null;
+  consistency_score: number | null;
+  data_limitations: string[];
+};
+
+export async function fetchDataProvenance(): Promise<import('@/types/provenance').DataProvenance[]> {
+  const body = await request<BackendDataProvenance[]>('/data-provenance');
+  return body.map((p) => ({
+    metricKey: p.metric_key,
+    sourceId: p.source_id,
+    isDemo: p.is_demo,
+    asOf: p.as_of,
+    confidence: p.confidence,
+    confidenceLabel: p.confidence_label,
+    sourceReliability: p.source_reliability,
+    freshnessScore: p.freshness_score,
+    completenessScore: p.completeness_score,
+    coverageScore: p.coverage_score,
+    spatialAccuracyScore: p.spatial_accuracy_score,
+    consistencyScore: p.consistency_score,
+    dataLimitations: p.data_limitations,
+  }));
+}
+
 export async function fetchIndustryRecommendation(input: IndustryAnalysisInput): Promise<RecommendationResult> {
   const body = await request<BackendRecommendationResult>('/recommendations/by-industry', {
     method: 'POST',

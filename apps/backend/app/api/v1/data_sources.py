@@ -3,7 +3,13 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from app.data.data_sources import all_sources, source_by_id
-from app.schemas.provenance import DataFreshnessInfo, DataQualityInfo, DataSourceInfo
+from app.schemas.provenance import (
+    DataFreshnessInfo,
+    DataProvenance,
+    DataQualityInfo,
+    DataSourceInfo,
+)
+from app.services.confidence import mock_confidence
 
 router = APIRouter()
 
@@ -39,6 +45,34 @@ def list_data_quality() -> list[DataQualityInfo]:
         )
         for s in all_sources()
     ]
+
+
+@router.get("/data-provenance", response_model=list[DataProvenance])
+def list_data_provenance() -> list[DataProvenance]:
+    # Every source is mock in this pass, so every sub-score comes from
+    # mock_confidence() (all zero) rather than a fabricated number.
+    provenance = []
+    for s in all_sources():
+        conf = mock_confidence()
+        sub = conf["sub_scores"]
+        provenance.append(
+            DataProvenance(
+                metric_key=s["id"],
+                source_id=s["id"],
+                is_demo=conf["is_demo"],
+                as_of=None,
+                confidence=conf["confidence"],
+                confidence_label=conf["label"],
+                source_reliability=sub["source_reliability"],
+                freshness_score=sub["freshness_score"],
+                completeness_score=sub["completeness_score"],
+                coverage_score=sub["coverage_score"],
+                spatial_accuracy_score=sub["spatial_accuracy_score"],
+                consistency_score=sub["consistency_score"],
+                data_limitations=["mock 데이터 소스 — 실측 신뢰도 산출 불가"],
+            )
+        )
+    return provenance
 
 
 @router.get("/data-sources/{source_id}", response_model=DataSourceInfo)
