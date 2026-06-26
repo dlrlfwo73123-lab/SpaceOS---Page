@@ -252,3 +252,75 @@ mock-labeled where data is involved); requires user action =
 here = PostGIS database, live data adapters, dong/building map polygon
 layer, real payment integration, full store-history/building ledger data
 models, administrative-boundary GeoJSON.
+
+## 7. Third pass — repository/adapter seam, status vocabulary, map honesty
+
+- **`app/repositories/market_repository.py` + `app/adapters/market_adapter.py`**
+  — introduced a `MarketRepository`/`MarketAdapter` protocol pair so
+  `app/api/v1/recommendations.py` no longer calls `app/data/mock_market.py`
+  directly. `MockMarketRepository` delegates to `MockMarketAdapter`, which
+  is documented as the *only* adapter wired up — there is no live adapter
+  and no credential to enable one. Swapping in a real data source later
+  means implementing the same `MarketAdapter` protocol against a real
+  HTTP client; `services/scoring.py` and everything downstream is
+  unaffected.
+- **`app/jobs/ingestion_job.py`** — a stub ingestion entrypoint, not
+  registered with any scheduler (no cron, no Celery beat, nothing in
+  `app/main.py` calls it). Calling `run()` fetches one sample via the mock
+  adapter and returns a status dict; it does not write to any database,
+  because no database is connected in this environment. The module
+  docstring spells out what real ingestion would additionally require: a
+  live adapter, a DB connection, and a scheduler.
+- **Building/store-history status vocabulary** — added
+  `app/schemas/building.py` with a fixed `BuildingHistoryStatus` literal
+  (`confirmed-open` / `confirmed-closed` / `observed-open` /
+  `temporarily-closed` / `inferred-closed` / `unknown`) and Pydantic
+  response models for `/buildings/{id}/floors`, `/model`, `/history`
+  (previously untyped `list[dict]`/`dict`). The mock generator in
+  `app/data/buildings.py` only ever emits `observed-open` or
+  `inferred-closed` — it never claims `confirmed-*`, since nothing here is
+  checked against a live registry. Mirrored the status type into the
+  frontend's `BuildingHistoryEvent` type in `lib/api.ts`.
+- **`DongPolygonLayer.tsx`** — previously rendered `null` with only a code
+  comment explaining the missing administrative-boundary GeoJSON. Per the
+  no-fabrication rule ("absence of real data must be visible, not silent"),
+  it now renders a visible "⚠ 행정구역 경계 데이터 없음 — 마커 기반 표시로
+  대체" badge on the map instead of disappearing entirely.
+- Added `tests/test_market_repository.py` (repository/adapter parity +
+  ingestion-job stub-status assertions).
+
+**Verification re-run after this pass:** 32 backend tests pass
+(`pytest -q`, up from 28 — added 3 repository/adapter/job tests, 1 already
+counted reference test), 4 frontend tests pass (`npx vitest run`), both
+`npm run build` and the backend import cleanly. No new Street
+View/Panorama/거리뷰 references, no secrets outside `.example` files
+(re-checked via the same `rg`/`git grep` sweep as prior passes).
+
+**Honest status line (cumulative, end of third pass):**
+- **코드 구현 완료 (code-complete, tested):** deterministic recommendation
+  engine; data-source/freshness/provenance/quality registry incl.
+  `/data-provenance` (confidence formula reused, all-zero/`is_demo=true`
+  for mock sources); regions/industries reference API; data-source UI
+  panel; pricing hypothesis page (payment disabled); frontend test
+  tooling; repository/adapter seam decoupling recommendations from
+  `mock_market` directly; building/store-history status vocabulary +
+  Pydantic response models; explicit no-boundary-data map indicator.
+- **Mock 검증 완료 (mock-verified, not live):** every data path above —
+  market stats, store history, building floors/model, data provenance —
+  is backed by deterministic mock generators only; `is_demo=true` and
+  `confidence=0`/`status` never `confirmed-*` throughout.
+- **Live 키 필요:** `AI_API_KEY`-style credential for the optional
+  AI-explanation path (deterministic template fallback works without it);
+  `NAVER_MAP_CLIENT_ID` repo variable for the map.
+- **DB 필요:** the PostGIS schema in `db/migrations/0001_initial.sql` is
+  schema-as-code only — not applied, not connected to any running
+  database. `app/jobs/ingestion_job.py` cannot persist anything until one
+  exists.
+- **결제사 필요:** `PricingPage` CTAs stay disabled ("결제 연동 준비 중")
+  until a real billing provider (e.g. 토스페이먼츠/아임포트) is wired up —
+  no payment integration exists, per CLAUDE.md.
+- **인프라 필요 (기타):** administrative-boundary GeoJSON for real dong
+  polygon rendering (행정안전부 공간정보 API); a live market-data adapter
+  implementing `MarketAdapter` (e.g. 서울 열린데이터광장 상권분석 API) to
+  replace `MockMarketAdapter`; a scheduler to run `ingestion_job.run()` on
+  a cadence once a DB and live adapter exist.
