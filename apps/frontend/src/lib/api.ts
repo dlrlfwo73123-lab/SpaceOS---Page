@@ -307,3 +307,50 @@ export async function fetchIndustryRecommendation(input: IndustryAnalysisInput):
   });
   return toRecommendationResult(body);
 }
+
+// ── 요금제/구독 — 실제 결제 연동 전까지 mock 카탈로그/단일 mock 구독 상태 ──
+import type { Entitlements, Plan } from '@/types/billing';
+
+type BackendPlan = {
+  id: Plan['id'];
+  name: string;
+  price_monthly_krw: number;
+  is_demo_pricing: boolean;
+  features: Plan['features'];
+  monthly_analysis_quota: number | null;
+};
+
+type BackendEntitlements = {
+  plan_id: Entitlements['planId'];
+  status: Entitlements['status'];
+  is_demo: boolean;
+  monthly_analysis_quota: number | null;
+  analyses_used_this_month: number;
+  payment_enabled: boolean;
+  note: string;
+};
+
+export async function fetchPlans(): Promise<Plan[]> {
+  const body = await request<BackendPlan[]>('/plans');
+  return body.map((p) => ({
+    id: p.id,
+    name: p.name,
+    priceMonthlyKrw: p.price_monthly_krw,
+    isDemoPricing: p.is_demo_pricing,
+    features: p.features,
+    monthlyAnalysisQuota: p.monthly_analysis_quota,
+  }));
+}
+
+export async function fetchEntitlements(): Promise<Entitlements> {
+  const e = await request<BackendEntitlements>('/entitlements');
+  return {
+    planId: e.plan_id,
+    status: e.status,
+    isDemo: e.is_demo,
+    monthlyAnalysisQuota: e.monthly_analysis_quota,
+    analysesUsedThisMonth: e.analyses_used_this_month,
+    paymentEnabled: e.payment_enabled,
+    note: e.note,
+  };
+}

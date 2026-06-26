@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1.billing import router as billing_router
 from app.api.v1.buildings import router as buildings_router
 from app.api.v1.data_sources import router as data_sources_router
 from app.api.v1.districts import router as districts_router
@@ -48,3 +49,4 @@ app.include_router(buildings_router, prefix="/api/v1")
 app.include_router(recommendations_router, prefix="/api/v1")
 app.include_router(data_sources_router, prefix="/api/v1")
 app.include_router(reference_router, prefix="/api/v1")
+app.include_router(billing_router, prefix="/api/v1")
