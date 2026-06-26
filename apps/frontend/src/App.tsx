@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import RegionAnalysisPage from './pages/RegionAnalysisPage';
 import IndustryAnalysisPage from './pages/IndustryAnalysisPage';
 import AnalysisResultPage from './pages/AnalysisResultPage';
+import PricingPage from './pages/PricingPage';
 
 const Dashboard = lazy(() => import('./pages/DashboardPage'));
 
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/region" element={<RegionAnalysisPage />} />
         <Route path="/industry" element={<IndustryAnalysisPage />} />
         <Route path="/result" element={<AnalysisResultPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route
           path="/dashboard"
           element={

@@ -30,9 +30,12 @@ export default function LandingPage() {
           />
         </section>
 
-        <div className="text-center">
+        <div className="flex items-center justify-center gap-4 text-center">
           <Link to="/dashboard" className="text-sm font-semibold text-slate-400 hover:text-slate-600">
             기존 상권분석 대시보드 보기 →
+          </Link>
+          <Link to="/pricing" className="text-sm font-semibold text-slate-400 hover:text-slate-600">
+            요금제 보기 →
           </Link>
         </div>
       </div>
