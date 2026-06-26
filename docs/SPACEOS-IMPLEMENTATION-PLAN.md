@@ -199,8 +199,56 @@ have, not attempted, not faked:**
   not implemented this pass.
 - Frontend Vitest/RTL test tooling — not installed.
 
-**Honest status line:** code-complete and tested = recommendation engine +
-data-source/freshness/quality registry (mock-labeled throughout); requires
-user action = `NAVER_MAP_CLIENT_ID` repo variable; requires infrastructure
-not present here = database, live data adapters, map polygon layer,
-pricing/payments, ledger data models.
+## 6. Second pass — additional codeable-without-infrastructure work
+
+After §5's assessment, the following was implemented, tested, and pushed
+(commits `a99bffa`, `37c4d08`, `600950b`), still without any external
+infrastructure:
+
+- **`GET /api/v1/regions`, `/regions/{gu_code}`, `/api/v1/industries`** —
+  port `app/data/seoul.py`'s reference data over HTTP so the backend is the
+  single source of truth instead of the frontend re-hardcoding the same
+  구/동/업종 list independently. 4 new tests.
+- **`DataSourcePanel` wired into the actual UI** (`AnalysisResultPage`) —
+  the `/data-sources` and `/data-freshness` endpoints from §5 were
+  previously only reachable via direct API calls; they're now rendered as
+  a collapsible "데이터 출처 안내" panel showing, per metric, the intended
+  live source, refresh cadence, and an explicit 데모 데이터/실데이터 badge.
+- **Found and fixed an actual no-fabrication violation**, not just the
+  already-flagged inert `demo-building` registry entry:
+  `StoreHistory.tsx`'s main 점포 이력 table rendered deterministic mock
+  "폐업 원인" (closure reasons) and rent figures from `lib/marketData.ts`
+  with no demo-data indicator anywhere on the main table — only a buried
+  footnote on a separate vacancy-recommendation panel below it. Added a
+  visible warning banner at the top of the component and relabeled the
+  inline closure-reason text as a demo example, not a real cause. Also
+  added `is_demo=true` to the backend's `GET /buildings/{id}/history`
+  response for the same data (this backend endpoint is currently unused by
+  the frontend, but was fabricating unlabeled closure reasons too).
+- **`PricingPage` + `PRICING_HYPOTHESIS_V1`** (`lib/pricing.ts`) — a 5-tier
+  draft pricing page (Free/Starter/Pro/Business/Enterprise) at `/pricing`,
+  explicitly labeled as a hypothesis, every CTA disabled with "결제 연동
+  준비 중" per CLAUDE.md's no-real-payment rule.
+- **Frontend test tooling** — Vitest + React Testing Library installed
+  (previously absent entirely), `npm run test` script added, smoke tests
+  for `RecommendationCard`'s 데모 데이터 badge logic and `DataSourcePanel`'s
+  rendering against a stubbed fetch.
+
+**Verification re-run after this pass:** the standard `rg`/`git grep`
+commands (§2) were re-run — no Street View/Panorama/거리뷰, no secrets
+outside `.example` files. `mulberry32`/`rngFor` still exist only in
+`lib/marketData.ts`, which backs the *old* dashboard (heatmap/trend/store
+history) flow, not the recommendation engine (already fixed in an earlier
+pass) — left as-is since it's a separate, pre-existing, smaller-scope
+concern from the original spec, now at least labeled per the fix above.
+28 backend tests pass (`pytest -q`), 4 frontend tests pass
+(`npx vitest run`), both `npm run build` and the backend import cleanly.
+
+**Honest status line:** code-complete and tested = recommendation engine,
+data-source/freshness/quality registry, regions/industries reference API,
+data-source UI panel, pricing hypothesis page, frontend test tooling (all
+mock-labeled where data is involved); requires user action =
+`NAVER_MAP_CLIENT_ID` repo variable; requires infrastructure not present
+here = PostGIS database, live data adapters, dong/building map polygon
+layer, real payment integration, full store-history/building ledger data
+models, administrative-boundary GeoJSON.
