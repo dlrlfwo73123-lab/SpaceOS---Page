@@ -15,11 +15,11 @@ added, must stay server-side only (never sent to the frontend).
 
 from __future__ import annotations
 
-import os
+from app.core.config import settings
 
 
 def is_ai_configured() -> bool:
-    return bool(os.getenv("AI_API_KEY"))
+    return settings.ai_configured
 
 
 def _top_components(breakdown: list[dict], n: int = 2) -> list[dict]:

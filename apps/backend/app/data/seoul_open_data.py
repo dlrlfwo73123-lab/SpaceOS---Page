@@ -9,11 +9,11 @@ that should switch over; this module's signature won't need to change.
 
 from __future__ import annotations
 
-import os
-
 import httpx
 
-API_KEY = os.environ.get("SEOUL_OPEN_DATA_API_KEY", "")
+from app.core.config import settings
+
+API_KEY = settings.seoul_open_data_api_key
 BASE_URL = "http://openapi.seoul.go.kr:8088"
 
 # 우리마을가게 상권분석서비스 dataset id (서비스명/구 단위 상권 통계)
@@ -25,7 +25,7 @@ class SeoulOpenDataError(RuntimeError):
 
 
 def is_configured() -> bool:
-    return bool(API_KEY)
+    return settings.seoul_open_data_configured
 
 
 def fetch_district_stats(gu_code: str, start: int = 1, end: int = 5) -> dict:
