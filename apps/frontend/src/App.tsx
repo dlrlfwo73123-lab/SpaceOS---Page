@@ -158,15 +158,24 @@ export default function App() {
           }}
         />
 
-        {/* 점포 이력 */}
-        <StoreHistory
-          buildingId={selectedBuildingId ?? 'demo-building'}
-          guCode={guCode || SEOUL_GU[0].code}
-          dongCode={dongCode}
-          industryCode={industryCode}
-          guName={guLabel}
-          dongName={dongLabel}
-        />
+        {/* 점포 이력 — 구·동·공실 선택 후에만 표시 */}
+        {selectedBuildingId ? (
+          <StoreHistory
+            buildingId={selectedBuildingId}
+            guCode={guCode || SEOUL_GU[0].code}
+            dongCode={dongCode}
+            industryCode={industryCode}
+            guName={guLabel}
+            dongName={dongLabel}
+          />
+        ) : (
+          <div className="flex h-20 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
+            <div>
+              <p className="text-sm font-semibold text-slate-400">점포 이력</p>
+              <p className="text-xs text-slate-300 mt-1">구·동을 선택하고 지도의 공실 매물(빨간 점)을 클릭하면 해당 점포의 이력을 볼 수 있습니다</p>
+            </div>
+          </div>
+        )}
 
         {/* 데이터 신뢰성 패널 */}
         <DataReliabilityPanel />

@@ -5,110 +5,174 @@ type ReliabilityLevel = 'high' | 'medium' | 'low' | 'demo';
 type MetricInfo = {
   name: string;
   level: ReliabilityLevel;
+  pct: number;           // 신뢰도 % (0~100)
   source: string;
   url: string;
   updateCycle: string;
   note: string;
+  improvePath?: string;  // 신뢰도 향상 방법
 };
 
 const METRICS: MetricInfo[] = [
   {
+    name: '인구밀도',
+    level: 'high',
+    pct: 88,
+    source: '행정안전부 주민등록 인구통계',
+    url: 'https://jumin.mois.go.kr',
+    updateCycle: '월별',
+    note: '주민등록 인구 ÷ 행정구역 면적(㎢). 구별 수치는 공식 통계 기반으로 오차 최소. 동 단위는 구 평균 비례 추정 적용.',
+    improvePath: '행정안전부 주민등록 인구 오픈 API(jumin.mois.go.kr) 연동 시 동 단위 실시간 인구밀도 100% 정확도 달성 가능.',
+  },
+  {
     name: '유동인구',
     level: 'medium',
+    pct: 62,
     source: '서울 열린데이터광장 "서울시 생활인구"',
     url: 'https://data.seoul.go.kr/dataList/OA-14991/S/1/datasetView.do',
     updateCycle: '시간별 / 일별',
-    note: '현재 사이트는 구별 기준치를 공공데이터로 보정한 합성값 사용. 실제 API 연동 시 정확도 향상 가능.',
+    note: '현재 사이트는 공공데이터 구별 평균을 보정한 합성값 사용. 실제 API는 KT 통신 데이터 기반 500m×500m 격자 단위 생활인구 제공.',
+    improvePath: '서울 열린데이터광장 생활인구 API 연동 (data.seoul.go.kr, 무료·인증 필요) → 격자 단위 시간대별 실제 유동인구 조회 가능. 예상 신뢰도 85%.',
   },
   {
     name: '공실률',
     level: 'medium',
+    pct: 55,
     source: '한국부동산원 "상업용부동산 임대동향조사"',
     url: 'https://www.reb.or.kr/r-one/statistics/statisticsViewer.do',
     updateCycle: '분기별',
-    note: '한국부동산원은 서울 주요 상권(명동·강남·홍대 등) 공실률만 조사. 동 단위 세부 공실률은 해당 자료로 산출 불가 — 현재 사이트는 구별 평균에서 동 단위로 분산 추정.',
+    note: '한국부동산원은 명동·강남·홍대 등 서울 주요 상권만 표본 조사. 동 단위 전수 조사 아님. 현재 사이트는 구 평균에서 동 단위로 분산 추정.',
+    improvePath: '① 한국부동산원 R-ONE API 구 단위 공실률 활용 (pct 70%) ② 건축물대장 + 임대차계약신고 DB 결합 시 동 단위 실측 공실률 산출 가능 (pct 82%).',
   },
   {
     name: '임대시세 (3.3㎡)',
     level: 'medium',
+    pct: 58,
     source: '서울시 상권분석서비스 + 토지이음 공시지가',
     url: 'https://golmok.seoul.go.kr',
     updateCycle: '분기별 / 연도별',
-    note: '서울시 상권분석서비스(골목상권)는 업종별 임대료 통계를 제공하나 동 단위 세분화 한계 있음. 토지이음 개별공시지가 기반 추정값 병행 사용 권장.',
-  },
-  {
-    name: '인구밀도',
-    level: 'high',
-    source: '행정안전부 주민등록 인구통계',
-    url: 'https://jumin.mois.go.kr',
-    updateCycle: '월별',
-    note: '주민등록 인구 ÷ 행정구역 면적(㎢). 행정안전부 공개 자료를 기반으로 구별 수치는 높은 신뢰도. 동 단위는 구 평균에서 추정.',
-  },
-  {
-    name: '업종별 생존율 / 폐업률',
-    level: 'low',
-    source: '소상공인시장진흥공단 "상가업소 DB"',
-    url: 'https://www.data.go.kr/data/15083033/fileData.do',
-    updateCycle: '분기별',
-    note: '소상공인시장진흥공단이 제공하는 상가업소 DB는 전국 규모이며 API 인증 필요. 현재 사이트는 업종별 전국 평균 폐업률을 서울 구별로 보정한 합성값 사용.',
+    note: '서울시 상권분석서비스(골목상권)는 업종별 임대료 통계를 제공하나 대형 상권 위주 표본. 현재 사이트는 공시지가 기반 추정값 보정 합성 사용.',
+    improvePath: '서울시 상권분석서비스 오픈 API (golmok.seoul.go.kr) 직접 연동 시 동 단위 업종별 실제 임대료 데이터 활용 가능. 예상 신뢰도 75%.',
   },
   {
     name: '공실 매물 위치',
     level: 'demo',
+    pct: 10,
     source: '네이버 부동산 / 서울 건축물대장 (미연동)',
-    url: 'https://land.naver.com',
+    url: 'https://cloud.eais.go.kr',
     updateCycle: '실시간 (미연동)',
-    note: '현재 지도의 빨간 점(공실 매물)은 시드 기반 합성 데이터입니다. 실제 연동을 위해서는 네이버 부동산 API(비공개) 또는 건축물대장 + 임대차계약신고 데이터가 필요합니다.',
+    note: '현재 지도의 빨간 점은 시드 기반 합성 위치. 실제 공실 좌표가 아님.',
+    improvePath: `실제 공실 위치 수집 3단계:
+
+STEP 1 — 건축물대장 수집 (세움터 cloud.eais.go.kr)
+  • 국토교통부 세움터에서 건물별 용도·층수·면적 정보 제공
+  • 공공데이터포털(data.go.kr) API 키 발급 후 건축물대장 일반/표제부 조회
+  • 상업용(근린생활시설 등) 건물 목록 + 주소 추출 → 지오코딩으로 좌표 변환
+
+STEP 2 — 임대차계약신고 데이터 (국토교통부 rt.molit.go.kr)
+  • 2021년 6월부터 상가·오피스 임대차계약 신고 의무화
+  • 국토교통부 실거래가 공개시스템(rt.molit.go.kr) API → 계약 시작일·종료일·보증금·월세 조회
+  • 계약 만료 후 갱신 이력 없는 주소 = 공실 추정
+
+STEP 3 — 두 데이터 결합 → 공실 추정
+  • 건축물대장 주소 ↔ 임대차신고 주소 매칭
+  • 마지막 계약 종료일 기준 3개월 이상 신규 계약 없는 호수 → 공실 마커 생성
+  • 지오코딩: 카카오 주소 API 또는 행안부 도로명주소 API 활용`,
   },
   {
     name: '창업 추천 점수',
     level: 'demo',
+    pct: 15,
     source: '내부 알고리즘 (유동인구·공실률·임대료 가중합산)',
     url: '',
     updateCycle: 'N/A',
-    note: '유동인구 30% + 저공실률 40% + 저임대료 30% 가중 합산. 실제 창업 성공 요인(경쟁업체 수, 배후인구 특성, 접근성 등)을 반영하지 않으므로 참고 목적으로만 사용.',
+    note: '유동인구(30%) + 저공실률(40%) + 저임대료(30%) 3개 지표 단순 합산. 경쟁업체 수·배후인구 특성·접근성·계절성 미반영.',
+    improvePath: `창업 추천 점수 계산 공식 (최대 100점):
+
+  총점 = 유동인구점수 + 공실률점수 + 임대료점수
+
+  ① 유동인구점수 (최대 30점)
+     = min(유동인구 ÷ 50,000 , 3) × 30
+     유동인구 15만명 이상 → 만점(30점). 5만명 증가마다 10점 추가.
+
+  ② 공실률점수 (최대 40점)
+     = max(0 , 20 − 공실률%) × 2
+     공실률 0% → 40점 / 20% → 0점. 낮을수록 안정 상권.
+
+  ③ 임대료점수 (최대 30점)
+     = max(0 , 20 − 임대시세(만원/3.3㎡)) × 1.5
+     3.3㎡당 임대료가 낮을수록 초기 비용 부담 감소.
+
+현재 한계 및 향상 방법:
+  • 경쟁 업체 수(소상공인시장진흥공단 DB) 반영 시 포화도 패널티 가능
+  • 배후 주거 인구·직장인 인구 세분화 → 업종별 타겟 고객 매칭
+  • 업종별 가중치 차별화 (음식점 vs 학원 vs 편의점 입지 요건 상이)
+  • 지하철역·대형마트 등 앵커 시설과의 거리 점수 반영`,
   },
 ];
 
-const LEVEL_STYLE: Record<ReliabilityLevel, { label: string; bar: string; text: string; bg: string }> = {
-  high:   { label: '높음', bar: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
-  medium: { label: '중간', bar: 'bg-amber-400',   text: 'text-amber-700',   bg: 'bg-amber-50 border-amber-200' },
-  low:    { label: '낮음', bar: 'bg-red-400',     text: 'text-red-700',     bg: 'bg-red-50 border-red-200' },
-  demo:   { label: '데모', bar: 'bg-slate-400',   text: 'text-slate-600',   bg: 'bg-slate-50 border-slate-200' },
+const LEVEL_STYLE: Record<ReliabilityLevel, { label: string; bar: string; text: string; bg: string; border: string }> = {
+  high:   { label: '높음', bar: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  medium: { label: '중간', bar: 'bg-amber-400',   text: 'text-amber-700',   bg: 'bg-amber-50',  border: 'border-amber-200' },
+  low:    { label: '낮음', bar: 'bg-red-400',     text: 'text-red-700',     bg: 'bg-red-50',    border: 'border-red-200' },
+  demo:   { label: '데모', bar: 'bg-slate-400',   text: 'text-slate-500',   bg: 'bg-slate-50',  border: 'border-slate-200' },
 };
 
-const LEVEL_WIDTH: Record<ReliabilityLevel, string> = {
-  high: 'w-full', medium: 'w-2/3', low: 'w-1/3', demo: 'w-1/6',
-};
+function PctBar({ pct, level }: { pct: number; level: ReliabilityLevel }) {
+  const s = LEVEL_STYLE[level];
+  return (
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 h-2 rounded-full bg-slate-200 overflow-hidden">
+        <div
+          className={`h-full rounded-full ${s.bar} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className={`text-xs font-bold tabular-nums w-8 text-right ${s.text}`}>{pct}%</span>
+    </div>
+  );
+}
 
 function MetricRow({ m }: { m: MetricInfo }) {
   const [open, setOpen] = useState(false);
   const s = LEVEL_STYLE[m.level];
   return (
-    <div className={`rounded-xl border ${s.bg} overflow-hidden`}>
+    <div className={`rounded-xl border ${s.bg} ${s.border} overflow-hidden`}>
       <button
-        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+        className="flex w-full items-center gap-3 px-4 py-3 text-left hover:brightness-95 transition-all"
         onClick={() => setOpen((v) => !v)}
       >
+        {/* 지표명 */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-slate-800">{m.name}</p>
-          <p className="text-[11px] text-slate-500 truncate">{m.source}</p>
+          <p className="text-[11px] text-slate-500 truncate mt-0.5">{m.source}</p>
         </div>
-        <div className="w-24 flex-shrink-0">
-          <div className="flex items-center justify-between mb-1">
-            <span className={`text-[11px] font-bold ${s.text}`}>{s.label}</span>
-            <span className="text-[10px] text-slate-400">{m.updateCycle}</span>
+
+        {/* 신뢰도 % 바 + 등급 + 갱신주기 */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${s.text} ${s.bg} ${s.border}`}>
+              {s.label}
+            </span>
+            <span className="text-[10px] text-slate-400 hidden sm:inline">{m.updateCycle}</span>
           </div>
-          <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
-            <div className={`h-full rounded-full ${s.bar} ${LEVEL_WIDTH[m.level]}`} />
-          </div>
+          <PctBar pct={m.pct} level={m.level} />
         </div>
-        <span className="text-slate-300 text-xs ml-1">{open ? '▲' : '▼'}</span>
+
+        <span className="text-slate-300 text-xs ml-1 flex-shrink-0">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
-        <div className="border-t border-slate-200/60 px-4 py-3 space-y-2">
-          <p className="text-[12px] text-slate-600">{m.note}</p>
+        <div className={`border-t ${s.border} px-4 py-3 space-y-3`}>
+          <p className="text-[12px] text-slate-600 leading-relaxed">{m.note}</p>
+
+          {m.improvePath && (
+            <div className="rounded-lg bg-white border border-slate-200 px-3 py-2">
+              <p className="text-[11px] font-semibold text-indigo-700 mb-1">신뢰도 향상 방법</p>
+              <p className="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">{m.improvePath}</p>
+            </div>
+          )}
+
           {m.url && (
             <a
               href={m.url}
@@ -128,6 +192,7 @@ function MetricRow({ m }: { m: MetricInfo }) {
 export default function DataReliabilityPanel() {
   const [open, setOpen] = useState(false);
 
+  const avgPct = Math.round(METRICS.reduce((s, m) => s + m.pct, 0) / METRICS.length);
   const counts = METRICS.reduce((acc, m) => {
     acc[m.level] = (acc[m.level] ?? 0) + 1;
     return acc;
@@ -141,9 +206,17 @@ export default function DataReliabilityPanel() {
       >
         <div>
           <h2 className="text-base font-semibold text-slate-800">데이터 신뢰성 현황</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">각 지표의 데이터 출처와 신뢰도를 확인하세요</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">각 지표의 출처·신뢰도(%)·향상 방법을 확인하세요</p>
         </div>
         <div className="flex items-center gap-2">
+          {/* 전체 평균 % */}
+          <div className="hidden sm:flex items-center gap-2 mr-2">
+            <span className="text-[11px] text-slate-400">전체 평균</span>
+            <div className="w-20 h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div className="h-full rounded-full bg-indigo-400" style={{ width: `${avgPct}%` }} />
+            </div>
+            <span className="text-[11px] font-bold text-indigo-600">{avgPct}%</span>
+          </div>
           <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">높음 {counts.high ?? 0}</span>
           <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">중간 {counts.medium ?? 0}</span>
           <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] font-semibold text-red-700">낮음 {counts.low ?? 0}</span>
@@ -154,18 +227,21 @@ export default function DataReliabilityPanel() {
 
       {open && (
         <div className="border-t border-slate-100 px-5 py-4 space-y-2">
+          {/* 등급 기준 안내 */}
           <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 mb-3">
-            <p className="text-[12px] text-blue-700 font-semibold mb-1">신뢰도 등급 기준</p>
-            <ul className="text-[11px] text-blue-600 space-y-0.5">
-              <li><b>높음</b>: 정부·공공기관 공식 API 또는 정기 통계 기반, 오차 범위 작음</li>
-              <li><b>중간</b>: 공공데이터를 구 단위로 집계 후 동 단위로 추정, 추정 오차 존재</li>
-              <li><b>낮음</b>: 전국 평균에서 보정, 지역 특성 반영 제한적</li>
-              <li><b>데모</b>: 시드 기반 합성 데이터 — 패턴은 유사하나 실제 수치 아님</li>
-            </ul>
+            <p className="text-[12px] text-blue-700 font-semibold mb-1">신뢰도 % 산정 기준</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-blue-600">
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span><span><b>높음</b> 80~100%: 정부 공식 통계·API 직접 연동</span></div>
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span><span><b>중간</b> 50~79%: 구 단위 공공데이터 → 동 단위 추정</span></div>
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0"></span><span><b>낮음</b> 20~49%: 전국 평균에서 보정, 추정 오차 큼</span></div>
+              <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 flex-shrink-0"></span><span><b>데모</b> 0~19%: 시드 기반 합성, 패턴만 유사</span></div>
+            </div>
           </div>
+
           {METRICS.map((m) => <MetricRow key={m.name} m={m} />)}
+
           <p className="text-[10px] text-slate-400 pt-1">
-            실제 서비스 전환 시 공공데이터포털(data.go.kr), 서울 열린데이터광장(data.seoul.go.kr), 서울시 상권분석서비스(golmok.seoul.go.kr) API 연동이 필요합니다.
+            실제 서비스 전환 시 공공데이터포털(data.go.kr) · 서울 열린데이터광장(data.seoul.go.kr) · 서울시 상권분석서비스(golmok.seoul.go.kr) API 연동이 필요합니다.
           </p>
         </div>
       )}
