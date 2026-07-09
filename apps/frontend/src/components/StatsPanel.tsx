@@ -80,6 +80,11 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
         />
       </div>
 
+      <p className="mt-1 text-[10px] text-slate-400">
+        ※ 데모 데이터 — 공공데이터 기반 합성 수치이며 실제 시장 상황과 다를 수 있습니다.
+        출처 기준: 서울 열린데이터광장 · 한국부동산원 · 서울시 상권분석서비스
+      </p>
+
       {activeMetric && (
         <Suspense fallback={null}>
           <MetricTrendChart

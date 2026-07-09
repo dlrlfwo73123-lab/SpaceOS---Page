@@ -7,18 +7,22 @@ import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
 const BuildingTwin = lazy(() => import('./components/BuildingTwin'));
 
 export default function App() {
-  const [guCode, setGuCode] = useState(SEOUL_GU[0].code);         // 강남구
-  const [dongCode, setDongCode] = useState(SEOUL_GU[0].dongs[0].code);
+  const [guCode, setGuCode] = useState('');          // '' = 서울 전체
+  const [dongCode, setDongCode] = useState('');      // '' = 전체 동
   const [industryCode, setIndustryCode] = useState('ALL');
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('demo-building');
 
-  const selectedGu = SEOUL_GU.find((g) => g.code === guCode) ?? SEOUL_GU[0];
+  const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
 
   function handleGuChange(code: string) {
     setGuCode(code);
-    const gu = SEOUL_GU.find((g) => g.code === code) ?? SEOUL_GU[0];
-    setDongCode(gu.dongs[0].code); // 구 바꾸면 첫 번째 동으로 리셋
+    setDongCode(''); // 구 바꾸면 동 전체로 리셋
   }
+
+  const guLabel = selectedGu?.name ?? '서울 전체';
+  const dongLabel = selectedGu
+    ? (selectedGu.dongs.find((d) => d.code === dongCode)?.name ?? '전체')
+    : '';
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
@@ -36,7 +40,7 @@ export default function App() {
           </p>
         </header>
 
-        {/* 필터 바 — 구 → 동 cascade + 업종 */}
+        {/* 필터 바 */}
         <section className="flex flex-wrap items-start gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
 
           {/* 구 선택 */}
@@ -47,21 +51,24 @@ export default function App() {
               onChange={(e) => handleGuChange(e.target.value)}
               className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
+              <option value="">서울 전체</option>
               {SEOUL_GU.map((g) => (
                 <option key={g.code} value={g.code}>{g.name}</option>
               ))}
             </select>
           </div>
 
-          {/* 동 선택 — 선택된 구의 동만 표시 */}
+          {/* 동 선택 — 선택된 구의 동만 표시, 구 미선택 시 비활성 */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">동</label>
             <select
               value={dongCode}
               onChange={(e) => setDongCode(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              disabled={!guCode}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-40"
             >
-              {selectedGu.dongs.map((d) => (
+              <option value="">전체</option>
+              {(selectedGu?.dongs ?? []).map((d) => (
                 <option key={d.code} value={d.code}>{d.name}</option>
               ))}
             </select>
@@ -91,19 +98,25 @@ export default function App() {
         {/* 선택된 지역 요약 */}
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 font-semibold">
-            {selectedGu.name} · {selectedGu.dongs.find((d) => d.code === dongCode)?.name ?? '-'}
+            {guLabel}{dongLabel ? ` · ${dongLabel}` : ''}
           </span>
           <span>·</span>
           <span>{INDUSTRY_CODES.find((i) => i.code === industryCode)?.name ?? '전체'}</span>
         </div>
 
-        {/* 통계 카드 — 구/동/업종별 10대 지표, 클릭 시 3년 추이 그래프 */}
-        <StatsPanel guCode={guCode} dongCode={dongCode} industryCode={industryCode} />
+        {/* 통계 카드 */}
+        <StatsPanel guCode={guCode || SEOUL_GU[0].code} dongCode={dongCode} industryCode={industryCode} />
 
         {/* 지도 */}
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-semibold">네이버 지도 · {selectedGu.name}</p>
-          <NaverMap guCode={guCode} dongCode={dongCode} industryCode={industryCode} onSelectBuilding={setSelectedBuildingId} />
+          <p className="mb-3 text-sm font-semibold">네이버 지도 · {guLabel}</p>
+          <NaverMap
+            guCode={guCode}
+            dongCode={dongCode}
+            industryCode={industryCode}
+            guDongs={selectedGu?.dongs ?? []}
+            onSelectBuilding={setSelectedBuildingId}
+          />
         </section>
 
         {/* 3D 디지털 트윈 */}
@@ -111,14 +124,14 @@ export default function App() {
           <BuildingTwin buildingId={selectedBuildingId} />
         </Suspense>
 
-        {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
+        {/* 점포 이력 */}
         <StoreHistory
           buildingId={selectedBuildingId}
-          guCode={guCode}
+          guCode={guCode || SEOUL_GU[0].code}
           dongCode={dongCode}
           industryCode={industryCode}
-          guName={selectedGu.name}
-          dongName={selectedGu.dongs.find((d) => d.code === dongCode)?.name ?? ''}
+          guName={guLabel}
+          dongName={dongLabel}
         />
 
       </div>
