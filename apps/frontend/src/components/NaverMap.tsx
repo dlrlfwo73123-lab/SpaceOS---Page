@@ -7,9 +7,10 @@ declare global {
       maps: {
         Map: new (el: HTMLElement, opts: Record<string, unknown>) => NaverMapInstance;
         LatLng: new (lat: number, lng: number) => unknown;
+        Point: new (x: number, y: number) => unknown;
         Marker: new (opts: Record<string, unknown>) => NaverMarker;
         Polygon: new (opts: Record<string, unknown>) => NaverPolygon;
-        Event: { addListener: (target: unknown, ev: string, h: (e: { coord: unknown }) => void) => void };
+        Event: { addListener: (target: unknown, ev: string, h: () => void) => void };
       };
     };
   }
@@ -50,19 +51,18 @@ export function NaverMap({ guCode, dongCode, onSelectBuilding }: NaverMapProps) 
   const selectedPolyRef = useRef<NaverPolygon | null>(null);
   const dongMarkerRef = useRef<NaverMarker | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
 
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
   const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '3a91WbDxtOPaPehOXqhl';
 
+  // 1단계: 스크립트 로드 (상태 변경만 — DOM 마운트 대기)
   useEffect(() => {
     if (scriptRef.current) return;
     const script = document.createElement('script');
     script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`;
     script.async = true;
-    script.onload = () => {
-      setScriptLoaded(true);
-      initMap();
-    };
+    script.onload = () => setScriptLoaded(true);
     document.head.appendChild(script);
     scriptRef.current = script;
     return () => {
@@ -71,37 +71,40 @@ export function NaverMap({ guCode, dongCode, onSelectBuilding }: NaverMapProps) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
-  // 구 변경 — 지도 중심 이동 + 줌 조절
+  // 2단계: scriptLoaded → map div가 DOM에 마운트된 후 initMap 호출
   useEffect(() => {
-    if (!mapRef.current || !window.naver) return;
+    if (!scriptLoaded || !containerRef.current || !window.naver) return;
     const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-    mapRef.current.setCenter(new window.naver.maps.LatLng(lat, lng));
-    mapRef.current.setZoom(guCode ? 13 : 11);
-    updateOverlays();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guCode]);
-
-  // 동 변경 — 마커 업데이트
-  useEffect(() => {
-    if (!mapRef.current || !window.naver) return;
-    updateDongMarker();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dongCode]);
-
-  function ll(lat: number, lng: number) {
-    return new window.naver.maps.LatLng(lat, lng);
-  }
-
-  function initMap() {
-    if (!containerRef.current || !window.naver) return;
     mapRef.current = new window.naver.maps.Map(containerRef.current, {
-      center: new window.naver.maps.LatLng(DEFAULT_CENTER[0], DEFAULT_CENTER[1]),
+      center: new window.naver.maps.LatLng(lat, lng),
       zoom: 11,
     });
     window.naver.maps.Event.addListener(mapRef.current, 'click', () => {
       onSelectBuilding?.('demo-building');
     });
+    setMapReady(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scriptLoaded]);
+
+  // 3단계: 지도 준비 or 구 변경 → 오버레이 업데이트
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.naver) return;
+    const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+    mapRef.current.setCenter(new window.naver.maps.LatLng(lat, lng));
+    mapRef.current.setZoom(13);
     updateOverlays();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, guCode]);
+
+  // 4단계: 동 변경 → 마커 업데이트
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.naver) return;
+    updateDongMarker();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapReady, dongCode]);
+
+  function ll(lat: number, lng: number) {
+    return new window.naver.maps.LatLng(lat, lng);
   }
 
   function clearPolygons() {
@@ -121,39 +124,37 @@ export function NaverMap({ guCode, dongCode, onSelectBuilding }: NaverMapProps) 
     clearPolygons();
     clearDongMarker();
 
-    const map = mapRef.current;
-
-    if (!guCode) {
-      // 초기 상태 — 서울 25개 구 모두 표시
-      Object.entries(GU_POLYGONS).forEach(([, coords]) => {
-        const poly = new window.naver.maps.Polygon({
-          map,
-          paths: [coords.map(([lat, lng]) => ll(lat, lng))],
-          strokeColor: '#6366f1',
-          strokeOpacity: 0.7,
-          strokeWeight: 1.5,
-          fillColor: '#818cf8',
-          fillOpacity: 0.15,
-        });
-        polygonsRef.current.push(poly);
+    // 선택된 구 경계 강조
+    const coords = GU_POLYGONS[guCode];
+    if (coords) {
+      const poly = new window.naver.maps.Polygon({
+        map: mapRef.current,
+        paths: [coords.map(([lat, lng]) => ll(lat, lng))],
+        strokeColor: '#4f46e5',
+        strokeOpacity: 0.9,
+        strokeWeight: 2.5,
+        fillColor: '#6366f1',
+        fillOpacity: 0.2,
       });
-    } else {
-      // 선택된 구 경계 강조
-      const coords = GU_POLYGONS[guCode];
-      if (coords) {
-        const poly = new window.naver.maps.Polygon({
-          map,
-          paths: [coords.map(([lat, lng]) => ll(lat, lng))],
-          strokeColor: '#4f46e5',
-          strokeOpacity: 0.9,
-          strokeWeight: 2.5,
-          fillColor: '#6366f1',
-          fillOpacity: 0.2,
-        });
-        selectedPolyRef.current = poly;
-      }
-      updateDongMarker();
+      selectedPolyRef.current = poly;
     }
+
+    // 나머지 구 경계도 연하게 표시
+    Object.entries(GU_POLYGONS).forEach(([code, coords]) => {
+      if (code === guCode) return;
+      const poly = new window.naver.maps.Polygon({
+        map: mapRef.current!,
+        paths: [coords.map(([lat, lng]) => ll(lat, lng))],
+        strokeColor: '#6366f1',
+        strokeOpacity: 0.3,
+        strokeWeight: 1,
+        fillColor: '#818cf8',
+        fillOpacity: 0.06,
+      });
+      polygonsRef.current.push(poly);
+    });
+
+    updateDongMarker();
   }
 
   function updateDongMarker() {
@@ -167,25 +168,24 @@ export function NaverMap({ guCode, dongCode, onSelectBuilding }: NaverMapProps) 
       position: ll(lat, lng),
       icon: {
         content: `<div style="width:14px;height:14px;border-radius:50%;background:#4f46e5;border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
-        anchor: new window.naver.maps.LatLng(7, 7),
+        anchor: new window.naver.maps.Point(7, 7),
       },
     });
   }
 
-  if (!scriptLoaded) {
-    return (
-      <div className="flex h-[65vh] min-h-[640px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
-        <span className="text-2xl">🗺️</span>
-        <p className="text-sm font-semibold text-slate-700">네이버 지도 불러오는 중…</p>
-        <div className="mt-2 w-64 rounded-lg border border-slate-200 bg-white p-3 text-left text-xs text-slate-500">
-          <p className="mb-1 font-semibold text-slate-700">선택된 구 (미리보기)</p>
-          <p>중심: {(GU_CENTER[guCode] ?? DEFAULT_CENTER).map(v => v.toFixed(4)).join(', ')}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div ref={containerRef} className="h-[65vh] min-h-[640px] w-full rounded-xl overflow-hidden" />
+    <>
+      {!scriptLoaded && (
+        <div className="flex h-[65vh] min-h-[640px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
+          <span className="text-2xl">🗺️</span>
+          <p className="text-sm font-semibold text-slate-700">네이버 지도 불러오는 중…</p>
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        className="h-[65vh] min-h-[640px] w-full rounded-xl overflow-hidden"
+        style={{ display: scriptLoaded ? 'block' : 'none' }}
+      />
+    </>
   );
 }
