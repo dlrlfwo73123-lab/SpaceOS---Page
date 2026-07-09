@@ -99,16 +99,16 @@ export default function App() {
         {/* 통계 카드 — 구/동/업종별 10대 지표, 클릭 시 3년 추이 그래프 */}
         <StatsPanel guCode={guCode} dongCode={dongCode} industryCode={industryCode} />
 
-        {/* 지도 + 3D 트윈 */}
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="mb-3 text-sm font-semibold">
-              네이버 지도 · {selectedGu.name}
-            </p>
-            <NaverMap guCode={guCode} onSelectBuilding={setSelectedBuildingId} />
-          </div>
-          <BuildingTwin buildingId={selectedBuildingId} />
+        {/* 지도 */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="mb-3 text-sm font-semibold">
+            네이버 지도 · {selectedGu.name}
+          </p>
+          <NaverMap guCode={guCode} dongCode={dongCode} onSelectBuilding={setSelectedBuildingId} />
         </section>
+
+        {/* 3D 디지털 트윈 */}
+        <BuildingTwin buildingId={selectedBuildingId} />
 
         {/* 점포 이력 + 창업 업종 추천 — 구/동/업종 필터에 따라 변경 */}
         <StoreHistory
