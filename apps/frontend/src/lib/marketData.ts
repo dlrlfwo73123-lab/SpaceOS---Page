@@ -181,6 +181,23 @@ export function getMetricTrend(
   return points;
 }
 
+// 최근 2개 관측 분기를 비교해 상승/하락/유지 판정 (lowerIsBetter=true면 의미상 반대로 좋은 방향 표시는 호출 측에서 처리)
+export function getMetricQoQTrend(
+  guCode: string,
+  dongCode: string,
+  industryCode: string,
+  metric: keyof MarketStats,
+): 'up' | 'down' | 'neutral' {
+  const points = getMetricTrend(guCode, dongCode, industryCode, metric);
+  const observed = points.filter((p) => !p.predicted);
+  const lastQ = observed[observed.length - 1].value;
+  const prevQ = observed[observed.length - 2].value;
+  if (prevQ === 0) return 'neutral';
+  const pctChange = (lastQ - prevQ) / Math.abs(prevQ);
+  if (Math.abs(pctChange) < 0.005) return 'neutral';
+  return pctChange > 0 ? 'up' : 'down';
+}
+
 // ── 점포 이력 (필터별 생성) ──
 export type StoreHistoryRow = {
   date: string;
