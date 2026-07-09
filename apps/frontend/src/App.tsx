@@ -2,21 +2,23 @@ import { lazy, Suspense, useState } from 'react';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
+import StartupRecommendation from './components/StartupRecommendation';
+import DataReliabilityPanel from './components/DataReliabilityPanel';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
 
 const BuildingTwin = lazy(() => import('./components/BuildingTwin'));
 
 export default function App() {
-  const [guCode, setGuCode] = useState('');          // '' = 서울 전체
-  const [dongCode, setDongCode] = useState('');      // '' = 전체 동
+  const [guCode, setGuCode] = useState('');
+  const [dongCode, setDongCode] = useState('');
   const [industryCode, setIndustryCode] = useState('ALL');
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string>('demo-building');
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
 
   function handleGuChange(code: string) {
     setGuCode(code);
-    setDongCode(''); // 구 바꾸면 동 전체로 리셋
+    setDongCode('');
   }
 
   const guLabel = selectedGu?.name ?? '서울 전체';
@@ -36,7 +38,7 @@ export default function App() {
           <h1 className="text-3xl font-semibold">서울 상권분석 현황</h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-500">
             서울 25개 자치구 · 동별 필터로 공실 현황을 확인하고,
-            건물을 선택하면 3D 디지털 트윈과 점포 이력을 볼 수 있습니다.
+            지도에서 공실 매물을 선택하면 3D 디지털 트윈과 점포 이력을 볼 수 있습니다.
           </p>
         </header>
 
@@ -58,7 +60,7 @@ export default function App() {
             </select>
           </div>
 
-          {/* 동 선택 — 선택된 구의 동만 표시, 구 미선택 시 비활성 */}
+          {/* 동 선택 */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">동</label>
             <select
@@ -109,30 +111,65 @@ export default function App() {
 
         {/* 지도 */}
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-sm font-semibold">네이버 지도 · {guLabel}</p>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-semibold">네이버 지도 · {guLabel}</p>
+            {guCode && (
+              <span className="text-[11px] text-slate-400">
+                빨간 점 클릭 → 공실 매물 상세 · 3D 트윈 활성화
+              </span>
+            )}
+          </div>
           <NaverMap
             guCode={guCode}
             dongCode={dongCode}
             industryCode={industryCode}
             guDongs={selectedGu?.dongs ?? []}
             onSelectBuilding={setSelectedBuildingId}
+            onSelectVacancy={(id) => setSelectedBuildingId(`vacancy-${id}`)}
           />
         </section>
 
-        {/* 3D 디지털 트윈 */}
-        <Suspense fallback={<div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">3D 트윈 불러오는 중…</div>}>
-          <BuildingTwin buildingId={selectedBuildingId} />
-        </Suspense>
+        {/* 3D 디지털 트윈 — 공실 매물 선택 후에만 표시 */}
+        {selectedBuildingId ? (
+          <Suspense fallback={
+            <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">
+              3D 트윈 불러오는 중…
+            </div>
+          }>
+            <BuildingTwin buildingId={selectedBuildingId} />
+          </Suspense>
+        ) : (
+          <div className="flex h-32 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
+            <div>
+              <p className="text-sm font-semibold text-slate-400">3D 디지털 트윈</p>
+              <p className="text-xs text-slate-300 mt-1">구·동을 선택하고 지도의 공실 매물(빨간 점)을 클릭하면 활성화됩니다</p>
+            </div>
+          </div>
+        )}
+
+        {/* 창업 지역 추천 */}
+        <StartupRecommendation
+          guCode={guCode}
+          guName={guLabel}
+          industryCode={industryCode}
+          dongs={selectedGu?.dongs ?? []}
+          onSelectDong={(code) => {
+            if (guCode) setDongCode(code);
+          }}
+        />
 
         {/* 점포 이력 */}
         <StoreHistory
-          buildingId={selectedBuildingId}
+          buildingId={selectedBuildingId ?? 'demo-building'}
           guCode={guCode || SEOUL_GU[0].code}
           dongCode={dongCode}
           industryCode={industryCode}
           guName={guLabel}
           dongName={dongLabel}
         />
+
+        {/* 데이터 신뢰성 패널 */}
+        <DataReliabilityPanel />
 
       </div>
     </main>
