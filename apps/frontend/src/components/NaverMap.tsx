@@ -36,7 +36,7 @@ type NaverMapProps = {
   industryCode?: string;
   guDongs?: DongItem[];
   onSelectBuilding?: (id: string) => void;
-  onSelectVacancy?: (id: string) => void;
+  onSelectVacancy?: (id: string, lat: number, lng: number) => void;
 };
 
 export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding, onSelectVacancy }: NaverMapProps) {
@@ -243,48 +243,61 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     });
   }
 
+  function addVacancyMarker(v: ReturnType<typeof getVacancyMarkers>[0], guName?: string) {
+    if (!mapRef.current || !window.naver) return;
+    const marker = new window.naver.maps.Marker({
+      position: ll(v.lat, v.lng),
+      map: mapRef.current!,
+      icon: {
+        content: `<div style="width:10px;height:10px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 4px rgba(239,68,68,0.6);cursor:pointer;"></div>`,
+        anchor: new window.naver.maps.Point(5, 5),
+      },
+      zIndex: 50,
+    });
+
+    window.naver.maps.Event.addListener(marker, 'click', () => {
+      if (!infoWindowRef.current) {
+        infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+      }
+      const locationLabel = guName ? `${guName} · ${v.dongName}` : v.dongName;
+      infoWindowRef.current.setContent(`
+        <div style="padding:10px 14px;min-width:180px;font-size:12px;line-height:1.7;">
+          <p style="font-weight:700;font-size:13px;margin-bottom:6px;color:#dc2626;">📍 공실 매물 (데모)</p>
+          <p style="color:#64748b;margin-bottom:4px;">${locationLabel}</p>
+          <p>층: <b>${v.floor}층</b></p>
+          <p>면적: <b>${v.sqm}㎡</b></p>
+          <p>월세: <b>${v.rentMonthly}만원/월</b></p>
+          <p>전 업종: ${v.lastIndustry}</p>
+          <p>공실 기간: ${v.emptyMonths}개월</p>
+          <p style="margin-top:6px;font-size:10px;color:#94a3b8;">※ 데모 데이터 — 실제 매물과 다름</p>
+        </div>
+      `);
+      infoWindowRef.current.open(mapRef.current!, marker);
+      onSelectVacancy?.(v.id, v.lat, v.lng);
+      onSelectBuilding?.(`vacancy-${v.id}`);
+    });
+
+    vacancyMarkersRef.current.push(marker);
+  }
+
   function updateVacancyMarkers() {
     if (!mapRef.current || !window.naver) return;
     clearVacancyMarkers();
-    if (!guCode) return;
+
+    if (!guCode) {
+      // 서울 전체: 25개 구 각 2~3개 공실 마커 표시
+      SEOUL_GU.forEach((gu) => {
+        const dongSlice = gu.dongs.slice(0, 5);
+        const centers = getAllDongCenters(dongSlice, gu.code);
+        const markers = getVacancyMarkers(gu.code, '', centers, 2);
+        markers.forEach((v) => addVacancyMarker(v, gu.name));
+      });
+      return;
+    }
 
     const centers = getAllDongCenters(guDongs, guCode);
     const markers = getVacancyMarkers(guCode, dongCode, centers, dongCode ? 8 : 15);
-
-    markers.forEach((v) => {
-      const marker = new window.naver.maps.Marker({
-        position: ll(v.lat, v.lng),
-        map: mapRef.current!,
-        icon: {
-          content: `<div style="width:10px;height:10px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 4px rgba(239,68,68,0.6);"></div>`,
-          anchor: new window.naver.maps.Point(5, 5),
-        },
-        zIndex: 50,
-      });
-
-      window.naver.maps.Event.addListener(marker, 'click', () => {
-        if (!infoWindowRef.current) {
-          infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
-        }
-        infoWindowRef.current.setContent(`
-          <div style="padding:10px 14px;min-width:180px;font-size:12px;line-height:1.7;">
-            <p style="font-weight:700;font-size:13px;margin-bottom:6px;color:#dc2626;">📍 공실 매물 (데모)</p>
-            <p style="color:#64748b;margin-bottom:4px;">${v.dongName}</p>
-            <p>층: <b>${v.floor}층</b></p>
-            <p>면적: <b>${v.sqm}㎡</b></p>
-            <p>월세: <b>${v.rentMonthly}만원/월</b></p>
-            <p>전 업종: ${v.lastIndustry}</p>
-            <p>공실 기간: ${v.emptyMonths}개월</p>
-            <p style="margin-top:6px;font-size:10px;color:#94a3b8;">※ 데모 데이터 — 실제 매물과 다름</p>
-          </div>
-        `);
-        infoWindowRef.current.open(mapRef.current!, marker);
-        onSelectVacancy?.(v.id);
-        onSelectBuilding?.(`vacancy-${v.id}`);
-      });
-
-      vacancyMarkersRef.current.push(marker);
-    });
+    markers.forEach((v) => addVacancyMarker(v));
   }
 
   if (authError) {
@@ -325,7 +338,9 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
               <span className="ml-2 inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
             </span>
           ) : (
-            <span className="ml-auto self-center text-[11px] text-slate-400">구를 선택하면 동별 공실률이 점으로 표시됩니다</span>
+            <span className="ml-auto flex items-center gap-2 text-[11px] text-slate-400">
+              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>구별 공실 매물 위치 (클릭하면 상세 확인)</span>
+            </span>
           )}
         </div>
       )}
