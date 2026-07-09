@@ -1,15 +1,10 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, useGLTF } from '@react-three/drei';
+import { OrbitControls, Text } from '@react-three/drei';
 import { Suspense, useEffect, useState } from 'react';
-import { getBuildingFloors, getBuildingModel, type BuildingFloor as Floor } from '@/lib/api';
+import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
 
 type BuildingTwinProps = { buildingId: string };
-
-function BuildingShell({ url }: { url: string }) {
-  const { scene } = useGLTF(url);
-  return <primitive object={scene} />;
-}
 
 const FALLBACK_FLOORS: Floor[] = [
   { level: 1, industry: '카페', vacant: false },
@@ -19,52 +14,101 @@ const FALLBACK_FLOORS: Floor[] = [
   { level: 5, industry: '음식점', vacant: false },
 ];
 
-// 1:1000 스케일 — 실제 1m = Three.js 0.001 units
-// 건물 폭/깊이: 실제 20m → 0.020 units  (단위: 3D unit = 1m 로 편의상 1 unit = 1m)
-// 층고: 실제 3.5m → Three.js 3.5 units  → 보기 편하게 1:1000 = 0.0035이 맞지만
-// 화면에 보이려면 상대 비율만 맞추면 됨: floorH=3.5, bldW=20, bldD=15 (1unit=1m 기준)
-const SCALE = 1;           // 1 Three.js unit = 1m (1:1000은 스케일바로 표기)
-const FLOOR_H = 3.5 * SCALE;    // 층고 3.5m
-const BLD_W   = 20  * SCALE;    // 건물 폭 20m
-const BLD_D   = 15  * SCALE;    // 건물 깊이 15m
-const GAP     = 0.15 * SCALE;   // 층 사이 간격
+const FLOOR_H = 3.5;
+const BLD_W   = 22;
+const BLD_D   = 16;
+const GAP     = 0.12;
 
-const OCCUPIED_COLORS = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706'];
-const VACANT_COLOR    = '#cbd5e1';
+// 외벽 창문 컬러
+const FACADE_COLORS = ['#3b82f6', '#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
+const VACANT_COLOR  = '#94a3b8';
 
+// 단일 층 — 본체 + 전면 창문 패널
 function FloorMesh({ floor, index, selected, onClick }: {
   floor: Floor; index: number; selected: boolean; onClick: () => void;
 }) {
   const y = index * (FLOOR_H + GAP) + FLOOR_H / 2;
-  const color = floor.vacant ? VACANT_COLOR : OCCUPIED_COLORS[index % OCCUPIED_COLORS.length];
+  const wallColor = floor.vacant ? VACANT_COLOR : FACADE_COLORS[index % FACADE_COLORS.length];
+  const glassColor = floor.vacant ? '#c8d3de' : '#bfdbfe';
+  const glassOpacity = floor.vacant ? 0.3 : 0.55;
 
   return (
     <group onClick={onClick}>
+      {/* 층 본체 */}
       <mesh position={[0, y, 0]}>
-        <boxGeometry args={[BLD_W, FLOOR_H, BLD_D]} />
+        <boxGeometry args={[BLD_W, FLOOR_H - 0.3, BLD_D]} />
         <meshStandardMaterial
-          color={selected ? '#f59e0b' : color}
+          color={selected ? '#f59e0b' : wallColor}
           transparent
-          opacity={floor.vacant ? 0.55 : 0.92}
+          opacity={floor.vacant ? 0.6 : 0.9}
+          roughness={0.4}
+          metalness={0.1}
         />
       </mesh>
-      {/* 층 번호 라벨 */}
+
+      {/* 전면 유리 패널 (남쪽 면) */}
+      <mesh position={[0, y, BLD_D / 2 + 0.05]}>
+        <planeGeometry args={[BLD_W - 2, FLOOR_H - 0.8]} />
+        <meshStandardMaterial
+          color={selected ? '#fcd34d' : glassColor}
+          transparent
+          opacity={glassOpacity}
+          roughness={0.05}
+          metalness={0.6}
+        />
+      </mesh>
+
+      {/* 층 번호 */}
       <Text
-        position={[BLD_W / 2 + 1.5, y, 0]}
-        fontSize={1.4}
-        color={floor.vacant ? '#94a3b8' : '#1e293b'}
+        position={[BLD_W / 2 + 1.8, y, 0]}
+        fontSize={1.3}
+        color={floor.vacant ? '#94a3b8' : '#e2e8f0'}
         anchorX="left"
         anchorY="middle"
       >
-        {`${floor.level}F`}
+        {`${floor.level}F  ${floor.industry}`}
       </Text>
     </group>
   );
 }
 
-// 스케일바 — 2D overlay (SVG)
+// 지붕 — 평지붕 + 돌출 파라펫
+function Rooftop({ topY, w, d }: { topY: number; w: number; d: number }) {
+  return (
+    <group>
+      {/* 옥상 슬래브 */}
+      <mesh position={[0, topY + 0.3, 0]}>
+        <boxGeometry args={[w + 0.4, 0.6, d + 0.4]} />
+        <meshStandardMaterial color="#334155" roughness={0.8} />
+      </mesh>
+      {/* 옥탑 (엘리베이터룸) */}
+      <mesh position={[-w * 0.3, topY + 2.1, 0]}>
+        <boxGeometry args={[w * 0.28, 3.6, d * 0.35]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.7} />
+      </mesh>
+    </group>
+  );
+}
+
+// 지상층 필로티/로비 — 기둥 4개
+function Lobby({ w, d }: { w: number; d: number }) {
+  const cols: [number, number][] = [
+    [-w * 0.38, -d * 0.35], [w * 0.38, -d * 0.35],
+    [-w * 0.38, d * 0.35],  [w * 0.38, d * 0.35],
+  ];
+  return (
+    <>
+      {cols.map(([cx, cz], i) => (
+        <mesh key={i} position={[cx, 0.75, cz]}>
+          <cylinderGeometry args={[0.6, 0.7, 1.5, 8]} />
+          <meshStandardMaterial color="#475569" roughness={0.5} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
 function ScaleBar() {
-  // 1:1000 스케일: Three.js에서 1unit=1m, 화면 표시는 "20m"
   return (
     <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
       <svg width="80" height="16">
@@ -81,40 +125,27 @@ function ScaleBar() {
 export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
-  const [modelUrl, setModelUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedFloor(null);
     getBuildingFloors(buildingId)
       .then((data) => setFloors(data.length ? data : FALLBACK_FLOORS))
-      .catch((err) => {
-        console.warn('층 데이터 로드 실패, fallback 사용', err);
-        setFloors(FALLBACK_FLOORS);
-      });
-
-    // 실측 GLB가 캡처된 건물만 셸을 불러옴 — 대부분 404가 정상이며 박스 층만 표시
-    getBuildingModel(buildingId)
-      .then((model) => {
-        useGLTF.preload(model.model_url);
-        setModelUrl(model.model_url);
-      })
-      .catch(() => setModelUrl(null));
+      .catch(() => setFloors(FALLBACK_FLOORS));
   }, [buildingId]);
 
   const totalH = floors.length * (FLOOR_H + GAP);
   const camY   = totalH / 2;
-  const camDist = Math.max(BLD_W, totalH) * 1.8;
+  const camDist = Math.max(BLD_W, totalH) * 1.9;
 
   const vacantCount = floors.filter((f) => f.vacant).length;
   const vacancyPct  = Math.round((vacantCount / floors.length) * 100);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white shadow-sm">
-      {/* 헤더 */}
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold">3D 디지털 트윈</p>
-          <p className="text-xs text-slate-400">층고 3.5m 기준 · 스케일 1:1,000</p>
+          <p className="text-xs text-slate-400">층고 3.5m · 1:1,000 스케일 · 데모 데이터</p>
         </div>
         <div className="text-right text-xs">
           <span className="font-mono text-amber-400">{vacantCount}</span>
@@ -122,68 +153,76 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
         </div>
       </div>
 
-      {/* Three.js 캔버스 */}
-      <div className="relative mb-4 h-[420px] overflow-hidden rounded-xl border border-white/10 bg-slate-900">
-        <Canvas
-          camera={{ position: [camDist * 0.8, camY, camDist * 0.8], fov: 40 }}
-          className="h-full w-full"
-        >
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[30, 50, 30]} intensity={1.2} castShadow />
-          <directionalLight position={[-20, 20, -20]} intensity={0.4} />
+      <div className="relative mb-4 h-[480px] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-slate-800 to-slate-900">
+        <ErrorBoundary fallback={<div className="flex h-full items-center justify-center text-slate-400 text-sm">3D 렌더링 오류</div>}>
+          <Canvas
+            camera={{ position: [camDist * 0.75, camY * 1.1, camDist * 0.75], fov: 38 }}
+            className="h-full w-full"
+          >
+            <ambientLight intensity={0.45} />
+            <directionalLight position={[40, 60, 30]} intensity={1.3} castShadow />
+            <directionalLight position={[-30, 30, -20]} intensity={0.35} color="#bfdbfe" />
+            <hemisphereLight args={['#1e3a5f', '#0f172a', 0.4]} />
 
-          {/* 바닥 그리드 */}
-          <gridHelper args={[60, 20, '#334155', '#1e293b']} position={[0, 0, 0]} />
+            {/* 바닥 */}
+            <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[80, 80]} />
+              <meshStandardMaterial color="#0f172a" roughness={0.9} />
+            </mesh>
+            {/* 도로 줄 */}
+            <gridHelper args={[80, 24, '#1e293b', '#1e293b']} position={[0, 0, 0]} />
 
-          {/* 실측 건물 셸 (GLB) — 있을 때만. 손상/누락된 모델은 박스 층만 표시 */}
-          {modelUrl && (
-            <ErrorBoundary fallback={null}>
-              <Suspense fallback={null}>
-                <BuildingShell url={modelUrl} />
-              </Suspense>
-            </ErrorBoundary>
-          )}
+            {/* 주변 저층 건물 실루엣 */}
+            {[[-30, 0, 10], [32, 0, -8], [-28, 0, -15], [30, 0, 20]].map(([cx, , cz], i) => (
+              <mesh key={i} position={[cx, 5 + i * 2, cz]}>
+                <boxGeometry args={[14, 10 + i * 4, 10]} />
+                <meshStandardMaterial color="#1e293b" roughness={0.9} />
+              </mesh>
+            ))}
 
-          {/* 건물 층 */}
-          {floors.map((floor, i) => (
-            <FloorMesh
-              key={floor.level}
-              floor={floor}
-              index={i}
-              selected={selectedFloor === floor.level}
-              onClick={() => setSelectedFloor(selectedFloor === floor.level ? null : floor.level)}
+            <Lobby w={BLD_W} d={BLD_D} />
+
+            {floors.map((floor, i) => (
+              <FloorMesh
+                key={floor.level}
+                floor={floor}
+                index={i}
+                selected={selectedFloor === floor.level}
+                onClick={() => setSelectedFloor(selectedFloor === floor.level ? null : floor.level)}
+              />
+            ))}
+
+            <Rooftop topY={totalH} w={BLD_W} d={BLD_D} />
+
+            <OrbitControls
+              enableDamping
+              dampingFactor={0.08}
+              minDistance={12}
+              maxDistance={140}
+              target={[0, camY, 0]}
             />
-          ))}
-
-          <OrbitControls
-            enableDamping
-            dampingFactor={0.08}
-            minDistance={10}
-            maxDistance={120}
-            target={[0, camY, 0]}
-          />
-        </Canvas>
+          </Canvas>
+        </ErrorBoundary>
 
         <ScaleBar />
 
-        {/* 선택 층 정보 팝업 */}
         {selectedFloor !== null && (() => {
           const f = floors.find((fl) => fl.level === selectedFloor);
           return f ? (
             <div className="absolute left-3 top-3 rounded-xl bg-black/70 px-3 py-2 text-xs backdrop-blur-sm">
               <p className="font-bold text-white">{f.level}층 · {f.industry}</p>
-              <p className={f.vacant ? 'text-amber-400' : 'text-emerald-400'}>
-                {f.vacant ? '공실' : '운영 중'}
-              </p>
-              <p className="text-slate-400 mt-0.5">
-                실제 높이 {((f.level - 1) * 3.5).toFixed(1)}m ~ {(f.level * 3.5).toFixed(1)}m
-              </p>
+              <p className={f.vacant ? 'text-amber-400' : 'text-emerald-400'}>{f.vacant ? '공실' : '운영 중'}</p>
+              <p className="text-slate-400 mt-0.5">{((f.level - 1) * 3.5).toFixed(1)}m ~ {(f.level * 3.5).toFixed(1)}m</p>
             </div>
           ) : null;
         })()}
+
+        {/* 데모 데이터 배너 */}
+        <div className="absolute top-3 right-3 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white">
+          데모 데이터
+        </div>
       </div>
 
-      {/* 층 목록 */}
       <div className="space-y-1.5 rounded-xl bg-white/5 p-3">
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">층별 현황</p>
         {[...floors].reverse().map((floor) => (
@@ -191,9 +230,7 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
             key={floor.level}
             onClick={() => setSelectedFloor(selectedFloor === floor.level ? null : floor.level)}
             className={`flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-xs transition-colors ${
-              selectedFloor === floor.level
-                ? 'bg-amber-500/20 text-amber-300'
-                : 'hover:bg-white/10'
+              selectedFloor === floor.level ? 'bg-amber-500/20 text-amber-300' : 'hover:bg-white/10'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -202,9 +239,7 @@ export default function BuildingTwin({ buildingId }: BuildingTwinProps) {
               <span className="text-slate-500 text-[10px]">{(floor.level * 3.5).toFixed(1)}m</span>
             </span>
             <span className={`rounded-full px-2 py-0.5 font-semibold ${
-              floor.vacant
-                ? 'bg-amber-900/50 text-amber-300'
-                : 'bg-emerald-900/50 text-emerald-300'
+              floor.vacant ? 'bg-amber-900/50 text-amber-300' : 'bg-emerald-900/50 text-emerald-300'
             }`}>
               {floor.vacant ? '공실' : '운영'}
             </span>
