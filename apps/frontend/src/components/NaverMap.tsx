@@ -54,7 +54,7 @@ export function NaverMap({ guCode, dongCode, onSelectBuilding }: NaverMapProps) 
   const [mapReady, setMapReady] = useState(false);
 
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
-  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : '3a91WbDxtOPaPehOXqhl';
+  const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : 'x8gtogoy1i';
 
   // 1단계: 스크립트 로드 (상태 변경만 — DOM 마운트 대기)
   useEffect(() => {
