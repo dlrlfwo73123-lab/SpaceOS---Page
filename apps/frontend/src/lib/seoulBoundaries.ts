@@ -139,10 +139,18 @@ const DONG_OFFSETS: Record<string, [number, number]> = {
 
 export function getDongCenter(dongCode: string, guCode: string): LL {
   if (DONG_OFFSETS[dongCode]) return DONG_OFFSETS[dongCode];
-  // fallback: gu center
+  // fallback: gu center with small hash-based offset so dongs don't all overlap
   const poly = GU_POLYGONS[guCode];
-  if (!poly || poly.length === 0) return [37.5665, 126.9780];
-  const lat = poly.reduce((s, p) => s + p[0], 0) / poly.length;
-  const lng = poly.reduce((s, p) => s + p[1], 0) / poly.length;
-  return [lat, lng];
+  const baseLat = poly ? poly.reduce((s, p) => s + p[0], 0) / poly.length : 37.5665;
+  const baseLng = poly ? poly.reduce((s, p) => s + p[1], 0) / poly.length : 126.9780;
+  let h = 0;
+  for (let i = 0; i < dongCode.length; i++) h = (h * 31 + dongCode.charCodeAt(i)) >>> 0;
+  const angle = (h % 360) * (Math.PI / 180);
+  const r = 0.005 + ((h >>> 8) % 100) / 10000;
+  return [baseLat + r * Math.cos(angle), baseLng + r * Math.sin(angle)];
+}
+
+// 한 구에 속한 모든 동의 중심 좌표 반환
+export function getAllDongCenters(dongs: { code: string; name: string }[], guCode: string): Array<{ code: string; name: string; center: LL }> {
+  return dongs.map((d) => ({ code: d.code, name: d.name, center: getDongCenter(d.code, guCode) }));
 }

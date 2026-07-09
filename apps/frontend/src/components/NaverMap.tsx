@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { getMarketStats } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
-import { GU_POLYGONS, getDongCenter } from '@/lib/seoulBoundaries';
-import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPolygon } from '@/types/naver-maps';
+import { GU_POLYGONS, getAllDongCenters } from '@/lib/seoulBoundaries';
+import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPolygon, NaverPanoramaInstance } from '@/types/naver-maps';
 
 const GU_CENTER: Record<string, [number, number]> = {
   '11680': [37.5172, 127.0473], '11740': [37.5301, 127.1238],
@@ -20,8 +20,7 @@ const GU_CENTER: Record<string, [number, number]> = {
   '11110': [37.5735, 126.9788], '11140': [37.5640, 126.9975],
   '11260': [37.5953, 127.0951],
 };
-
-const DEFAULT_CENTER: [number, number] = [37.5665, 126.9780];
+const SEOUL_CENTER: [number, number] = [37.5665, 126.9780];
 
 function vacancyColor(rate: number): string {
   if (rate >= 15) return '#dc2626';
@@ -29,36 +28,42 @@ function vacancyColor(rate: number): string {
   return '#16a34a';
 }
 
+type DongItem = { code: string; name: string };
+
 type NaverMapProps = {
   guCode: string;
   dongCode?: string;
   industryCode?: string;
+  guDongs?: DongItem[];
   onSelectBuilding?: (id: string) => void;
 };
 
-export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelectBuilding }: NaverMapProps) {
+export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
-  const dongMarkerRef = useRef<NaverMarker | null>(null);
+  const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
   const polygonsRef = useRef<NaverPolygon[]>([]);
   const selectedPolyRef = useRef<NaverPolygon | null>(null);
+  const dongMarkersRef = useRef<NaverMarker[]>([]);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [streetView, setStreetView] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
   const clientId = envClientId && envClientId !== 'YOUR_NAVER_CLIENT_ID' ? envClientId : 'x8gtogoy1i';
 
   useEffect(() => {
-    const unsubscribe = onNaverMapsAuthFailure((message) => setAuthError(message));
+    const unsub = onNaverMapsAuthFailure((msg) => setAuthError(msg));
     let cancelled = false;
     loadNaverMaps(clientId)
       .then(() => { if (!cancelled) setScriptLoaded(true); })
-      .catch((err) => console.error(err));
-    return () => { cancelled = true; unsubscribe(); };
+      .catch(console.error);
+    return () => { cancelled = true; unsub(); };
   }, [clientId]);
 
-  // scriptLoaded 후 containerRef DOM 마운트 보장 → initMap
+  // scriptLoaded → map div DOM 마운트 후 initMap
   useEffect(() => {
     if (!scriptLoaded || mapRef.current) return;
     if (containerRef.current) { initMap(); return; }
@@ -70,20 +75,35 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     return () => { cancelled = true; window.clearInterval(id); };
   }, [scriptLoaded]);
 
-  // 구/동 변경 → 지도 중심 이동 + 마커·폴리곤 업데이트
+  // 거리뷰 토글 시 Panorama 인스턴스 생성
   useEffect(() => {
-    if (!window.naver || !scriptLoaded || !mapRef.current) return;
+    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps?.Panorama) return;
+    const [lat, lng] = guCode ? (GU_CENTER[guCode] ?? SEOUL_CENTER) : SEOUL_CENTER;
+    if (!panoramaRef.current) {
+      panoramaRef.current = new window.naver.maps.Panorama(panoramaContainerRef.current, {
+        position: new window.naver.maps.LatLng(lat, lng),
+        pov: { pan: 0, tilt: 0, fov: 100 },
+      });
+    } else {
+      panoramaRef.current.setPosition(new window.naver.maps.LatLng(lat, lng));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [streetView, guCode]);
+
+  // 구/동/업종 변경 → 지도 업데이트
+  useEffect(() => {
+    if (!scriptLoaded || !mapRef.current || !window.naver) return;
     try {
-      const [gLat, gLng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
-      mapRef.current.setCenter(new window.naver.maps.LatLng(gLat, gLng));
-      mapRef.current.setZoom(dongCode ? 15 : 13);
+      const [lat, lng] = guCode ? (GU_CENTER[guCode] ?? SEOUL_CENTER) : SEOUL_CENTER;
+      mapRef.current.setCenter(new window.naver.maps.LatLng(lat, lng));
+      mapRef.current.setZoom(guCode ? (dongCode ? 14 : 12) : 11);
       updatePolygons();
-      updateDongMarker();
+      updateDongMarkers();
     } catch (err) {
       console.error('지도 갱신 실패', err);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guCode, dongCode, industryCode, scriptLoaded]);
+  }, [guCode, dongCode, industryCode, guDongs, scriptLoaded]);
 
   function ll(lat: number, lng: number) {
     return new window.naver.maps.LatLng(lat, lng);
@@ -92,19 +112,20 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
   function initMap() {
     if (!containerRef.current || !window.naver) return;
     try {
-      const [lat, lng] = GU_CENTER[guCode] ?? DEFAULT_CENTER;
+      const [lat, lng] = guCode ? (GU_CENTER[guCode] ?? SEOUL_CENTER) : SEOUL_CENTER;
       mapRef.current = new window.naver.maps.Map(containerRef.current, {
         center: new window.naver.maps.LatLng(lat, lng),
-        zoom: 11,
+        zoom: guCode ? 12 : 11,
       });
-      window.naver.maps.Event.addListener(mapRef.current, 'click', () => {
+      window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
+        if (panoramaRef.current && e) panoramaRef.current.setPosition((e as { coord: unknown }).coord);
         onSelectBuilding?.('demo-building');
       });
       updatePolygons();
-      updateDongMarker();
+      updateDongMarkers();
     } catch (err) {
       console.error('네이버 지도 초기화 실패', err);
-      setAuthError('지도를 초기화하는 중 오류가 발생했습니다. 네이버 지도 Open API 인증 상태를 확인하세요.');
+      setAuthError('지도 초기화 오류. NCP 콘솔에서 Client ID와 Web 서비스 URL 등록을 확인하세요.');
     }
   }
 
@@ -115,101 +136,159 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', onSelect
     selectedPolyRef.current = null;
   }
 
+  function clearDongMarkers() {
+    dongMarkersRef.current.forEach((m) => m.setMap(null));
+    dongMarkersRef.current = [];
+    infoWindowRef.current?.close();
+  }
+
   function updatePolygons() {
     if (!mapRef.current || !window.naver) return;
     clearPolygons();
 
-    // 선택된 구 경계 강조
-    const coords = GU_POLYGONS[guCode];
-    if (coords) {
-      selectedPolyRef.current = new window.naver.maps.Polygon({
-        map: mapRef.current,
-        paths: [coords.map(([lat, lng]) => ll(lat, lng))],
-        strokeColor: '#4f46e5',
-        strokeOpacity: 0.9,
-        strokeWeight: 2.5,
-        fillColor: '#6366f1',
-        fillOpacity: 0.18,
+    if (!guCode) {
+      // 서울 전체 — 25개 구 모두 동일한 스타일로 표시
+      Object.entries(GU_POLYGONS).forEach(([, coords]) => {
+        polygonsRef.current.push(new window.naver.maps.Polygon({
+          map: mapRef.current!,
+          paths: [coords.map(([la, ln]) => ll(la, ln))],
+          strokeColor: '#4f46e5',
+          strokeOpacity: 0.5,
+          strokeWeight: 1.5,
+          fillColor: '#818cf8',
+          fillOpacity: 0.12,
+        }));
+      });
+    } else {
+      // 선택된 구 강조 + 나머지 구 연하게
+      const selCoords = GU_POLYGONS[guCode];
+      if (selCoords) {
+        selectedPolyRef.current = new window.naver.maps.Polygon({
+          map: mapRef.current,
+          paths: [selCoords.map(([la, ln]) => ll(la, ln))],
+          strokeColor: '#4f46e5',
+          strokeOpacity: 0.95,
+          strokeWeight: 3,
+          fillColor: '#6366f1',
+          fillOpacity: 0.18,
+        });
+      }
+      Object.entries(GU_POLYGONS).forEach(([code, coords]) => {
+        if (code === guCode) return;
+        polygonsRef.current.push(new window.naver.maps.Polygon({
+          map: mapRef.current!,
+          paths: [coords.map(([la, ln]) => ll(la, ln))],
+          strokeColor: '#6366f1',
+          strokeOpacity: 0.2,
+          strokeWeight: 1,
+          fillColor: '#818cf8',
+          fillOpacity: 0.04,
+        }));
       });
     }
-
-    // 나머지 구 경계 연하게 표시
-    Object.entries(GU_POLYGONS).forEach(([code, c]) => {
-      if (code === guCode) return;
-      polygonsRef.current.push(new window.naver.maps.Polygon({
-        map: mapRef.current!,
-        paths: [c.map(([lat, lng]) => ll(lat, lng))],
-        strokeColor: '#6366f1',
-        strokeOpacity: 0.25,
-        strokeWeight: 1,
-        fillColor: '#818cf8',
-        fillOpacity: 0.05,
-      }));
-    });
   }
 
-  function updateDongMarker() {
+  function updateDongMarkers() {
     if (!mapRef.current || !window.naver) return;
-    dongMarkerRef.current?.setMap(null);
-    infoWindowRef.current?.close();
-    if (!dongCode) return;
+    clearDongMarkers();
+    if (!guCode || guDongs.length === 0) return;
 
-    const [lat, lng] = getDongCenter(dongCode, guCode);
-    const latlng = ll(lat, lng);
-    const stats = getMarketStats(guCode, dongCode, industryCode);
-    const color = vacancyColor(stats.vacancyRate);
+    // 선택된 구의 모든 동을 점으로 표시
+    const centers = getAllDongCenters(guDongs, guCode);
     const gu = SEOUL_GU.find((g) => g.code === guCode);
-    const dong = gu?.dongs.find((d) => d.code === dongCode);
 
-    if (!dongMarkerRef.current) {
-      dongMarkerRef.current = new window.naver.maps.Marker({ position: latlng, map: mapRef.current });
-    } else {
-      dongMarkerRef.current.setPosition(latlng);
-      dongMarkerRef.current.setMap(mapRef.current);
-    }
-    dongMarkerRef.current.setIcon({
-      content: `<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>`,
-      anchor: new window.naver.maps.Point(8, 8),
+    centers.forEach(({ code, name, center }) => {
+      const stats = getMarketStats(guCode, code, industryCode);
+      const color = vacancyColor(stats.vacancyRate);
+      const isSelected = code === dongCode;
+
+      const marker = new window.naver.maps.Marker({
+        position: ll(center[0], center[1]),
+        map: mapRef.current!,
+        icon: {
+          content: isSelected
+            ? `<div style="width:20px;height:20px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 0 0 2px ${color},0 2px 6px rgba(0,0,0,0.4);"></div>`
+            : `<div style="width:13px;height:13px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.35);opacity:0.85"></div>`,
+          anchor: new window.naver.maps.Point(isSelected ? 10 : 6, isSelected ? 10 : 6),
+        },
+      });
+
+      window.naver.maps.Event.addListener(marker, 'click', () => {
+        if (!infoWindowRef.current) {
+          infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+        }
+        infoWindowRef.current.setContent(`
+          <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.6;">
+            <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${name}</p>
+            <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
+            <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
+            <p>인구밀도: ${Math.round(stats.popDensity).toLocaleString()}명/km²</p>
+            <p>임대시세: ${stats.rentPer33.toFixed(1)}만원/3.3㎡</p>
+          </div>
+        `);
+        infoWindowRef.current.open(mapRef.current!, marker);
+        if (panoramaRef.current) panoramaRef.current.setPosition(ll(center[0], center[1]));
+      });
+
+      dongMarkersRef.current.push(marker);
     });
-
-    if (!infoWindowRef.current) {
-      infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
-    }
-    infoWindowRef.current.setContent(`
-      <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.6;">
-        <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${dong?.name ?? ''}</p>
-        <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
-        <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
-        <p>인구밀도: ${Math.round(stats.popDensity).toLocaleString()}명/km²</p>
-        <p>임대시세: ${stats.rentPer33.toFixed(1)}만원/3.3㎡</p>
-      </div>
-    `);
-    infoWindowRef.current.open(mapRef.current, dongMarkerRef.current);
   }
 
   if (authError) {
     return (
-      <div className="flex h-[65vh] min-h-[640px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
+      <div className="flex h-[65vh] min-h-[580px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
         <span className="text-2xl">⚠️</span>
         <p className="text-sm font-semibold text-red-700">{authError}</p>
-        <p className="text-xs text-red-500">NCP 콘솔 › AI·NAVER API › Maps › 앱 관리에서 Web 서비스 URL에<br /><code>https://dlrlfwo73123-lab.github.io</code> 등록 여부를 확인하세요.</p>
+        <p className="text-xs text-red-500">
+          NCP 콘솔 › AI·NAVER API › Maps › 앱 관리 › Web 서비스 URL에<br />
+          <code className="bg-red-100 px-1 rounded">https://dlrlfwo73123-lab.github.io</code> 등록 후 새로고침
+        </p>
       </div>
     );
   }
 
   return (
-    <>
+    <div>
+      {/* 지도/거리뷰 토글 */}
+      {scriptLoaded && (
+        <div className="mb-2 flex gap-1.5">
+          <button
+            onClick={() => setStreetView(false)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${!streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            🗺 지도
+          </button>
+          <button
+            onClick={() => setStreetView(true)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            🔭 거리뷰
+          </button>
+          {!guCode && <span className="ml-auto self-center text-[11px] text-slate-400">구를 선택하면 동별 공실률이 점으로 표시됩니다</span>}
+        </div>
+      )}
+
+      {/* 로딩 */}
       {!scriptLoaded && (
-        <div className="flex h-[65vh] min-h-[640px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
+        <div className="flex h-[65vh] min-h-[580px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
           <span className="text-2xl">🗺️</span>
           <p className="text-sm font-semibold text-slate-700">네이버 지도 불러오는 중…</p>
         </div>
       )}
+
+      {/* 지도 */}
       <div
         ref={containerRef}
-        className="h-[65vh] min-h-[640px] w-full rounded-xl overflow-hidden"
-        style={{ display: scriptLoaded ? 'block' : 'none' }}
+        className="h-[65vh] min-h-[580px] w-full rounded-xl overflow-hidden"
+        style={{ display: scriptLoaded && !streetView ? 'block' : 'none' }}
       />
-    </>
+
+      {/* 거리뷰 */}
+      <div
+        ref={panoramaContainerRef}
+        className="h-[65vh] min-h-[580px] w-full rounded-xl overflow-hidden"
+        style={{ display: scriptLoaded && streetView ? 'block' : 'none' }}
+      />
+    </div>
   );
 }
