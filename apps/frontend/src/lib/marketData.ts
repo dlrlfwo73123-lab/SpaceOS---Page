@@ -337,3 +337,106 @@ export function getRecommendations(
     };
   });
 }
+
+// ── 공실 마커 데이터 (지도 표시용) ──
+export type VacancyMarker = {
+  id: string;
+  lat: number;
+  lng: number;
+  floor: number;
+  sqm: number;
+  rentMonthly: number;   // 만원/월
+  lastIndustry: string;
+  emptyMonths: number;
+  dongName: string;
+  dongCode: string;
+};
+
+const LAST_INDUSTRIES = ['음식점', '카페', '소매점', '의류', '미용실', '학원', '편의점', '사무실', '약국', 'PC방'];
+
+export function getVacancyMarkers(
+  guCode: string,
+  dongCode: string,
+  guDongs: { code: string; name: string; center: [number, number] }[],
+  count = 12,
+): VacancyMarker[] {
+  if (!guCode || guDongs.length === 0) return [];
+  const targetDongs = dongCode ? guDongs.filter((d) => d.code === dongCode) : guDongs;
+  const rng = rngFor(guCode, dongCode, 'vacancy-markers');
+  const markers: VacancyMarker[] = [];
+  const perDong = Math.max(1, Math.ceil(count / targetDongs.length));
+
+  targetDongs.forEach((dong) => {
+    const n = dongCode ? count : perDong;
+    for (let i = 0; i < n; i++) {
+      const angle = rng() * 2 * Math.PI;
+      const r = 0.002 + rng() * 0.006;
+      markers.push({
+        id: `${dong.code}-v${i}`,
+        lat: dong.center[0] + r * Math.cos(angle),
+        lng: dong.center[1] + r * Math.sin(angle),
+        floor: 1 + Math.floor(rng() * 5),
+        sqm: Math.round(30 + rng() * 120),
+        rentMonthly: Math.round(80 + rng() * 400),
+        lastIndustry: LAST_INDUSTRIES[Math.floor(rng() * LAST_INDUSTRIES.length)],
+        emptyMonths: Math.round(1 + rng() * 18),
+        dongName: dong.name,
+        dongCode: dong.code,
+      });
+    }
+  });
+
+  return markers.slice(0, dongCode ? count : Math.min(markers.length, count * 2));
+}
+
+// ── 창업 지역 추천 (동 단위 점수 기반) ──
+export type StartupAreaRec = {
+  rank: number;
+  guCode: string;
+  guName: string;
+  dongCode: string;
+  dongName: string;
+  score: number;
+  vacancyRate: number;
+  floatingPop: number;
+  rentPer33: number;
+  reasons: string[];
+};
+
+export function getStartupAreaRecs(
+  guCode: string,
+  industryCode: string,
+  guName: string,
+  dongs: { code: string; name: string }[],
+  topN = 5,
+): StartupAreaRec[] {
+  if (!guCode || dongs.length === 0) return [];
+  const scored = dongs.map((d) => {
+    const stats = getMarketStats(guCode, d.code, industryCode);
+    // 점수 = 유동인구(정규화) + 낮은 공실률 보너스 - 임대료 패널티
+    const popScore = Math.min(stats.floatingPop / 50000, 3) * 30;
+    const vacancyScore = Math.max(0, (20 - stats.vacancyRate)) * 2;
+    const rentScore = Math.max(0, (20 - stats.rentPer33)) * 1.5;
+    const score = Math.round(popScore + vacancyScore + rentScore);
+    return { dong: d, stats, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, topN).map(({ dong, stats, score }, i) => ({
+    rank: i + 1,
+    guCode,
+    guName,
+    dongCode: dong.code,
+    dongName: dong.name,
+    score: Math.min(99, score),
+    vacancyRate: Math.round(stats.vacancyRate * 10) / 10,
+    floatingPop: Math.round(stats.floatingPop),
+    rentPer33: Math.round(stats.rentPer33 * 10) / 10,
+    reasons: [
+      `일평균 유동인구 ${Math.round(stats.floatingPop).toLocaleString()}명으로 상권 유입 우수`,
+      `공실률 ${stats.vacancyRate.toFixed(1)}% — 안정적 상권 유지 중`,
+      `임대시세 3.3㎡당 ${stats.rentPer33.toFixed(1)}만원으로 초기 비용 부담 적정`,
+    ],
+  }));
+}

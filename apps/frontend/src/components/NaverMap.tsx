@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getMarketStats } from '@/lib/marketData';
+import { getMarketStats, getVacancyMarkers } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
 import { GU_POLYGONS, getAllDongCenters } from '@/lib/seoulBoundaries';
@@ -36,9 +36,10 @@ type NaverMapProps = {
   industryCode?: string;
   guDongs?: DongItem[];
   onSelectBuilding?: (id: string) => void;
+  onSelectVacancy?: (id: string) => void;
 };
 
-export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding }: NaverMapProps) {
+export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding, onSelectVacancy }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
@@ -47,6 +48,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
   const polygonsRef = useRef<NaverPolygon[]>([]);
   const selectedPolyRef = useRef<NaverPolygon | null>(null);
   const dongMarkersRef = useRef<NaverMarker[]>([]);
+  const vacancyMarkersRef = useRef<NaverMarker[]>([]);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [streetView, setStreetView] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -99,6 +101,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       mapRef.current.setZoom(guCode ? (dongCode ? 14 : 12) : 11);
       updatePolygons();
       updateDongMarkers();
+      updateVacancyMarkers();
     } catch (err) {
       console.error('지도 갱신 실패', err);
     }
@@ -123,6 +126,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       });
       updatePolygons();
       updateDongMarkers();
+      updateVacancyMarkers();
     } catch (err) {
       console.error('네이버 지도 초기화 실패', err);
       setAuthError('지도 초기화 오류. NCP 콘솔에서 Client ID와 Web 서비스 URL 등록을 확인하세요.');
@@ -140,6 +144,11 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     dongMarkersRef.current.forEach((m) => m.setMap(null));
     dongMarkersRef.current = [];
     infoWindowRef.current?.close();
+  }
+
+  function clearVacancyMarkers() {
+    vacancyMarkersRef.current.forEach((m) => m.setMap(null));
+    vacancyMarkersRef.current = [];
   }
 
   function updatePolygons() {
@@ -234,6 +243,50 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     });
   }
 
+  function updateVacancyMarkers() {
+    if (!mapRef.current || !window.naver) return;
+    clearVacancyMarkers();
+    if (!guCode) return;
+
+    const centers = getAllDongCenters(guDongs, guCode);
+    const markers = getVacancyMarkers(guCode, dongCode, centers, dongCode ? 8 : 15);
+
+    markers.forEach((v) => {
+      const marker = new window.naver.maps.Marker({
+        position: ll(v.lat, v.lng),
+        map: mapRef.current!,
+        icon: {
+          content: `<div style="width:10px;height:10px;border-radius:50%;background:#ef4444;border:2px solid white;box-shadow:0 1px 4px rgba(239,68,68,0.6);"></div>`,
+          anchor: new window.naver.maps.Point(5, 5),
+        },
+        zIndex: 50,
+      });
+
+      window.naver.maps.Event.addListener(marker, 'click', () => {
+        if (!infoWindowRef.current) {
+          infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+        }
+        infoWindowRef.current.setContent(`
+          <div style="padding:10px 14px;min-width:180px;font-size:12px;line-height:1.7;">
+            <p style="font-weight:700;font-size:13px;margin-bottom:6px;color:#dc2626;">📍 공실 매물 (데모)</p>
+            <p style="color:#64748b;margin-bottom:4px;">${v.dongName}</p>
+            <p>층: <b>${v.floor}층</b></p>
+            <p>면적: <b>${v.sqm}㎡</b></p>
+            <p>월세: <b>${v.rentMonthly}만원/월</b></p>
+            <p>전 업종: ${v.lastIndustry}</p>
+            <p>공실 기간: ${v.emptyMonths}개월</p>
+            <p style="margin-top:6px;font-size:10px;color:#94a3b8;">※ 데모 데이터 — 실제 매물과 다름</p>
+          </div>
+        `);
+        infoWindowRef.current.open(mapRef.current!, marker);
+        onSelectVacancy?.(v.id);
+        onSelectBuilding?.(`vacancy-${v.id}`);
+      });
+
+      vacancyMarkersRef.current.push(marker);
+    });
+  }
+
   if (authError) {
     return (
       <div className="flex h-[65vh] min-h-[580px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
@@ -264,7 +317,16 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
           >
             🔭 거리뷰
           </button>
-          {!guCode && <span className="ml-auto self-center text-[11px] text-slate-400">구를 선택하면 동별 공실률이 점으로 표시됩니다</span>}
+          {guCode ? (
+            <span className="ml-auto flex items-center gap-2 text-[11px] text-slate-400">
+              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실</span>
+              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간</span>
+              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실</span>
+              <span className="ml-2 inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
+            </span>
+          ) : (
+            <span className="ml-auto self-center text-[11px] text-slate-400">구를 선택하면 동별 공실률이 점으로 표시됩니다</span>
+          )}
         </div>
       )}
 
