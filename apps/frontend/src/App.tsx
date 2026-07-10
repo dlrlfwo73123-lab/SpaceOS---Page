@@ -13,6 +13,7 @@ export default function App() {
   const [dongCode, setDongCode] = useState('');
   const [industryCode, setIndustryCode] = useState('ALL');
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
+  const [vacancyCoords, setVacancyCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
 
@@ -125,7 +126,10 @@ export default function App() {
             industryCode={industryCode}
             guDongs={selectedGu?.dongs ?? []}
             onSelectBuilding={setSelectedBuildingId}
-            onSelectVacancy={(id) => setSelectedBuildingId(`vacancy-${id}`)}
+            onSelectVacancy={(id, lat, lng) => {
+              setSelectedBuildingId(`vacancy-${id}`);
+              setVacancyCoords({ lat, lng });
+            }}
           />
         </section>
 
@@ -136,7 +140,7 @@ export default function App() {
               3D 트윈 불러오는 중…
             </div>
           }>
-            <BuildingTwin buildingId={selectedBuildingId} />
+            <BuildingTwin buildingId={selectedBuildingId} lat={vacancyCoords?.lat} lng={vacancyCoords?.lng} />
           </Suspense>
         ) : (
           <div className="flex h-32 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
@@ -153,8 +157,9 @@ export default function App() {
           guName={guLabel}
           industryCode={industryCode}
           dongs={selectedGu?.dongs ?? []}
-          onSelectDong={(code) => {
-            if (guCode) setDongCode(code);
+          onSelectDong={(code, gCode) => {
+            if (gCode) { setGuCode(gCode); setDongCode(code); }
+            else if (guCode) setDongCode(code);
           }}
         />
 
