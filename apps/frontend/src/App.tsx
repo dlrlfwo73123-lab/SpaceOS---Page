@@ -50,6 +50,10 @@ export default function App() {
   function handleGuChange(code: string) {
     setGuCode(code);
     setDongCode('');
+    if (!code) {
+      setSelectedBuildingId(null);
+      setVacancyCoords(null);
+    }
   }
 
   const guLabel = selectedGu?.name ?? '서울 전체';
