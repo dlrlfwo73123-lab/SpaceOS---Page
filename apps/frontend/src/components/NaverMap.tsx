@@ -36,7 +36,7 @@ type NaverMapProps = {
   industryCode?: string;
   guDongs?: DongItem[];
   onSelectBuilding?: (id: string) => void;
-  onSelectVacancy?: (id: string, lat: number, lng: number) => void;
+  onSelectVacancy?: (id: string, lat: number, lng: number, guCode: string, dongCode: string) => void;
 };
 
 export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding, onSelectVacancy }: NaverMapProps) {
@@ -223,7 +223,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     });
   }
 
-  function addVacancyMarker(v: ReturnType<typeof getVacancyMarkers>[0], guName?: string) {
+  function addVacancyMarker(v: ReturnType<typeof getVacancyMarkers>[0], guName?: string, markerGuCode?: string) {
     if (!mapRef.current || !window.naver) return;
     const marker = new window.naver.maps.Marker({
       position: ll(v.lat, v.lng),
@@ -253,7 +253,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
         </div>
       `);
       infoWindowRef.current.open(mapRef.current!, marker);
-      onSelectVacancy?.(v.id, v.lat, v.lng);
+      onSelectVacancy?.(v.id, v.lat, v.lng, markerGuCode ?? guCode, v.dongCode);
       onSelectBuilding?.(`vacancy-${v.id}`);
     });
 
@@ -270,7 +270,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
         const dongSlice = gu.dongs.slice(0, 5);
         const centers = getAllDongCenters(dongSlice, gu.code);
         const markers = getVacancyMarkers(gu.code, '', centers, 2);
-        markers.forEach((v) => addVacancyMarker(v, gu.name));
+        markers.forEach((v) => addVacancyMarker(v, gu.name, gu.code));
       });
       return;
     }
