@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
@@ -16,6 +16,7 @@ export default function App() {
   const [vacancyCoords, setVacancyCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
+  const guDongs = useMemo(() => selectedGu?.dongs ?? [], [selectedGu]);
 
   function handleGuChange(code: string) {
     setGuCode(code);
@@ -124,7 +125,7 @@ export default function App() {
             guCode={guCode}
             dongCode={dongCode}
             industryCode={industryCode}
-            guDongs={selectedGu?.dongs ?? []}
+            guDongs={guDongs}
             onSelectBuilding={setSelectedBuildingId}
             onSelectVacancy={(id, lat, lng) => {
               setSelectedBuildingId(`vacancy-${id}`);
@@ -156,7 +157,7 @@ export default function App() {
           guCode={guCode}
           guName={guLabel}
           industryCode={industryCode}
-          dongs={selectedGu?.dongs ?? []}
+          dongs={guDongs}
           onSelectDong={(code, gCode) => {
             if (gCode) { setGuCode(gCode); setDongCode(code); }
             else if (guCode) setDongCode(code);
