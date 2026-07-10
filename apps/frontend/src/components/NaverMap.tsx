@@ -3,7 +3,7 @@ import { getMarketStats, getVacancyMarkers } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
 import { GU_POLYGONS, getAllDongCenters } from '@/lib/seoulBoundaries';
-import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPolygon, NaverPanoramaInstance } from '@/types/naver-maps';
+import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPolygon } from '@/types/naver-maps';
 
 const GU_CENTER: Record<string, [number, number]> = {
   '11680': [37.5172, 127.0473], '11740': [37.5301, 127.1238],
@@ -41,16 +41,13 @@ type NaverMapProps = {
 
 export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding, onSelectVacancy }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const panoramaContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
-  const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
   const infoWindowRef = useRef<NaverInfoWindow | null>(null);
   const polygonsRef = useRef<NaverPolygon[]>([]);
   const selectedPolyRef = useRef<NaverPolygon | null>(null);
   const dongMarkersRef = useRef<NaverMarker[]>([]);
   const vacancyMarkersRef = useRef<NaverMarker[]>([]);
   const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [streetView, setStreetView] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const envClientId = import.meta.env.VITE_NAVER_CLIENT_ID as string | undefined;
@@ -76,21 +73,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     }, 50);
     return () => { cancelled = true; window.clearInterval(id); };
   }, [scriptLoaded]);
-
-  // 거리뷰 토글 시 Panorama 인스턴스 생성
-  useEffect(() => {
-    if (!streetView || !panoramaContainerRef.current || !window.naver?.maps?.Panorama) return;
-    const [lat, lng] = guCode ? (GU_CENTER[guCode] ?? SEOUL_CENTER) : SEOUL_CENTER;
-    if (!panoramaRef.current) {
-      panoramaRef.current = new window.naver.maps.Panorama(panoramaContainerRef.current, {
-        position: new window.naver.maps.LatLng(lat, lng),
-        pov: { pan: 0, tilt: 0, fov: 100 },
-      });
-    } else {
-      panoramaRef.current.setPosition(new window.naver.maps.LatLng(lat, lng));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streetView, guCode]);
 
   // 구/동/업종 변경 → 지도 업데이트
   useEffect(() => {
@@ -120,8 +102,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
         center: new window.naver.maps.LatLng(lat, lng),
         zoom: guCode ? 12 : 11,
       });
-      window.naver.maps.Event.addListener(mapRef.current, 'click', (e) => {
-        if (panoramaRef.current && e) panoramaRef.current.setPosition((e as { coord: unknown }).coord);
+      window.naver.maps.Event.addListener(mapRef.current, 'click', () => {
         onSelectBuilding?.('demo-building');
       });
       updatePolygons();
@@ -236,7 +217,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
           </div>
         `);
         infoWindowRef.current.open(mapRef.current!, marker);
-        if (panoramaRef.current) panoramaRef.current.setPosition(ll(center[0], center[1]));
       });
 
       dongMarkersRef.current.push(marker);
@@ -315,31 +295,20 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
 
   return (
     <div>
-      {/* 지도/거리뷰 토글 */}
+      {/* 범례 */}
       {scriptLoaded && (
-        <div className="mb-2 flex gap-1.5">
-          <button
-            onClick={() => setStreetView(false)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${!streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            🗺 지도
-          </button>
-          <button
-            onClick={() => setStreetView(true)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${streetView ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            🔭 거리뷰
-          </button>
+        <div className="mb-2 flex items-center justify-end">
           {guCode ? (
-            <span className="ml-auto flex items-center gap-2 text-[11px] text-slate-400">
+            <span className="flex items-center gap-2 text-[11px] text-slate-400">
               <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실</span>
               <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간</span>
               <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실</span>
               <span className="ml-2 inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
             </span>
           ) : (
-            <span className="ml-auto flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>구별 공실 매물 위치 (클릭하면 상세 확인)</span>
+            <span className="flex items-center gap-1 text-[11px] text-slate-400">
+              <span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>
+              구별 공실 매물 위치 (클릭하면 상세 확인)
             </span>
           )}
         </div>
@@ -357,14 +326,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       <div
         ref={containerRef}
         className="h-[65vh] min-h-[580px] w-full rounded-xl overflow-hidden"
-        style={{ display: scriptLoaded && !streetView ? 'block' : 'none' }}
-      />
-
-      {/* 거리뷰 */}
-      <div
-        ref={panoramaContainerRef}
-        className="h-[65vh] min-h-[580px] w-full rounded-xl overflow-hidden"
-        style={{ display: scriptLoaded && streetView ? 'block' : 'none' }}
+        style={{ display: scriptLoaded ? 'block' : 'none' }}
       />
     </div>
   );
