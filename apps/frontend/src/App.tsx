@@ -211,19 +211,17 @@ export default function App() {
           </div>
         )}
 
-        {/* 창업 지역 추천 — 구 선택 시에만 표시 */}
-        {guCode && (
-          <StartupRecommendation
-            guCode={guCode}
-            guName={guLabel}
-            industryCode={industryCode}
-            dongs={guDongs}
-            onSelectDong={(code, gCode) => {
-              if (gCode) { setGuCode(gCode); setDongCode(code); }
-              else if (guCode) setDongCode(code);
-            }}
-          />
-        )}
+        {/* 창업 지역 추천 — 항상 표시 (서울 전체 시 전체 추천, 구 선택 시 해당 구 추천) */}
+        <StartupRecommendation
+          guCode={guCode}
+          guName={guLabel}
+          industryCode={industryCode}
+          dongs={guDongs}
+          onSelectDong={(code, gCode) => {
+            if (gCode) { setGuCode(gCode); setDongCode(code); }
+            else if (guCode) setDongCode(code);
+          }}
+        />
 
         {/* 데이터 신뢰성 패널 */}
         <DataReliabilityPanel />
