@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { NaverPanoramaInstance } from '@/types/naver-maps';
@@ -11,6 +11,26 @@ type BuildingTwinProps = {
   lng?: number;
 };
 
+// ── 시드 기반 난수 ──────────────────────────────────────────────
+function hashStr(s: string): number {
+  let h = 1779033703 ^ s.length;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return h >>> 0;
+}
+function makePRNG(seed: number) {
+  let a = seed;
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ── 상수 ────────────────────────────────────────────────────────
 const FALLBACK_FLOORS: Floor[] = [
   { level: 1, industry: '카페', vacant: false },
   { level: 2, industry: '미용실', vacant: true },
@@ -20,10 +40,76 @@ const FALLBACK_FLOORS: Floor[] = [
 ];
 
 const FLOOR_H = 3.5;
-const BLD_W   = 22;
-const BLD_D   = 16;
-const GAP     = 0.12;
+const BLD_W   = 18;
+const BLD_D   = 13;
+const GAP     = 0.1;
 
+// 도시 블록 그리드: 셀 1개 = 38m (건물 30m + 도로 8m)
+const CELL   = 38;
+const GRID_R = 4; // -4..+4 → 9×9 그리드 = 약 342m × 342m
+
+// ── 주변 건물 데이터 생성 ────────────────────────────────────────
+type NeighborBuilding = {
+  gx: number; gz: number;
+  floors: number; w: number; d: number;
+  color: string;
+};
+
+const BLD_COLORS = [
+  '#1e3a5f', '#1e293b', '#172554', '#1c1917',
+  '#14532d', '#134e4a', '#3b0764', '#1e1b4b',
+];
+
+function generateNeighborhood(seed: string): NeighborBuilding[] {
+  const rng = makePRNG(hashStr(seed));
+  const out: NeighborBuilding[] = [];
+  for (let gx = -GRID_R; gx <= GRID_R; gx++) {
+    for (let gz = -GRID_R; gz <= GRID_R; gz++) {
+      if (gx === 0 && gz === 0) continue;
+      // 가끔 빈 필지
+      if (rng() < 0.08) continue;
+      const floors = Math.max(1, Math.round(rng() * 18 + 2));
+      const w = 12 + rng() * 16;
+      const d = 10 + rng() * 14;
+      const color = BLD_COLORS[Math.floor(rng() * BLD_COLORS.length)];
+      out.push({ gx, gz, floors, w, d, color });
+    }
+  }
+  return out;
+}
+
+// ── 주변 건물 메쉬 ──────────────────────────────────────────────
+function NeighborMesh({ b }: { b: NeighborBuilding }) {
+  const h = b.floors * FLOOR_H;
+  return (
+    <mesh position={[b.gx * CELL, h / 2, b.gz * CELL]} castShadow>
+      <boxGeometry args={[b.w, h, b.d]} />
+      <meshStandardMaterial color={b.color} roughness={0.7} metalness={0.1} />
+    </mesh>
+  );
+}
+
+// ── 도로 그리드 ─────────────────────────────────────────────────
+function Roads() {
+  const lines: JSX.Element[] = [];
+  const extent = GRID_R * CELL + CELL / 2;
+  for (let i = -GRID_R; i <= GRID_R + 1; i++) {
+    const pos = (i - 0.5) * CELL;
+    lines.push(
+      <mesh key={`hx${i}`} position={[0, 0.02, pos]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[extent * 2, 8]} />
+        <meshStandardMaterial color="#1c1917" roughness={0.95} />
+      </mesh>,
+      <mesh key={`hz${i}`} position={[pos, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[8, extent * 2]} />
+        <meshStandardMaterial color="#1c1917" roughness={0.95} />
+      </mesh>
+    );
+  }
+  return <>{lines}</>;
+}
+
+// ── 선택 건물 — 층별 상세 ────────────────────────────────────────
 const FACADE_COLORS = ['#3b82f6', '#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
 const VACANT_COLOR  = '#94a3b8';
 
@@ -31,38 +117,31 @@ function FloorMesh({ floor, index, selected, onClick }: {
   floor: Floor; index: number; selected: boolean; onClick: () => void;
 }) {
   const y = index * (FLOOR_H + GAP) + FLOOR_H / 2;
-  const wallColor = floor.vacant ? VACANT_COLOR : FACADE_COLORS[index % FACADE_COLORS.length];
-  const glassColor = floor.vacant ? '#c8d3de' : '#bfdbfe';
-  const glassOpacity = floor.vacant ? 0.3 : 0.55;
+  const wc = floor.vacant ? VACANT_COLOR : FACADE_COLORS[index % FACADE_COLORS.length];
+  const gc = floor.vacant ? '#c8d3de' : '#bfdbfe';
 
   return (
     <group onClick={onClick}>
-      <mesh position={[0, y, 0]}>
-        <boxGeometry args={[BLD_W, FLOOR_H - 0.3, BLD_D]} />
+      <mesh position={[0, y, 0]} castShadow>
+        <boxGeometry args={[BLD_W, FLOOR_H - 0.25, BLD_D]} />
         <meshStandardMaterial
-          color={selected ? '#f59e0b' : wallColor}
-          transparent
-          opacity={floor.vacant ? 0.6 : 0.9}
-          roughness={0.4}
-          metalness={0.1}
+          color={selected ? '#f59e0b' : wc}
+          transparent opacity={floor.vacant ? 0.65 : 0.95}
+          roughness={0.35} metalness={0.12}
         />
       </mesh>
       <mesh position={[0, y, BLD_D / 2 + 0.05]}>
-        <planeGeometry args={[BLD_W - 2, FLOOR_H - 0.8]} />
+        <planeGeometry args={[BLD_W - 2, FLOOR_H - 0.75]} />
         <meshStandardMaterial
-          color={selected ? '#fcd34d' : glassColor}
-          transparent
-          opacity={glassOpacity}
-          roughness={0.05}
-          metalness={0.6}
+          color={selected ? '#fcd34d' : gc}
+          transparent opacity={floor.vacant ? 0.3 : 0.55}
+          roughness={0.05} metalness={0.65}
         />
       </mesh>
       <Text
-        position={[BLD_W / 2 + 1.8, y, 0]}
-        fontSize={1.3}
-        color={floor.vacant ? '#94a3b8' : '#e2e8f0'}
-        anchorX="left"
-        anchorY="middle"
+        position={[BLD_W / 2 + 1.5, y, 0]}
+        fontSize={1.2} color={floor.vacant ? '#94a3b8' : '#e2e8f0'}
+        anchorX="left" anchorY="middle"
       >
         {`${floor.level}F  ${floor.industry}`}
       </Text>
@@ -70,53 +149,50 @@ function FloorMesh({ floor, index, selected, onClick }: {
   );
 }
 
-function Rooftop({ topY, w, d }: { topY: number; w: number; d: number }) {
+function Rooftop({ topY }: { topY: number }) {
   return (
     <group>
       <mesh position={[0, topY + 0.3, 0]}>
-        <boxGeometry args={[w + 0.4, 0.6, d + 0.4]} />
-        <meshStandardMaterial color="#334155" roughness={0.8} />
+        <boxGeometry args={[BLD_W + 0.4, 0.55, BLD_D + 0.4]} />
+        <meshStandardMaterial color="#334155" roughness={0.85} />
       </mesh>
-      <mesh position={[-w * 0.3, topY + 2.1, 0]}>
-        <boxGeometry args={[w * 0.28, 3.6, d * 0.35]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.7} />
+      <mesh position={[-BLD_W * 0.28, topY + 2.0, 0]}>
+        <boxGeometry args={[BLD_W * 0.27, 3.5, BLD_D * 0.33]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.75} />
       </mesh>
     </group>
   );
 }
 
-function Lobby({ w, d }: { w: number; d: number }) {
-  const cols: [number, number][] = [
-    [-w * 0.38, -d * 0.35], [w * 0.38, -d * 0.35],
-    [-w * 0.38, d * 0.35],  [w * 0.38, d * 0.35],
-  ];
+// ── 선택 건물 하이라이트 링 ──────────────────────────────────────
+function SelectionRing({ h }: { h: number }) {
   return (
-    <>
-      {cols.map(([cx, cz], i) => (
-        <mesh key={i} position={[cx, 0.75, cz]}>
-          <cylinderGeometry args={[0.6, 0.7, 1.5, 8]} />
-          <meshStandardMaterial color="#475569" roughness={0.5} />
-        </mesh>
-      ))}
-    </>
+    <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[BLD_W * 0.78, BLD_W * 0.85, 32]} />
+      <meshStandardMaterial color="#f59e0b" transparent opacity={0.6} />
+    </mesh>
   );
 }
 
+// ── 스케일 바 ────────────────────────────────────────────────────
 function ScaleBar() {
   return (
-    <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5">
-      <svg width="80" height="16">
-        <line x1="0" y1="8" x2="80" y2="8" stroke="white" strokeWidth="2" />
-        <line x1="0" y1="4" x2="0" y2="12" stroke="white" strokeWidth="2" />
-        <line x1="80" y1="4" x2="80" y2="12" stroke="white" strokeWidth="2" />
-        <text x="40" y="6" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace">20m</text>
+    <div className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5 pointer-events-none">
+      <svg width="90" height="16">
+        <line x1="0" y1="8" x2="90" y2="8" stroke="white" strokeWidth="1.5" />
+        <line x1="0" y1="4" x2="0" y2="12" stroke="white" strokeWidth="1.5" />
+        <line x1="45" y1="5" x2="45" y2="11" stroke="white" strokeWidth="1" />
+        <line x1="90" y1="4" x2="90" y2="12" stroke="white" strokeWidth="1.5" />
+        <text x="0" y="6" fill="white" fontSize="7" fontFamily="monospace">0</text>
+        <text x="38" y="6" fill="white" fontSize="7" fontFamily="monospace">200m</text>
+        <text x="76" y="6" fill="white" fontSize="7" fontFamily="monospace">400m</text>
       </svg>
-      <span className="text-[10px] text-white/60 font-mono">1:1,000</span>
+      <span className="text-[9px] text-white/50 font-mono">반경 ≈ 340m 범위 표시</span>
     </div>
   );
 }
 
-// 네이버 파노라마(거리뷰) — 실제 건물 위치 기반
+// ── 네이버 파노라마 ──────────────────────────────────────────────
 function NaverPanorama({ lat, lng }: { lat: number; lng: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panoramaRef = useRef<NaverPanoramaInstance | null>(null);
@@ -124,12 +200,8 @@ function NaverPanorama({ lat, lng }: { lat: number; lng: number }) {
 
   useEffect(() => {
     if (!containerRef.current) return;
-
     const tryInit = () => {
-      if (!window.naver?.maps?.Panorama) {
-        setStatus('unavailable');
-        return;
-      }
+      if (!window.naver?.maps?.Panorama) { setStatus('unavailable'); return; }
       try {
         if (panoramaRef.current) {
           panoramaRef.current.setPosition(new window.naver.maps.LatLng(lat, lng));
@@ -140,28 +212,18 @@ function NaverPanorama({ lat, lng }: { lat: number; lng: number }) {
           position: new window.naver.maps.LatLng(lat, lng),
           pov: { pan: 0, tilt: 0, fov: 90 },
         });
-        // 파노라마 위치 변경 이벤트 감지 — 이미지 없을 때 fallback
         window.naver.maps.Event.addListener(panoramaRef.current, 'pano_status', (e: unknown) => {
           setStatus((e as string) === 'UNAVAILABLE' ? 'unavailable' : 'ready');
         });
         setStatus('ready');
-      } catch {
-        setStatus('unavailable');
-      }
+      } catch { setStatus('unavailable'); }
     };
 
-    // 이미 로드된 경우 바로 실행, 아니면 대기
-    if (window.naver?.maps?.Panorama) {
-      tryInit();
-    } else {
-      const timer = window.setInterval(() => {
-        if (window.naver?.maps?.Panorama) {
-          window.clearInterval(timer);
-          tryInit();
-        }
-      }, 200);
-      return () => window.clearInterval(timer);
-    }
+    if (window.naver?.maps?.Panorama) { tryInit(); return; }
+    const timer = window.setInterval(() => {
+      if (window.naver?.maps?.Panorama) { window.clearInterval(timer); tryInit(); }
+    }, 200);
+    return () => window.clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lat, lng]);
 
@@ -176,8 +238,8 @@ function NaverPanorama({ lat, lng }: { lat: number; lng: number }) {
       {status === 'unavailable' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-900 text-center px-4">
           <span className="text-2xl">📷</span>
-          <p className="text-xs font-semibold text-slate-300">거리뷰 이미지 없음</p>
-          <p className="text-[10px] text-slate-500">해당 위치의 네이버 거리뷰 데이터가 없습니다</p>
+          <p className="text-xs font-semibold text-slate-300">거리뷰 데이터 없음</p>
+          <p className="text-[10px] text-slate-500">해당 좌표({lat.toFixed(4)}, {lng.toFixed(4)})의<br />네이버 거리뷰 이미지가 없습니다</p>
         </div>
       )}
       <div className="absolute top-2 left-2 rounded-full bg-indigo-600/90 px-2 py-0.5 text-[10px] font-bold text-white">
@@ -187,51 +249,70 @@ function NaverPanorama({ lat, lng }: { lat: number; lng: number }) {
   );
 }
 
+// ── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps) {
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
-  const [view, setView] = useState<'3d' | 'street' | 'split'>('split');
+  const [view, setView] = useState<'split' | '3d' | 'street'>('split');
 
   useEffect(() => {
     setSelectedFloor(null);
     getBuildingFloors(buildingId)
-      .then((data) => setFloors(data.length ? data : FALLBACK_FLOORS))
+      .then((d) => setFloors(d.length ? d : FALLBACK_FLOORS))
       .catch(() => setFloors(FALLBACK_FLOORS));
   }, [buildingId]);
 
-  const totalH = floors.length * (FLOOR_H + GAP);
-  const camY   = totalH / 2;
-  const camDist = Math.max(BLD_W, totalH) * 1.9;
+  const neighbors = useMemo(() => generateNeighborhood(buildingId), [buildingId]);
+
+  const totalH  = floors.length * (FLOOR_H + GAP);
+  const camY    = totalH * 0.5;
+  const camDist = 280;
 
   const vacantCount = floors.filter((f) => f.vacant).length;
   const vacancyPct  = Math.round((vacantCount / floors.length) * 100);
-
-  const has3D = true;
   const hasStreetView = !!(lat && lng);
 
-  const ThreeDCanvas = (
+  // ── 3D 캔버스 (이웃 건물 포함) ──
+  const ThreeScene = (
     <div className="relative h-full w-full">
       <ErrorBoundary fallback={<div className="flex h-full items-center justify-center text-slate-400 text-sm">3D 렌더링 오류</div>}>
         <Canvas
-          camera={{ position: [camDist * 0.75, camY * 1.1, camDist * 0.75], fov: 38 }}
+          shadows
+          camera={{ position: [camDist * 0.5, camDist * 0.55, camDist * 0.6], fov: 42 }}
           className="h-full w-full"
         >
-          <ambientLight intensity={0.45} />
-          <directionalLight position={[40, 60, 30]} intensity={1.3} castShadow />
-          <directionalLight position={[-30, 30, -20]} intensity={0.35} color="#bfdbfe" />
-          <hemisphereLight args={['#1e3a5f', '#0f172a', 0.4]} />
-          <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[80, 80]} />
-            <meshStandardMaterial color="#0f172a" roughness={0.9} />
+          {/* 조명 */}
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[120, 200, 80]} intensity={1.2} castShadow
+            shadow-mapSize={[2048, 2048]}
+            shadow-camera-far={800}
+            shadow-camera-left={-300}
+            shadow-camera-right={300}
+            shadow-camera-top={300}
+            shadow-camera-bottom={-300}
+          />
+          <directionalLight position={[-80, 100, -60]} intensity={0.3} color="#bfdbfe" />
+          <hemisphereLight args={['#1e3a5f', '#0f172a', 0.45]} />
+          <fog attach="fog" args={['#0f172a', 200, 600]} />
+
+          {/* 지면 */}
+          <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[800, 800]} />
+            <meshStandardMaterial color="#111827" roughness={0.95} />
           </mesh>
-          <gridHelper args={[80, 24, '#1e293b', '#1e293b']} position={[0, 0, 0]} />
-          {[[-30, 0, 10], [32, 0, -8], [-28, 0, -15], [30, 0, 20]].map(([cx, , cz], i) => (
-            <mesh key={i} position={[cx, 5 + i * 2, cz]}>
-              <boxGeometry args={[14, 10 + i * 4, 10]} />
-              <meshStandardMaterial color="#1e293b" roughness={0.9} />
-            </mesh>
+
+          {/* 도로 */}
+          <Roads />
+
+          {/* 주변 건물 (1km 반경 대표 표시) */}
+          {neighbors.map((b, i) => (
+            <NeighborMesh key={i} b={b} />
           ))}
-          <Lobby w={BLD_W} d={BLD_D} />
+
+          {/* 선택 건물 하이라이트 */}
+          <SelectionRing h={totalH} />
+
+          {/* 선택 건물 상세 층 */}
           {floors.map((floor, i) => (
             <FloorMesh
               key={floor.level}
@@ -241,29 +322,47 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
               onClick={() => setSelectedFloor(selectedFloor === floor.level ? null : floor.level)}
             />
           ))}
-          <Rooftop topY={totalH} w={BLD_W} d={BLD_D} />
+          <Rooftop topY={totalH} />
+
+          {/* 선택 건물 라벨 */}
+          <Text
+            position={[0, totalH + 5, 0]}
+            fontSize={3} color="#f59e0b" anchorX="center" anchorY="bottom"
+          >
+            ▼ 선택 공실
+          </Text>
+
           <OrbitControls
-            enableDamping
-            dampingFactor={0.08}
-            minDistance={12}
-            maxDistance={140}
-            target={[0, camY, 0]}
+            enableDamping dampingFactor={0.08}
+            minDistance={15} maxDistance={500}
+            target={[0, camY * 0.4, 0]}
           />
         </Canvas>
       </ErrorBoundary>
+
       <ScaleBar />
+
+      {/* 층 선택 오버레이 */}
       {selectedFloor !== null && (() => {
         const f = floors.find((fl) => fl.level === selectedFloor);
         return f ? (
-          <div className="absolute left-3 top-3 rounded-xl bg-black/70 px-3 py-2 text-xs backdrop-blur-sm">
+          <div className="absolute left-3 top-3 rounded-xl bg-black/75 px-3 py-2 text-xs backdrop-blur-sm">
             <p className="font-bold text-white">{f.level}층 · {f.industry}</p>
             <p className={f.vacant ? 'text-amber-400' : 'text-emerald-400'}>{f.vacant ? '공실' : '운영 중'}</p>
             <p className="text-slate-400 mt-0.5">{((f.level - 1) * 3.5).toFixed(1)}m ~ {(f.level * 3.5).toFixed(1)}m</p>
           </div>
         ) : null;
       })()}
+
+      {/* 데모 배너 */}
       <div className="absolute top-2 right-2 rounded-full bg-amber-500/90 px-2.5 py-0.5 text-[10px] font-bold text-white">
         데모 데이터
+      </div>
+
+      {/* 이웃 건물 수 표시 */}
+      <div className="absolute bottom-10 left-3 rounded-lg bg-black/60 px-2.5 py-1.5 text-[10px] text-slate-300 backdrop-blur-sm">
+        <p className="font-semibold text-white">주변 건물 {neighbors.length}동</p>
+        <p className="text-slate-400">반경 약 340m 범위 · 시드 기반 데모</p>
       </div>
     </div>
   );
@@ -271,11 +370,11 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white shadow-sm">
       {/* 헤더 */}
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold">3D 디지털 트윈</p>
+          <p className="text-sm font-semibold">3D 디지털 트윈 · 주변 1km 도시 블록</p>
           <p className="text-xs text-slate-400">
-            층고 3.5m · 1:1,000 스케일
+            층고 3.5m · 셀 38m/블록 · {neighbors.length}동 주변 건물
             {hasStreetView ? ' · 네이버 거리뷰 연동' : ''}
             {' · 데모 데이터'}
           </p>
@@ -285,10 +384,9 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
             <span className="font-mono text-amber-400">{vacantCount}</span>
             <span className="text-slate-400">/{floors.length}층 공실 ({vacancyPct}%)</span>
           </div>
-          {/* 뷰 전환 탭 */}
           {hasStreetView && (
-            <div className="flex gap-1 rounded-lg bg-slate-800 p-0.5">
-              {([['split', '분할'], ['street', '거리뷰'], ['3d', '3D']] as const).map(([v, label]) => (
+            <div className="flex gap-0.5 rounded-lg bg-slate-800 p-0.5">
+              {([['split', '분할'], ['3d', '3D+이웃'], ['street', '거리뷰']] as const).map(([v, label]) => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
@@ -304,33 +402,32 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
         </div>
       </div>
 
-      {/* 메인 뷰 */}
-      <div className="relative mb-4 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-slate-800 to-slate-900"
-        style={{ height: view === 'split' ? '640px' : '480px' }}>
+      {/* 메인 뷰 영역 */}
+      <div
+        className="relative mb-4 overflow-hidden rounded-xl border border-white/10 bg-gradient-to-b from-slate-800 to-slate-900"
+        style={{ height: hasStreetView && view === 'split' ? '700px' : '520px' }}
+      >
         {!hasStreetView || view === '3d' ? (
-          // 3D만
-          <div className="h-full w-full">{ThreeDCanvas}</div>
+          <div className="h-full w-full">{ThreeScene}</div>
         ) : view === 'street' ? (
-          // 거리뷰만
           <div className="h-full w-full">
             <Suspense fallback={null}>
               <NaverPanorama lat={lat!} lng={lng!} />
             </Suspense>
           </div>
         ) : (
-          // 분할: 위쪽 거리뷰 + 아래쪽 3D
+          // 분할: 거리뷰 위 + 3D 아래
           <div className="flex h-full flex-col">
-            <div className="relative" style={{ height: '50%' }}>
+            <div className="relative border-b border-white/10" style={{ height: '42%' }}>
               <Suspense fallback={null}>
                 <NaverPanorama lat={lat!} lng={lng!} />
               </Suspense>
-              {/* 위치 좌표 표시 */}
-              <div className="absolute bottom-2 right-2 rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-mono text-white/70">
+              <div className="absolute bottom-2 right-2 rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-mono text-white/60">
                 {lat!.toFixed(5)}, {lng!.toFixed(5)}
               </div>
             </div>
-            <div className="relative border-t border-white/10" style={{ height: '50%' }}>
-              {ThreeDCanvas}
+            <div className="relative" style={{ height: '58%' }}>
+              {ThreeScene}
             </div>
           </div>
         )}
@@ -338,7 +435,7 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
 
       {/* 층별 현황 */}
       <div className="space-y-1.5 rounded-xl bg-white/5 p-3">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">층별 현황</p>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">층별 현황 (선택 건물)</p>
         {[...floors].reverse().map((floor) => (
           <button
             key={floor.level}
@@ -363,7 +460,7 @@ export default function BuildingTwin({ buildingId, lat, lng }: BuildingTwinProps
 
       {hasStreetView && (
         <p className="mt-3 text-[10px] text-slate-500">
-          거리뷰: 네이버 지도 파노라마 API 기반 실제 위치({lat!.toFixed(4)}, {lng!.toFixed(4)}) · 3D 모델은 층수/업종 기반 데모
+          ※ 거리뷰: 네이버 파노라마 API (실제 위치 기반) · 3D 주변 건물: 시드 기반 프로시저럴 생성 (데모)
         </p>
       )}
     </div>
