@@ -158,19 +158,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 창업 지역 추천 */}
-        <StartupRecommendation
-          guCode={guCode}
-          guName={guLabel}
-          industryCode={industryCode}
-          dongs={guDongs}
-          onSelectDong={(code, gCode) => {
-            if (gCode) { setGuCode(gCode); setDongCode(code); }
-            else if (guCode) setDongCode(code);
-          }}
-        />
-
-        {/* 점포 이력 — 구·동·공실 선택 후에만 표시 */}
+        {/* 점포 이력 + 거리뷰 — 3D 트윈 바로 아래 */}
         {selectedBuildingId ? (
           <StoreHistory
             buildingId={selectedBuildingId}
@@ -188,6 +176,18 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* 창업 지역 추천 */}
+        <StartupRecommendation
+          guCode={guCode}
+          guName={guLabel}
+          industryCode={industryCode}
+          dongs={guDongs}
+          onSelectDong={(code, gCode) => {
+            if (gCode) { setGuCode(gCode); setDongCode(code); }
+            else if (guCode) setDongCode(code);
+          }}
+        />
 
         {/* 데이터 신뢰성 패널 */}
         <DataReliabilityPanel />
