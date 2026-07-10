@@ -127,9 +127,15 @@ export default function App() {
             industryCode={industryCode}
             guDongs={guDongs}
             onSelectBuilding={setSelectedBuildingId}
-            onSelectVacancy={(id, lat, lng) => {
+            onSelectVacancy={(id, lat, lng, vGuCode, vDongCode) => {
               setSelectedBuildingId(`vacancy-${id}`);
               setVacancyCoords({ lat, lng });
+              if (vGuCode && vGuCode !== guCode) {
+                setGuCode(vGuCode);
+                setDongCode(vDongCode ?? '');
+              } else if (vDongCode && vDongCode !== dongCode) {
+                setDongCode(vDongCode);
+              }
             }}
           />
         </section>
