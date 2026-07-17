@@ -4,10 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
 
+type NearbyVacancy = { id: string; lat: number; lng: number; dongName?: string };
+
 type BuildingTwinProps = {
   buildingId: string;
   lat?: number;
   lng?: number;
+  nearbyVacancies?: NearbyVacancy[];
+  aiRecommendedIndustries?: string[];
 };
 
 // ── 시드 기반 난수 ──────────────────────────────────────────────
@@ -74,6 +78,15 @@ function generateNeighborhood(seed: string): NeighborBuilding[] {
     }
   }
   return out;
+}
+
+// lat/lng 좌표 → grid cell 위치 변환 (선택 공실 기준)
+function coordToGrid(baseLat: number, baseLng: number, lat: number, lng: number): { gx: number; gz: number } {
+  const metersPerLat = 111320;
+  const metersPerLng = 111320 * Math.cos((baseLat * Math.PI) / 180);
+  const dx = (lng - baseLng) * metersPerLng;
+  const dz = (lat - baseLat) * metersPerLat;
+  return { gx: Math.round(dx / CELL), gz: Math.round(-dz / CELL) };
 }
 
 // ── 주변 건물 메쉬 ──────────────────────────────────────────────
@@ -189,7 +202,7 @@ function ScaleBar() {
 }
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────────
-export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng }: BuildingTwinProps) {
+export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyVacancies = [], aiRecommendedIndustries = [] }: BuildingTwinProps) {
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
@@ -200,7 +213,43 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng }: Build
       .catch(() => setFloors(FALLBACK_FLOORS));
   }, [buildingId]);
 
-  const neighbors = useMemo(() => generateNeighborhood(buildingId), [buildingId]);
+  const allNeighbors = useMemo(() => generateNeighborhood(buildingId), [buildingId]);
+
+  // 주변 공실 → grid cell 위치 (최대 GRID_R 이내)
+  const vacancyGridCells = useMemo(() => {
+    if (!_lat || !_lng || nearbyVacancies.length === 0) return new Set<string>();
+    const cells = new Set<string>();
+    nearbyVacancies.forEach((v) => {
+      const { gx, gz } = coordToGrid(_lat, _lng, v.lat, v.lng);
+      if (Math.abs(gx) <= GRID_R && Math.abs(gz) <= GRID_R) cells.add(`${gx},${gz}`);
+    });
+    return cells;
+  }, [_lat, _lng, nearbyVacancies]);
+
+  // AI 추천 업종 건물 → grid cell 위치 (seed 기반 고정 위치)
+  const aiGridCells = useMemo(() => {
+    if (aiRecommendedIndustries.length === 0) return new Set<string>();
+    const rng = makePRNG(hashStr(buildingId + 'ai'));
+    const cells = new Set<string>();
+    aiRecommendedIndustries.forEach((_, idx) => {
+      const angle = (idx / aiRecommendedIndustries.length) * Math.PI * 2 + rng() * 0.5;
+      const dist = 2 + Math.floor(rng() * 4);
+      const gx = Math.round(Math.cos(angle) * dist);
+      const gz = Math.round(Math.sin(angle) * dist);
+      cells.add(`${gx},${gz}`);
+    });
+    return cells;
+  }, [buildingId, aiRecommendedIndustries]);
+
+  // 표시할 건물: 주변 공실 + AI 추천 위치만
+  const neighbors = useMemo(() => {
+    const hasFilters = nearbyVacancies.length > 0 || aiRecommendedIndustries.length > 0;
+    if (!hasFilters) return allNeighbors.slice(0, 30); // fallback: 일부만 표시
+    return allNeighbors.filter((b) => {
+      const key = `${b.gx},${b.gz}`;
+      return vacancyGridCells.has(key) || aiGridCells.has(key);
+    });
+  }, [allNeighbors, vacancyGridCells, aiGridCells, nearbyVacancies.length, aiRecommendedIndustries.length]);
 
   const totalH  = floors.length * (FLOOR_H + GAP);
   const camY    = totalH * 0.5;
@@ -255,10 +304,18 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng }: Build
             {/* 도로 */}
             <Roads />
 
-            {/* 주변 건물 (500m 반경) */}
-            {neighbors.map((b, i) => (
-              <NeighborMesh key={i} b={b} />
-            ))}
+            {/* 주변 건물 (공실/AI추천만 표시) */}
+            {neighbors.map((b, i) => {
+              const key = `${b.gx},${b.gz}`;
+              const isVacancy = vacancyGridCells.has(key);
+              const isAI = aiGridCells.has(key);
+              const displayB = isVacancy
+                ? { ...b, color: '#f97316' }
+                : isAI
+                ? { ...b, color: '#10b981' }
+                : b;
+              return <NeighborMesh key={i} b={displayB} />;
+            })}
 
             {/* 선택 건물 하이라이트 */}
             <SelectionRing />
@@ -309,10 +366,11 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng }: Build
           데모 데이터
         </div>
 
-        {/* 이웃 건물 수 */}
-        <div className="absolute bottom-10 left-3 rounded-lg bg-black/60 px-2.5 py-1.5 text-[10px] text-slate-300 backdrop-blur-sm">
-          <p className="font-semibold text-white">주변 건물 {neighbors.length}동</p>
-          <p className="text-slate-400">반경 약 500m 범위 · 시드 기반 데모</p>
+        {/* 범례 */}
+        <div className="absolute bottom-10 left-3 rounded-lg bg-black/60 px-2.5 py-1.5 text-[10px] text-slate-300 backdrop-blur-sm space-y-0.5">
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-amber-400 flex-shrink-0" />선택 공실</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-orange-500 flex-shrink-0" />주변 공실 ({vacancyGridCells.size}동)</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 flex-shrink-0" />AI 추천 업종 ({aiGridCells.size}동)</div>
         </div>
       </div>
 

@@ -24,15 +24,13 @@ function StatCard({ label, value, sub, color, trend, trendGood, onClick }: StatC
   return (
     <button
       onClick={onClick}
-      className="rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md hover:border-indigo-300"
+      className="rounded-xl border border-slate-200 bg-white px-2 py-2 text-left shadow-sm transition-shadow hover:shadow-md hover:border-indigo-300 min-w-0"
     >
-      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-        {label}<span className="ml-1 text-slate-300">· 클릭하여 3년 추이 보기</span>
-      </p>
-      <p className={`mt-1 text-xl font-bold ${color} flex items-baseline`}>
+      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 truncate">{label}</p>
+      <p className={`mt-0.5 text-sm font-bold ${color} flex items-baseline`}>
         {value}{trendEl}
       </p>
-      <p className="mt-0.5 text-[11px] text-slate-500">{sub}</p>
+      <p className="text-[9px] text-slate-400 truncate">{sub}</p>
     </button>
   );
 }
@@ -45,7 +43,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-4 gap-2">
         <StatCard
           label="유동인구"
           value={Math.round(s.floatingPop).toLocaleString()}
@@ -58,7 +56,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
         <StatCard
           label="공실률"
           value={`${s.vacancyRate.toFixed(1)}%`}
-          sub="점포 공실 비율"
+          sub="공실 비율"
           color={s.vacancyRate >= 15 ? 'text-red-600' : s.vacancyRate >= 12 ? 'text-amber-600' : 'text-emerald-600'}
           trend={s.vacancyRate >= 15 ? 'up' : 'down'}
           trendGood="down"
@@ -67,13 +65,13 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
         <StatCard
           label="인구밀도"
           value={Math.round(s.popDensity).toLocaleString()}
-          sub="명 / km²"
+          sub="명/km²"
           color="text-slate-600"
           onClick={() => setActiveMetric('popDensity')}
         />
         <StatCard
           label="임대시세"
-          value={`${s.rentPer33.toFixed(1)}만원`}
+          value={`${s.rentPer33.toFixed(1)}만`}
           sub="3.3㎡ 기준"
           color="text-violet-600"
           onClick={() => setActiveMetric('rentPer33')}
