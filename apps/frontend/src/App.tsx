@@ -4,38 +4,11 @@ import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
 import StartupRecommendation from './components/StartupRecommendation';
 import DataReliabilityPanel from './components/DataReliabilityPanel';
+import VacancyModal from './components/VacancyModal';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
+import type { VacancyMarker } from './lib/marketData';
 
 const BuildingTwin = lazy(() => import('./components/BuildingTwin'));
-
-function StreetViewPanel({ buildingId }: { buildingId: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-4 text-sm font-bold text-slate-800 hover:bg-slate-50 transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <span className="text-base">🔭</span>거리뷰 (Naver 거리뷰)
-        </span>
-        <span className="text-xs text-slate-400">{open ? '▲ 닫기' : '▼ 열기'}</span>
-      </button>
-      {open && (
-        <div className="border-t border-slate-100 px-5 py-6">
-          <div className="flex h-52 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50">
-            <span className="text-3xl">🗺️</span>
-            <p className="text-sm font-semibold text-slate-700">Naver 거리뷰 준비 중</p>
-            <p className="max-w-xs text-center text-xs text-slate-400">
-              Naver Cloud Console에서 Maps Panorama API를 활성화하면 건물 주변 360° 거리뷰가 표시됩니다.
-            </p>
-            <span className="rounded bg-slate-200 px-2 py-0.5 text-xs font-mono text-slate-500">건물 ID: {buildingId}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function App() {
   const [guCode, setGuCode] = useState('');
@@ -43,6 +16,8 @@ export default function App() {
   const [industryCode, setIndustryCode] = useState('ALL');
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
   const [vacancyCoords, setVacancyCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [vacancyDetail, setVacancyDetail] = useState<{ vacancy: VacancyMarker; guCode: string; guName: string } | null>(null);
+  const [sideOpen, setSideOpen] = useState(false);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
   const guDongs = useMemo(() => selectedGu?.dongs ?? [], [selectedGu]);
@@ -62,175 +37,208 @@ export default function App() {
     : '';
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-slate-900">
 
-        {/* 헤더 */}
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            SpaceOS Platform
-          </p>
-          <h1 className="text-3xl font-semibold">서울 상권분석 현황</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-500">
-            서울 25개 자치구 · 동별 필터로 공실 현황을 확인하고,
-            지도에서 공실 매물을 선택하면 3D 디지털 트윈과 점포 이력을 볼 수 있습니다.
-          </p>
-        </header>
-
-        {/* 필터 바 */}
-        <section className="flex flex-wrap items-start gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-
-          {/* 구 선택 */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">구</label>
-            <select
-              value={guCode}
-              onChange={(e) => handleGuChange(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <option value="">서울 전체</option>
-              {SEOUL_GU.map((g) => (
-                <option key={g.code} value={g.code}>{g.name}</option>
-              ))}
-            </select>
+      {/* 상단 헤더 바 */}
+      <header className="flex flex-shrink-0 items-center justify-between gap-3 bg-slate-900/95 px-4 py-2.5 backdrop-blur-sm border-b border-slate-700">
+        <div className="flex items-center gap-3 min-w-0">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">SpaceOS</p>
+            <h1 className="text-sm font-bold text-white leading-tight">서울 상권분석</h1>
           </div>
-
-          {/* 동 선택 */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">동</label>
-            <select
-              value={dongCode}
-              onChange={(e) => setDongCode(e.target.value)}
-              disabled={!guCode}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-40"
-            >
-              <option value="">전체</option>
-              {(selectedGu?.dongs ?? []).map((d) => (
-                <option key={d.code} value={d.code}>{d.name}</option>
-              ))}
-            </select>
+          {/* 현재 선택 */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs">
+            <span className="rounded-full bg-indigo-600/80 px-2.5 py-0.5 font-semibold text-white">
+              {guLabel}{dongLabel && dongLabel !== '전체' ? ` · ${dongLabel}` : ''}
+            </span>
+            <span className="text-slate-400">·</span>
+            <span className="text-slate-300">{INDUSTRY_CODES.find((i) => i.code === industryCode)?.name ?? '전체'}</span>
           </div>
-
-          {/* 업종 chip */}
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">업종</label>
-            <div className="flex flex-wrap gap-1.5">
-              {INDUSTRY_CODES.map((ind) => (
-                <button
-                  key={ind.code}
-                  onClick={() => setIndustryCode(ind.code)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    industryCode === ind.code
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {ind.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 선택된 지역 요약 */}
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700 font-semibold">
-            {guLabel}{dongLabel ? ` · ${dongLabel}` : ''}
-          </span>
-          <span>·</span>
-          <span>{INDUSTRY_CODES.find((i) => i.code === industryCode)?.name ?? '전체'}</span>
         </div>
 
-        {/* 통계 카드 */}
-        <StatsPanel guCode={guCode || SEOUL_GU[0].code} dongCode={dongCode} industryCode={industryCode} />
+        {/* 필터 (헤더 우측) */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 구 선택 */}
+          <select
+            value={guCode}
+            onChange={(e) => handleGuChange(e.target.value)}
+            className="rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          >
+            <option value="">서울 전체</option>
+            {SEOUL_GU.map((g) => (
+              <option key={g.code} value={g.code}>{g.name}</option>
+            ))}
+          </select>
 
-        {/* 지도 */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-semibold">네이버 지도 · {guLabel}</p>
-            {guCode && (
-              <span className="text-[11px] text-slate-400">
-                빨간 점 클릭 → 공실 매물 상세 · 3D 트윈 활성화
-              </span>
+          {/* 동 선택 */}
+          <select
+            value={dongCode}
+            onChange={(e) => setDongCode(e.target.value)}
+            disabled={!guCode}
+            className="rounded-lg border border-slate-600 bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:opacity-40"
+          >
+            <option value="">전체 동</option>
+            {(selectedGu?.dongs ?? []).map((d) => (
+              <option key={d.code} value={d.code}>{d.name}</option>
+            ))}
+          </select>
+
+          {/* 업종 chip (간소화) */}
+          <div className="flex flex-wrap gap-1">
+            {INDUSTRY_CODES.slice(0, 5).map((ind) => (
+              <button
+                key={ind.code}
+                onClick={() => setIndustryCode(ind.code)}
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors ${
+                  industryCode === ind.code
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
+              >
+                {ind.name}
+              </button>
+            ))}
+            {INDUSTRY_CODES.length > 5 && (
+              <select
+                value={INDUSTRY_CODES.slice(5).find(i => i.code === industryCode) ? industryCode : ''}
+                onChange={(e) => e.target.value && setIndustryCode(e.target.value)}
+                className="rounded-full border border-slate-600 bg-slate-700 px-2 py-0.5 text-[11px] text-slate-300"
+              >
+                <option value="">더보기…</option>
+                {INDUSTRY_CODES.slice(5).map((ind) => (
+                  <option key={ind.code} value={ind.code}>{ind.name}</option>
+                ))}
+              </select>
             )}
           </div>
-          <NaverMap
-            guCode={guCode}
-            dongCode={dongCode}
-            industryCode={industryCode}
-            guDongs={guDongs}
-            onSelectBuilding={setSelectedBuildingId}
-            onSelectVacancy={(id, lat, lng, vGuCode, vDongCode) => {
-              setSelectedBuildingId(`vacancy-${id}`);
-              setVacancyCoords({ lat, lng });
-              if (vGuCode && vGuCode !== guCode) {
-                setGuCode(vGuCode);
-                setDongCode(vDongCode ?? '');
-              } else if (vDongCode && vDongCode !== dongCode) {
-                setDongCode(vDongCode);
-              }
-            }}
-          />
-        </section>
 
-        {/* 3D 디지털 트윈 — 공실 매물 선택 후에만 표시 */}
-        {selectedBuildingId ? (
-          <Suspense fallback={
-            <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">
-              3D 트윈 불러오는 중…
+          {/* 사이드 패널 토글 */}
+          <button
+            onClick={() => setSideOpen((v) => !v)}
+            className="ml-1 rounded-lg border border-slate-600 bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-300 hover:bg-slate-600 transition-colors"
+          >
+            {sideOpen ? '지도 전체 ▶' : '◀ 상세분석'}
+          </button>
+        </div>
+      </header>
+
+      {/* 메인 영역: 지도 + (선택 시) 사이드 패널 */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* 지도 (항상 보임, 사이드 열릴 때 축소) */}
+        <div className={`relative flex-1 transition-all duration-300 ${sideOpen ? 'hidden sm:flex' : 'flex'}`}>
+          <div className="absolute inset-2 rounded-xl overflow-hidden">
+            <NaverMap
+              guCode={guCode}
+              dongCode={dongCode}
+              industryCode={industryCode}
+              guDongs={guDongs}
+              onSelectBuilding={setSelectedBuildingId}
+              onSelectVacancy={(id, lat, lng, vGuCode, vDongCode, vData) => {
+                setSelectedBuildingId(`vacancy-${id}`);
+                setVacancyCoords({ lat, lng });
+                if (vGuCode && vGuCode !== guCode) {
+                  setGuCode(vGuCode);
+                  setDongCode(vDongCode ?? '');
+                } else if (vDongCode && vDongCode !== dongCode) {
+                  setDongCode(vDongCode);
+                }
+                const gu = SEOUL_GU.find((g) => g.code === vGuCode);
+                setVacancyDetail({ vacancy: vData, guCode: vGuCode, guName: gu?.name ?? '' });
+                setSideOpen(true);
+              }}
+            />
+          </div>
+
+          {/* 지도 위 힌트 (공실 미선택 시) */}
+          {!selectedBuildingId && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 rounded-full bg-black/60 px-4 py-1.5 text-xs text-white backdrop-blur-sm pointer-events-none">
+              빨간 점 클릭 → 공실 매물 상세 · 3D 트윈 활성화
             </div>
-          }>
-            <BuildingTwin buildingId={selectedBuildingId} lat={vacancyCoords?.lat} lng={vacancyCoords?.lng} />
-          </Suspense>
-        ) : (
-          <div className="flex h-32 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
-            <div>
-              <p className="text-sm font-semibold text-slate-400">3D 디지털 트윈</p>
-              <p className="text-xs text-slate-300 mt-1">구·동을 선택하고 지도의 공실 매물(빨간 점)을 클릭하면 활성화됩니다</p>
+          )}
+        </div>
+
+        {/* 사이드 패널 (상세 분석) */}
+        {sideOpen && (
+          <div className="w-full sm:w-[400px] flex-shrink-0 overflow-y-auto bg-slate-50 border-l border-slate-200 p-4 space-y-4">
+
+            {/* 닫기 */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-slate-800">
+                {selectedBuildingId ? '공실 매물 상세분석' : '서울 상권분석'}
+              </h2>
+              <button
+                onClick={() => setSideOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+              >
+                ×
+              </button>
             </div>
+
+            {/* 통계 카드 */}
+            <StatsPanel guCode={guCode || SEOUL_GU[0].code} dongCode={dongCode} industryCode={industryCode} />
+
+            {/* 3D 디지털 트윈 */}
+            {selectedBuildingId ? (
+              <Suspense fallback={
+                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white text-sm text-slate-400">
+                  3D 트윈 불러오는 중…
+                </div>
+              }>
+                <BuildingTwin buildingId={selectedBuildingId} lat={vacancyCoords?.lat} lng={vacancyCoords?.lng} />
+              </Suspense>
+            ) : (
+              <div className="flex h-24 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
+                <div>
+                  <p className="text-sm font-semibold text-slate-400">3D 디지털 트윈</p>
+                  <p className="text-xs text-slate-300 mt-1">공실 매물 클릭 시 활성화</p>
+                </div>
+              </div>
+            )}
+
+            {/* 점포 이력 */}
+            {selectedBuildingId ? (
+              <StoreHistory
+                buildingId={selectedBuildingId}
+                guCode={guCode || SEOUL_GU[0].code}
+                dongCode={dongCode}
+                industryCode={industryCode}
+                guName={guLabel}
+                dongName={dongLabel}
+              />
+            ) : (
+              <div className="flex h-16 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
+                <p className="text-xs text-slate-300">공실 매물 클릭 시 점포 이력 표시</p>
+              </div>
+            )}
+
+            {/* 창업 지역 추천 */}
+            <StartupRecommendation
+              guCode={guCode}
+              guName={guLabel}
+              industryCode={industryCode}
+              dongs={guDongs}
+              onSelectDong={(code, gCode) => {
+                if (gCode) { setGuCode(gCode); setDongCode(code); }
+                else if (guCode) setDongCode(code);
+              }}
+            />
+
+            {/* 데이터 신뢰성 */}
+            <DataReliabilityPanel />
           </div>
         )}
-
-        {/* 거리뷰 — 3D 트윈 아래, 점포 이력 위 */}
-        {selectedBuildingId ? (
-          <StreetViewPanel buildingId={selectedBuildingId} />
-        ) : null}
-
-        {/* 점포 이력 */}
-        {selectedBuildingId ? (
-          <StoreHistory
-            buildingId={selectedBuildingId}
-            guCode={guCode || SEOUL_GU[0].code}
-            dongCode={dongCode}
-            industryCode={industryCode}
-            guName={guLabel}
-            dongName={dongLabel}
-          />
-        ) : (
-          <div className="flex h-20 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
-            <div>
-              <p className="text-sm font-semibold text-slate-400">점포 이력</p>
-              <p className="text-xs text-slate-300 mt-1">구·동을 선택하고 지도의 공실 매물(빨간 점)을 클릭하면 해당 점포의 이력을 볼 수 있습니다</p>
-            </div>
-          </div>
-        )}
-
-        {/* 창업 지역 추천 — 항상 표시 (서울 전체 시 전체 추천, 구 선택 시 해당 구 추천) */}
-        <StartupRecommendation
-          guCode={guCode}
-          guName={guLabel}
-          industryCode={industryCode}
-          dongs={guDongs}
-          onSelectDong={(code, gCode) => {
-            if (gCode) { setGuCode(gCode); setDongCode(code); }
-            else if (guCode) setDongCode(code);
-          }}
-        />
-
-        {/* 데이터 신뢰성 패널 */}
-        <DataReliabilityPanel />
-
       </div>
-    </main>
+
+      {/* 공실 상세 모달 */}
+      {vacancyDetail && (
+        <VacancyModal
+          vacancy={vacancyDetail.vacancy}
+          guCode={vacancyDetail.guCode}
+          guName={vacancyDetail.guName}
+          onClose={() => setVacancyDetail(null)}
+        />
+      )}
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { getMarketStats, getVacancyMarkers } from '@/lib/marketData';
+import { getMarketStats, getVacancyMarkers, getStartupAreaRecs, type VacancyMarker } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
 import { GU_POLYGONS, getAllDongCenters } from '@/lib/seoulBoundaries';
@@ -22,6 +22,21 @@ const GU_CENTER: Record<string, [number, number]> = {
 };
 const SEOUL_CENTER: [number, number] = [37.5665, 126.9780];
 
+// 25개 구별 고유 색상
+const GU_COLOR_LIST = [
+  '#ef4444','#f97316','#eab308','#84cc16','#22c55e',
+  '#10b981','#14b8a6','#06b6d4','3b82f6','#6366f1',
+  '#8b5cf6','#a855f7','#ec4899','#f43f5e','#0ea5e9',
+  '#d946ef','#fb923c','#4ade80','#34d399','#2dd4bf',
+  '#38bdf8','#818cf8','#fb7185','#a3e635','#64748b',
+];
+const GU_CODE_ORDER = Object.keys(GU_CENTER);
+function guColor(code: string) {
+  const idx = GU_CODE_ORDER.indexOf(code);
+  const hex = GU_COLOR_LIST[idx < 0 ? 0 : idx % GU_COLOR_LIST.length];
+  return hex.startsWith('#') ? hex : `#${hex}`;
+}
+
 function vacancyColor(rate: number): string {
   if (rate >= 15) return '#dc2626';
   if (rate >= 12) return '#f59e0b';
@@ -36,7 +51,7 @@ type NaverMapProps = {
   industryCode?: string;
   guDongs?: DongItem[];
   onSelectBuilding?: (id: string) => void;
-  onSelectVacancy?: (id: string, lat: number, lng: number, guCode: string, dongCode: string) => void;
+  onSelectVacancy?: (id: string, lat: number, lng: number, guCode: string, dongCode: string, vacancyData: VacancyMarker) => void;
 };
 
 export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs = [], onSelectBuilding, onSelectVacancy }: NaverMapProps) {
@@ -47,6 +62,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
   const selectedPolyRef = useRef<NaverPolygon | null>(null);
   const dongMarkersRef = useRef<NaverMarker[]>([]);
   const vacancyMarkersRef = useRef<NaverMarker[]>([]);
+  const startupMarkersRef = useRef<NaverMarker[]>([]);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -62,7 +78,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     return () => { cancelled = true; unsub(); };
   }, [clientId]);
 
-  // scriptLoaded → map div DOM 마운트 후 initMap
   useEffect(() => {
     if (!scriptLoaded || mapRef.current) return;
     if (containerRef.current) { initMap(); return; }
@@ -74,7 +89,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     return () => { cancelled = true; window.clearInterval(id); };
   }, [scriptLoaded]);
 
-  // 구/동/업종 변경 → 지도 업데이트
   useEffect(() => {
     if (!scriptLoaded || !mapRef.current || !window.naver) return;
     try {
@@ -84,6 +98,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       updatePolygons();
       updateDongMarkers();
       updateVacancyMarkers();
+      clearStartupMarkers();
     } catch (err) {
       console.error('지도 갱신 실패', err);
     }
@@ -132,47 +147,57 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     vacancyMarkersRef.current = [];
   }
 
+  function clearStartupMarkers() {
+    startupMarkersRef.current.forEach((m) => m.setMap(null));
+    startupMarkersRef.current = [];
+  }
+
   function updatePolygons() {
     if (!mapRef.current || !window.naver) return;
     clearPolygons();
 
     if (!guCode) {
-      // 서울 전체 — 25개 구 모두 동일한 스타일로 표시
-      Object.entries(GU_POLYGONS).forEach(([, coords]) => {
+      // 서울 전체 — 25개 구 각자 고유 색상으로 표시
+      GU_CODE_ORDER.forEach((code) => {
+        const coords = GU_POLYGONS[code];
+        if (!coords) return;
+        const color = guColor(code);
         polygonsRef.current.push(new window.naver.maps.Polygon({
           map: mapRef.current!,
           paths: [coords.map(([la, ln]) => ll(la, ln))],
-          strokeColor: '#4f46e5',
-          strokeOpacity: 0.5,
+          strokeColor: color,
+          strokeOpacity: 0.7,
           strokeWeight: 1.5,
-          fillColor: '#818cf8',
-          fillOpacity: 0.12,
+          fillColor: color,
+          fillOpacity: 0.15,
         }));
       });
     } else {
       // 선택된 구 강조 + 나머지 구 연하게
+      const color = guColor(guCode);
       const selCoords = GU_POLYGONS[guCode];
       if (selCoords) {
         selectedPolyRef.current = new window.naver.maps.Polygon({
           map: mapRef.current,
           paths: [selCoords.map(([la, ln]) => ll(la, ln))],
-          strokeColor: '#4f46e5',
+          strokeColor: color,
           strokeOpacity: 0.95,
           strokeWeight: 3,
-          fillColor: '#6366f1',
+          fillColor: color,
           fillOpacity: 0.18,
         });
       }
       Object.entries(GU_POLYGONS).forEach(([code, coords]) => {
         if (code === guCode) return;
+        const c = guColor(code);
         polygonsRef.current.push(new window.naver.maps.Polygon({
           map: mapRef.current!,
           paths: [coords.map(([la, ln]) => ll(la, ln))],
-          strokeColor: '#6366f1',
-          strokeOpacity: 0.2,
+          strokeColor: c,
+          strokeOpacity: 0.3,
           strokeWeight: 1,
-          fillColor: '#818cf8',
-          fillOpacity: 0.04,
+          fillColor: c,
+          fillOpacity: 0.05,
         }));
       });
     }
@@ -183,7 +208,6 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     clearDongMarkers();
     if (!guCode || guDongs.length === 0) return;
 
-    // 선택된 구의 모든 동을 점으로 표시
     const centers = getAllDongCenters(guDongs, guCode);
     const gu = SEOUL_GU.find((g) => g.code === guCode);
 
@@ -223,7 +247,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
     });
   }
 
-  function addVacancyMarker(v: ReturnType<typeof getVacancyMarkers>[0], guName?: string, markerGuCode?: string) {
+  function addVacancyMarker(v: VacancyMarker, guName?: string, markerGuCode?: string) {
     if (!mapRef.current || !window.naver) return;
     const marker = new window.naver.maps.Marker({
       position: ll(v.lat, v.lng),
@@ -241,23 +265,73 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       }
       const locationLabel = guName ? `${guName} · ${v.dongName}` : v.dongName;
       infoWindowRef.current.setContent(`
-        <div style="padding:10px 14px;min-width:180px;font-size:12px;line-height:1.7;">
-          <p style="font-weight:700;font-size:13px;margin-bottom:6px;color:#dc2626;">📍 공실 매물 (데모)</p>
+        <div style="padding:8px 12px;min-width:160px;font-size:12px;line-height:1.6;">
+          <p style="font-weight:700;font-size:13px;margin-bottom:4px;color:#dc2626;">📍 공실 매물</p>
           <p style="color:#64748b;margin-bottom:4px;">${locationLabel}</p>
-          <p>층: <b>${v.floor}층</b></p>
-          <p>면적: <b>${v.sqm}㎡</b></p>
-          <p>월세: <b>${v.rentMonthly}만원/월</b></p>
-          <p>전 업종: ${v.lastIndustry}</p>
-          <p>공실 기간: ${v.emptyMonths}개월</p>
-          <p style="margin-top:6px;font-size:10px;color:#94a3b8;">※ 데모 데이터 — 실제 매물과 다름</p>
+          <p>층: <b>${v.floor}층</b> · 면적: <b>${v.sqm}㎡</b></p>
+          <p style="margin-top:4px;font-size:10px;color:#6366f1;font-weight:600;">▶ 클릭하여 상세정보 보기</p>
         </div>
       `);
       infoWindowRef.current.open(mapRef.current!, marker);
-      onSelectVacancy?.(v.id, v.lat, v.lng, markerGuCode ?? guCode, v.dongCode);
+
+      const effectiveGuCode = markerGuCode ?? guCode;
+      onSelectVacancy?.(v.id, v.lat, v.lng, effectiveGuCode, v.dongCode, v);
       onSelectBuilding?.(`vacancy-${v.id}`);
+
+      // 창업 추천 마커 표시
+      showStartupMarkers(effectiveGuCode, v.dongCode);
     });
 
     vacancyMarkersRef.current.push(marker);
+  }
+
+  function showStartupMarkers(vGuCode: string, vDongCode: string) {
+    clearStartupMarkers();
+    if (!mapRef.current || !window.naver) return;
+
+    const gu = SEOUL_GU.find((g) => g.code === vGuCode);
+    if (!gu) return;
+
+    const recs = getStartupAreaRecs(vGuCode, industryCode, gu.name, gu.dongs, 3);
+    const centers = getAllDongCenters(gu.dongs, vGuCode);
+
+    recs.forEach((rec, idx) => {
+      const dongCenter = centers.find((c) => c.code === rec.dongCode);
+      if (!dongCenter) return;
+
+      const rankColors = ['#f59e0b', '#94a3b8', '#fb923c'];
+      const color = rankColors[idx] ?? '#6366f1';
+      const label = idx + 1;
+
+      const marker = new window.naver.maps.Marker({
+        position: ll(dongCenter.center[0], dongCenter.center[1]),
+        map: mapRef.current!,
+        icon: {
+          content: `<div style="background:${color};color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${label}</div>`,
+          anchor: new window.naver.maps.Point(11, 11),
+        },
+        zIndex: 60,
+      });
+
+      window.naver.maps.Event.addListener(marker, 'click', () => {
+        if (!infoWindowRef.current) {
+          infoWindowRef.current = new window.naver.maps.InfoWindow({ content: ' ' });
+        }
+        infoWindowRef.current.setContent(`
+          <div style="padding:8px 12px;min-width:160px;font-size:12px;line-height:1.6;">
+            <p style="font-weight:700;margin-bottom:2px;">⭐ 창업 추천 ${label}위</p>
+            <p style="color:#64748b;">${rec.guName} ${rec.dongName}</p>
+            <p>추천 점수: <b>${rec.score}점</b></p>
+            <p>공실률: ${rec.vacancyRate}% · 임대: ${rec.rentPer33}만/3.3㎡</p>
+            <p>유동인구: ${Math.round(rec.floatingPop).toLocaleString()}명</p>
+            ${vDongCode === rec.dongCode ? '<p style="color:#6366f1;font-size:10px;">← 현재 공실 위치</p>' : ''}
+          </div>
+        `);
+        infoWindowRef.current.open(mapRef.current!, marker);
+      });
+
+      startupMarkersRef.current.push(marker);
+    });
   }
 
   function updateVacancyMarkers() {
@@ -282,7 +356,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
 
   if (authError) {
     return (
-      <div className="flex h-[65vh] min-h-[580px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-200 bg-red-50 text-center px-6">
         <span className="text-2xl">⚠️</span>
         <p className="text-sm font-semibold text-red-700">{authError}</p>
         <p className="text-xs text-red-500">
@@ -294,29 +368,31 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
   }
 
   return (
-    <div>
+    <div className="relative h-full w-full">
       {/* 범례 */}
       {scriptLoaded && (
-        <div className="mb-2 flex items-center justify-end">
+        <div className="absolute bottom-3 left-3 z-10 rounded-xl bg-white/90 px-3 py-2 shadow text-[11px] space-y-1 backdrop-blur-sm">
           {guCode ? (
-            <span className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실</span>
-              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간</span>
-              <span className="inline-flex items-center gap-1"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실</span>
-              <span className="ml-2 inline-flex items-center gap-1"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
-            </span>
+            <>
+              <p className="font-semibold text-slate-500 mb-1">동별 공실 현황</p>
+              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실 (&lt;12%)</span>
+              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간 (12~15%)</span>
+              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실 (&gt;15%)</span>
+              <span className="flex items-center gap-1 text-slate-600 pt-1 border-t border-slate-100"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
+              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'2px solid white'}}></span>창업 추천</span>
+            </>
           ) : (
-            <span className="flex items-center gap-1 text-[11px] text-slate-400">
-              <span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>
-              구별 공실 매물 위치 (클릭하면 상세 확인)
-            </span>
+            <>
+              <p className="font-semibold text-slate-500 mb-1">구별 색상</p>
+              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물 클릭 → 상세</span>
+            </>
           )}
         </div>
       )}
 
       {/* 로딩 */}
       {!scriptLoaded && (
-        <div className="flex h-[65vh] min-h-[580px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-center">
           <span className="text-2xl">🗺️</span>
           <p className="text-sm font-semibold text-slate-700">네이버 지도 불러오는 중…</p>
         </div>
@@ -325,7 +401,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
       {/* 지도 */}
       <div
         ref={containerRef}
-        className="h-[65vh] min-h-[580px] w-full rounded-xl overflow-hidden"
+        className="h-full w-full rounded-xl overflow-hidden"
         style={{ display: scriptLoaded ? 'block' : 'none' }}
       />
     </div>
