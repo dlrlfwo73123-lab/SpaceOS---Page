@@ -91,7 +91,7 @@ function AreaCard({ rec, onSelect }: { rec: StartupAreaRec; onSelect: () => void
           <p className="text-[11px] text-slate-400">{rec.guName}</p>
         </div>
         <div className="flex items-center gap-3 text-right">
-          <div className="hidden sm:block text-[11px] text-slate-500">
+          <div className="hidden 2xl:block text-[11px] text-slate-500">
             <span className="text-red-500 font-medium">공실 {rec.vacancyRate}%</span>
             {' · '}
             <span>{Math.round(rec.floatingPop).toLocaleString()}명</span>

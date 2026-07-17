@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "is_demo": true,
+    "generated_at": null,
+    "source": "demo — real data not yet fetched",
+    "note": "이 파일은 GitHub Actions daily-data-fetch 워크플로가 덮어씌웁니다. 현재는 데모 데이터입니다."
+  },
+  "population": {},
+  "rent": {},
+  "land_price": {}
+}

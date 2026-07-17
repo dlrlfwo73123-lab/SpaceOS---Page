@@ -1,0 +1,77 @@
+name: Daily Data Fetch
+
+on:
+  schedule:
+    - cron: '0 1 * * *'   # 매일 UTC 01:00 (KST 10:00)
+  workflow_dispatch:        # 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create raw data directory
+        run: mkdir -p data/raw
+
+      # ── 행정안전부 주민등록인구 (구 단위) ──
+      - name: Fetch 행정안전부 주민등록인구
+        env:
+          MOIS_KEY: ${{ secrets.DATA_API_KEY_MOIS }}
+        run: |
+          STATUS=$(curl -s -o data/raw/population.json -w "%{http_code}" \
+            "https://apis.data.go.kr/9741000/주민등록인구및세대현황조회/읍면동별주민등록인구및세대현황조회?serviceKey=${MOIS_KEY}&siDoCd=11&pageNo=1&numOfRows=1000&type=json")
+          echo "행정안전부 응답 코드: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo '{"error":"fetch_failed","status":"'"$STATUS"'"}' > data/raw/population.json
+          fi
+
+      # ── 한국부동산원 상업용부동산 임대동향 ──
+      - name: Fetch 한국부동산원 임대동향
+        env:
+          REB_KEY: ${{ secrets.DATA_API_KEY_REB }}
+        run: |
+          STATUS=$(curl -s -o data/raw/rent-market.json -w "%{http_code}" \
+            "https://apis.data.go.kr/B552555/rentiendatainfo/getRentMarketList?serviceKey=${REB_KEY}&city=11&pageNo=1&numOfRows=100&type=json")
+          echo "한국부동산원 응답 코드: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo '{"error":"fetch_failed","status":"'"$STATUS"'"}' > data/raw/rent-market.json
+          fi
+
+      # ── 전국지가변동률조사 ──
+      - name: Fetch 전국지가변동률
+        env:
+          MOIS_KEY: ${{ secrets.DATA_API_KEY_MOIS }}
+        run: |
+          YEAR=$(date -u '+%Y')
+          STATUS=$(curl -s -o data/raw/land-price.json -w "%{http_code}" \
+            "https://apis.data.go.kr/1611000/nsdi/LandPriceService/attr/getLandPriceAttr?serviceKey=${MOIS_KEY}&ldcdSido=11&referYear=${YEAR}&pageNo=1&numOfRows=100&format=json")
+          echo "지가변동률 응답 코드: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo '{"error":"fetch_failed","status":"'"$STATUS"'"}' > data/raw/land-price.json
+          fi
+
+      # ── 데이터 처리 → gu-stats.json 생성 ──
+      - name: Process data
+        run: node scripts/process-data.mjs
+
+      # ── 변경사항 커밋 ──
+      - name: Commit updated data
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add apps/frontend/public/data/gu-stats.json data/raw/
+          if git diff --staged --quiet; then
+            echo "변경 없음 — 커밋 생략"
+          else
+            git commit -m "data: daily update $(date -u '+%Y-%m-%d')"
+            git push
+          fi
