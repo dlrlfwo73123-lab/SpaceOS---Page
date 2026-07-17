@@ -34,9 +34,9 @@ type VacantFloor = {
 // 스타일 상수
 // ─────────────────────────────────────────────
 const EVENT_STYLE: Record<string, string> = {
-  '신규입점': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  '폐업':    'text-red-700',
-  '업종변경': 'bg-blue-100 text-blue-700 border border-blue-200',
+  '신규입점': 'text-emerald-700 font-semibold',
+  '폐업':    'text-red-700 font-semibold',
+  '업종변경': 'text-blue-700 font-semibold',
 };
 const CODE_COLOR: Record<string, string> = {
   I56: 'text-amber-600', G47: 'text-violet-600', G4711: 'text-cyan-600',
@@ -296,7 +296,7 @@ export default function StoreHistory({
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">가게 이름</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">층 · 면적</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">업종</th>
-                <th className="px-4 py-2.5 text-left whitespace-nowrap">이벤트</th>
+                <th className="px-4 py-2.5 text-center whitespace-nowrap">이벤트</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">임차비</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">개업일</th>
                 <th className="px-4 py-2.5 text-left whitespace-nowrap">폐업일</th>
@@ -319,13 +319,13 @@ export default function StoreHistory({
                         {row.industryCode}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center">
                       {row.event === '폐업' ? (
-                        <span className={`text-xs font-semibold [writing-mode:vertical-rl] ${EVENT_STYLE[row.event] ?? ''}`}>
+                        <span className={`text-xs [writing-mode:vertical-rl] ${EVENT_STYLE[row.event] ?? ''}`}>
                           {row.event}
                         </span>
                       ) : (
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${EVENT_STYLE[row.event] ?? ''}`}>
+                        <span className={`text-xs ${EVENT_STYLE[row.event] ?? ''}`}>
                           {row.event}
                         </span>
                       )}
