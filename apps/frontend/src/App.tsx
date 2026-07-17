@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useMemo, useState } from 'react';
 import { NaverMap } from './components/NaverMap';
 import StatsPanel from './components/StatsPanel';
 import StoreHistory from './components/StoreHistory';
@@ -6,7 +6,26 @@ import StartupRecommendation from './components/StartupRecommendation';
 import DataReliabilityPanel from './components/DataReliabilityPanel';
 import VacancyModal from './components/VacancyModal';
 import { SEOUL_GU, INDUSTRY_CODES } from './lib/seoul';
-import type { VacancyMarker } from './lib/marketData';
+import { getVacancyMarkers, getRecommendations, type VacancyMarker } from './lib/marketData';
+import { getAllDongCenters } from './lib/seoulBoundaries';
+
+function SimpleModal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div
+      className="fixed inset-0 z-[9998] flex items-center justify-center p-3"
+      style={{ background: 'rgba(0,0,0,0.6)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 flex-shrink-0">
+          <h2 className="text-sm font-bold text-slate-800">{title}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
+        </div>
+        <div className="overflow-y-auto flex-1 p-5">{children}</div>
+      </div>
+    </div>
+  );
+}
 
 const BuildingTwin = lazy(() => import('./components/BuildingTwin'));
 
@@ -18,9 +37,32 @@ export default function App() {
   const [vacancyCoords, setVacancyCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [vacancyDetail, setVacancyDetail] = useState<{ vacancy: VacancyMarker; guCode: string; guName: string } | null>(null);
   const [sideOpen, setSideOpen] = useState(false);
+  const [storeHistoryModal, setStoreHistoryModal] = useState(false);
+  const [dataReliabilityModal, setDataReliabilityModal] = useState(false);
 
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
   const guDongs = useMemo(() => selectedGu?.dongs ?? [], [selectedGu]);
+
+  // 선택 공실 주변 공실 (같은 구/동 내 다른 공실들)
+  const nearbyVacancies = useMemo(() => {
+    if (!vacancyDetail || !vacancyCoords) return [];
+    const { guCode: vGuCode, vacancy } = vacancyDetail;
+    const gu = SEOUL_GU.find((g) => g.code === vGuCode);
+    if (!gu) return [];
+    const centers = getAllDongCenters(gu.dongs, vGuCode);
+    const markers = getVacancyMarkers(vGuCode, vacancy.dongCode, centers, 15);
+    return markers
+      .filter((m) => m.id !== vacancy.id)
+      .map((m) => ({ id: m.id, lat: m.lat, lng: m.lng }));
+  }, [vacancyDetail, vacancyCoords]);
+
+  // AI 추천 업종 이름
+  const aiRecommendedIndustries = useMemo(() => {
+    if (!vacancyDetail) return [];
+    const { guCode: vGuCode, guName, vacancy } = vacancyDetail;
+    const recs = getRecommendations(vGuCode, vacancy.dongCode, 'ALL', guName, vacancy.dongName);
+    return recs.map((r) => r.industry);
+  }, [vacancyDetail]);
 
   function handleGuChange(code: string) {
     setGuCode(code);
@@ -185,7 +227,13 @@ export default function App() {
                   3D 트윈 불러오는 중…
                 </div>
               }>
-                <BuildingTwin buildingId={selectedBuildingId} lat={vacancyCoords?.lat} lng={vacancyCoords?.lng} />
+                <BuildingTwin
+                  buildingId={selectedBuildingId}
+                  lat={vacancyCoords?.lat}
+                  lng={vacancyCoords?.lng}
+                  nearbyVacancies={nearbyVacancies}
+                  aiRecommendedIndustries={aiRecommendedIndustries}
+                />
               </Suspense>
             ) : (
               <div className="flex h-24 items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
@@ -196,21 +244,22 @@ export default function App() {
               </div>
             )}
 
-            {/* 점포 이력 */}
-            {selectedBuildingId ? (
-              <StoreHistory
-                buildingId={selectedBuildingId}
-                guCode={guCode || SEOUL_GU[0].code}
-                dongCode={dongCode}
-                industryCode={industryCode}
-                guName={guLabel}
-                dongName={dongLabel}
-              />
-            ) : (
-              <div className="flex h-16 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-center">
-                <p className="text-xs text-slate-300">공실 매물 클릭 시 점포 이력 표시</p>
-              </div>
-            )}
+            {/* 점포이력 / 데이터신뢰성 버튼 */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStoreHistoryModal(true)}
+                disabled={!selectedBuildingId}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                📋 점포이력 보기
+              </button>
+              <button
+                onClick={() => setDataReliabilityModal(true)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
+              >
+                📊 데이터 신뢰성
+              </button>
+            </div>
 
             {/* 창업 지역 추천 */}
             <StartupRecommendation
@@ -223,9 +272,6 @@ export default function App() {
                 else if (guCode) setDongCode(code);
               }}
             />
-
-            {/* 데이터 신뢰성 */}
-            <DataReliabilityPanel />
           </div>
         )}
       </div>
@@ -238,6 +284,27 @@ export default function App() {
           guName={vacancyDetail.guName}
           onClose={() => setVacancyDetail(null)}
         />
+      )}
+
+      {/* 점포이력 모달 */}
+      {storeHistoryModal && selectedBuildingId && (
+        <SimpleModal title="점포이력" onClose={() => setStoreHistoryModal(false)}>
+          <StoreHistory
+            buildingId={selectedBuildingId}
+            guCode={guCode || SEOUL_GU[0].code}
+            dongCode={dongCode}
+            industryCode={industryCode}
+            guName={guLabel}
+            dongName={dongLabel}
+          />
+        </SimpleModal>
+      )}
+
+      {/* 데이터 신뢰성 모달 */}
+      {dataReliabilityModal && (
+        <SimpleModal title="데이터 신뢰성 현황" onClose={() => setDataReliabilityModal(false)}>
+          <DataReliabilityPanel />
+        </SimpleModal>
       )}
     </div>
   );

@@ -1,0 +1,28 @@
+name: Daily Data Validation
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 매일 UTC 02:00 (KST 11:00) — fetch-data 후 1시간 뒤
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate 서울 구/동 데이터 무결성
+        run: node scripts/validate-data.mjs
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-${{ github.run_number }}
+          path: data/validation-report.json
+          retention-days: 30
