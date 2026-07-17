@@ -88,7 +88,7 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
               arrowhead: 4,
               ax: 0,
               ay: -30,
-              font: { color: '#16a34a', size: 12 },
+              font: { color: '#16a34a', size: 9 },
               bgcolor: '#f0fdf4',
               bordercolor: '#16a34a',
               borderwidth: 1,
@@ -112,7 +112,7 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
               <button
                 key={p.month}
                 onClick={() => setSelected(p)}
-                className={`rounded px-1.5 py-1 text-[11px] font-medium transition-colors ${
+                className={`rounded px-1 py-1 text-[9px] font-medium transition-colors ${
                   selected?.month === p.month
                     ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400'
                     : p.predicted
@@ -120,7 +120,7 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
                       : 'bg-slate-50 text-slate-600 hover:bg-indigo-50'
                 }`}
               >
-                <span className="block text-[10px] text-slate-400">{p.month}</span>
+                <span className="block text-[8px] text-slate-400">{p.month}</span>
                 {p.value.toLocaleString()}
               </button>
             ))}
