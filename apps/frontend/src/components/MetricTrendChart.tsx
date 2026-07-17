@@ -83,15 +83,16 @@ export default function MetricTrendChart({ points, label, unit, onClose }: Metri
             annotations: selected ? [{
               x: selected.month,
               y: selected.value,
-              text: `${selected.value.toLocaleString()} ${unit}`,
+              text: `${Number(selected.value.toFixed(1)).toLocaleString()} ${unit}`,
               showarrow: true,
               arrowhead: 4,
               ax: 0,
               ay: -30,
-              font: { color: '#16a34a', size: 9 },
+              font: { color: '#16a34a', size: 8 },
               bgcolor: '#f0fdf4',
               bordercolor: '#16a34a',
               borderwidth: 1,
+              borderpad: 2,
             }] : [],
           }}
           config={{ displayModeBar: false, responsive: true }}

@@ -36,6 +36,8 @@ export default function App() {
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
   const [vacancyCoords, setVacancyCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [vacancyDetail, setVacancyDetail] = useState<{ vacancy: VacancyMarker; guCode: string; guName: string } | null>(null);
+  // 3D 트윈용 — VacancyModal 닫아도 마지막 선택 공실 유지
+  const [twinVacancyDetail, setTwinVacancyDetail] = useState<{ vacancy: VacancyMarker; guCode: string; guName: string } | null>(null);
   const [sideOpen, setSideOpen] = useState(false);
   const [storeHistoryModal, setStoreHistoryModal] = useState(false);
   const [dataReliabilityModal, setDataReliabilityModal] = useState(false);
@@ -43,10 +45,10 @@ export default function App() {
   const selectedGu = SEOUL_GU.find((g) => g.code === guCode);
   const guDongs = useMemo(() => selectedGu?.dongs ?? [], [selectedGu]);
 
-  // 선택 공실 주변 공실 (같은 구/동 내 다른 공실들)
+  // 선택 공실 주변 공실 (같은 구/동 내 다른 공실들) — twinVacancyDetail 기반으로 모달 닫아도 유지
   const nearbyVacancies = useMemo(() => {
-    if (!vacancyDetail || !vacancyCoords) return [];
-    const { guCode: vGuCode, vacancy } = vacancyDetail;
+    if (!twinVacancyDetail || !vacancyCoords) return [];
+    const { guCode: vGuCode, vacancy } = twinVacancyDetail;
     const gu = SEOUL_GU.find((g) => g.code === vGuCode);
     if (!gu) return [];
     const centers = getAllDongCenters(gu.dongs, vGuCode);
@@ -56,10 +58,10 @@ export default function App() {
       .map((m) => ({ id: m.id, lat: m.lat, lng: m.lng }));
   }, [vacancyDetail, vacancyCoords]);
 
-  // AI 추천 업종 이름
+  // AI 추천 업종 이름 — twinVacancyDetail 기반으로 모달 닫아도 유지
   const aiRecommendedIndustries = useMemo(() => {
-    if (!vacancyDetail) return [];
-    const { guCode: vGuCode, guName, vacancy } = vacancyDetail;
+    if (!twinVacancyDetail) return [];
+    const { guCode: vGuCode, guName, vacancy } = twinVacancyDetail;
     const recs = getRecommendations(vGuCode, vacancy.dongCode, 'ALL', guName, vacancy.dongName);
     return recs.map((r) => r.industry);
   }, [vacancyDetail]);
@@ -186,7 +188,9 @@ export default function App() {
                   setDongCode(vDongCode);
                 }
                 const gu = SEOUL_GU.find((g) => g.code === vGuCode);
-                setVacancyDetail({ vacancy: vData, guCode: vGuCode, guName: gu?.name ?? '' });
+                const detail = { vacancy: vData, guCode: vGuCode, guName: gu?.name ?? '' };
+                setVacancyDetail(detail);
+                setTwinVacancyDetail(detail);
                 setSideOpen(true);
               }}
             />
