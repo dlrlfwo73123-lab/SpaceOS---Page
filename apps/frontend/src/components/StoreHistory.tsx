@@ -35,7 +35,7 @@ type VacantFloor = {
 // ─────────────────────────────────────────────
 const EVENT_STYLE: Record<string, string> = {
   '신규입점': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  '폐업':    'bg-red-100 text-red-700 border border-red-200',
+  '폐업':    'text-red-700',
   '업종변경': 'bg-blue-100 text-blue-700 border border-blue-200',
 };
 const CODE_COLOR: Record<string, string> = {
@@ -320,9 +320,15 @@ export default function StoreHistory({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${EVENT_STYLE[row.event] ?? ''}`}>
-                        {row.event}
-                      </span>
+                      {row.event === '폐업' ? (
+                        <span className={`text-xs font-semibold [writing-mode:vertical-rl] ${EVENT_STYLE[row.event] ?? ''}`}>
+                          {row.event}
+                        </span>
+                      ) : (
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${EVENT_STYLE[row.event] ?? ''}`}>
+                          {row.event}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs font-semibold text-violet-700">
                       {row.rentMonthly ? `${row.rentMonthly}만원` : '—'}

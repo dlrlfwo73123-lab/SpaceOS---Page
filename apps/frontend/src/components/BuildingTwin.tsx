@@ -47,9 +47,9 @@ const BLD_W   = 18;
 const BLD_D   = 13;
 const GAP     = 0.1;
 
-// 도시 블록 그리드: 셀 1개 = 38m, GRID_R=7 → 약 500m 반경
+// 도시 블록 그리드: 셀 1개 = 38m, GRID_R=13 → 약 1000m 반경
 const CELL   = 38;
-const GRID_R = 7;
+const GRID_R = 13;
 
 // ── 주변 건물 데이터 생성 ────────────────────────────────────────
 type NeighborBuilding = {
@@ -193,10 +193,10 @@ function ScaleBar() {
         <line x1="45" y1="5" x2="45" y2="11" stroke="white" strokeWidth="1" />
         <line x1="90" y1="4" x2="90" y2="12" stroke="white" strokeWidth="1.5" />
         <text x="0" y="6" fill="white" fontSize="7" fontFamily="monospace">0</text>
-        <text x="35" y="6" fill="white" fontSize="7" fontFamily="monospace">250m</text>
-        <text x="73" y="6" fill="white" fontSize="7" fontFamily="monospace">500m</text>
+        <text x="35" y="6" fill="white" fontSize="7" fontFamily="monospace">500m</text>
+        <text x="73" y="6" fill="white" fontSize="7" fontFamily="monospace">1000m</text>
       </svg>
-      <span className="text-[9px] text-white/50 font-mono">반경 ≈ 500m 범위 표시</span>
+      <span className="text-[9px] text-white/50 font-mono">반경 ≈ 1000m 범위 표시</span>
     </div>
   );
 }
@@ -263,7 +263,7 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
       {/* 헤더 */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold">3D 디지털 트윈 · 주변 500m 도시 블록</p>
+          <p className="text-sm font-semibold">3D 디지털 트윈 · 주변 1000m 도시 블록</p>
           <p className="text-xs text-slate-400">
             층고 3.5m · 셀 38m/블록 · {neighbors.length}동 주변 건물 · 데모 데이터
           </p>
