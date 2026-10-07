@@ -1,0 +1,234 @@
+{
+ "type": "FeatureCollection",
+ "name": "synthetic seed fixture - not real data",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.02235860313186,
+       36.62141446722467
+      ],
+      [
+       127.02258218914753,
+       36.62141442506095
+      ],
+      [
+       127.02258224171517,
+       36.62159465302391
+      ],
+      [
+       127.02235865517905,
+       36.6215946951879
+      ],
+      [
+       127.02235860313186,
+       36.62141446722467
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-001",
+    "building_id": "syn-b1",
+    "height_m": 15.22,
+    "floors": 5,
+    "floor_certainty": "confirmed",
+    "source": "synthetic_fixture"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.02263808565138,
+       36.62141441445446
+      ],
+      [
+       127.02280577516274,
+       36.62141438247769
+      ],
+      [
+       127.02280584152297,
+       36.621639667430195
+      ],
+      [
+       127.02263815152367,
+       36.62163969940723
+      ],
+      [
+       127.02263808565138,
+       36.62141441445446
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-002",
+    "building_id": "syn-b2",
+    "height_m": 12.0,
+    "floors": 4,
+    "floor_certainty": "probable",
+    "source": "synthetic_fixture"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.02286167166646,
+       36.62141437176633
+      ],
+      [
+       127.02297346467384,
+       36.621414350264935
+      ],
+      [
+       127.02297349141301,
+       36.62150446424685
+      ],
+      [
+       127.02286169827552,
+       36.62150448574831
+      ],
+      [
+       127.02286167166646,
+       36.62141437176633
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-003",
+    "building_id": "syn-b3",
+    "height_m": 9.0,
+    "floors": 3,
+    "floor_certainty": "confirmed",
+    "source": "synthetic_fixture"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.0228617115801,
+       36.62154954273879
+      ],
+      [
+       127.02297350478264,
+       36.6215495212373
+      ],
+      [
+       127.022973531522,
+       36.62163963521716
+      ],
+      [
+       127.02286173818933,
+       36.621639656718735
+      ],
+      [
+       127.0228617115801,
+       36.62154954273879
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-003",
+    "building_id": "syn-b4",
+    "height_m": 9.0,
+    "floors": 3,
+    "floor_certainty": "confirmed",
+    "source": "synthetic_fixture"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.0223586812028,
+       36.62168480916746
+      ],
+      [
+       127.0224928332807,
+       36.621684783919335
+      ],
+      [
+       127.02249286469673,
+       36.62179292069292
+      ],
+      [
+       127.02235871243147,
+       36.62179294594114
+      ],
+      [
+       127.0223586812028,
+       36.62168480916746
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-005",
+    "building_id": "syn-b5",
+    "height_m": 0,
+    "floors": 3,
+    "floor_certainty": "probable",
+    "source": "synthetic_fixture"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       127.02302936117746,
+       36.6214143394749
+      ],
+      [
+       127.02325300132077,
+       36.62159452401469
+      ],
+      [
+       127.02325294719172,
+       36.62141429605257
+      ],
+      [
+       127.02302941478607,
+       36.6215945674373
+      ],
+      [
+       127.02302936117746,
+       36.6214143394749
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "pnu": "SYN-006",
+    "building_id": "syn-b6",
+    "height_m": 10.0,
+    "floors": 3,
+    "floor_certainty": "confirmed",
+    "source": "synthetic_fixture"
+   }
+  }
+ ]
+}
