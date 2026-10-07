@@ -40,3 +40,7 @@ manifest, ambiguous_pnu, missing_height, crs/scale, certainty 보존, watertight
 4. 3MF 내보내기(색 파트)는 구현하지 않았다. STL만 지원한다.
 5. 도면·LiDAR 실측(5단계)과 앱 연동(7단계)은 계획만 있다.
 6. 인수인계 검수 담당자가 판단할 것: 대상 저장소 확정, Gold 데이터 공유 방식, 프린터 기준.
+
+## 내 PC 적용 점검 (보고서 1~7장 기준)
+- `tools/print3d/pc_setup_check.ps1`을 대상 저장소 루트에서 실행하면 `print3d-pc-check.md`(단계 1~7별 PASS/FAIL/WARN)가 생성된다. 읽기 전용이며 설치는 하지 않는다. Windows에서 실행해 보지 못했다.
+- 보고서가 정한 1장 조건: 대상 `seoghyeonbag36-max/spaceos`, 소유자가 준 **전체 40자 SHA**로 `git switch --detach`, 작업 브랜치 `chore/3d-print-poc-worker`. 바탕화면 PDF·미커밋 파일·ignore 대상(`*.glb` 포함)은 clone으로 오지 않는다.

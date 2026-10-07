@@ -25,6 +25,22 @@ foreach ($f in "data/gold/garosugil/page_building_master.geojson","data/gold/gar
   if (git ls-files $f 2>$null) { Add-Row "1" "데이터 추적: $f" "PASS" "clone에 포함됨" } else { Add-Row "1" "데이터 추적: $f" "WARN" "이 저장소에 없음 → 소유자에게 별도 전달 요청" }
 }
 
+# 1 (보고서 1장 기준). 대상 저장소·작업 브랜치·clone에서 빠지는 것
+if ($remote -match 'seoghyeonbag36-max/spaceos') { Add-Row "1" "대상 저장소(보고서 기준)" "PASS" $remote } else { Add-Row "1" "대상 저장소(보고서 기준)" "FAIL" "보고서는 seoghyeonbag36-max/spaceos 를 가리킴. 현재: $remote" }
+$branch = (git branch --show-current 2>$null)
+if ($branch -eq "chore/3d-print-poc-worker") { Add-Row "1" "작업 브랜치" "PASS" $branch } else { Add-Row "1" "작업 브랜치" "WARN" "detached 후 git switch -c chore/3d-print-poc-worker (현재: '$branch')" }
+foreach ($doc in "AGENTS.md","CLAUDE.md") { if (Test-Path $doc) { Add-Row "1" "$doc 읽기 대상" "PASS" "Get-Content -Encoding UTF8 $doc" } else { Add-Row "1" "$doc" "WARN" "없음" } }
+git check-ignore --no-index data/gold/garosugil/page_building_master.geojson 2>$null | Out-Null
+$ig = $LASTEXITCODE
+if ($ig -eq 1) { Add-Row "1" "gold geojson ignore 여부" "PASS" "무시되지 않음(종료코드 1)" } elseif ($ig -eq 0) { Add-Row "1" "gold geojson ignore 여부" "WARN" "무시됨(종료코드 0): 별도 전달 필요" } else { Add-Row "1" "gold geojson ignore 여부" "WARN" "종료코드 $ig (오류)" }
+git check-ignore --no-index model.glb 2>$null | Out-Null
+if ($LASTEXITCODE -eq 0) { Add-Row "1" "*.glb ignore" "INFO" "GLB는 무시 대상 → 만든 모델은 clone/배포로 전달 안 됨" }
+Add-Row "1" "clone으로 오지 않는 것" "INFO" "바탕화면 참고 PDF, 미커밋 파일, ignore 대상은 소유자에게 별도 전달 받아야 함"
+if (Test-Path "scripts/pppp_status.py") { Add-Row "1" "pppp_status.py --all" "INFO" "읽기 전용 확인: ACTIVE_HUBS 개수 보고" }
+$gb = @("C:\Program Files\Git\bin\bash.exe","C:\Program Files (x86)\Git\bin\bash.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($gb) { Add-Row "2" "Git Bash(SessionStart/Bash용)" "PASS" $gb } else { Add-Row "2" "Git Bash(SessionStart/Bash용)" "WARN" "보고서: Windows에서 Git Bash 경로 확인 필요" }
+if (Test-Path ".claude/settings.local.json") { Add-Row "6" ".claude/settings.local.json" "INFO" "개인 파일: 복사·전달 금지, 값은 읽지 않음" }
+
 # 2. 도구 설치
 $py = Cmd-Version "py" "-3.11 --version"; if (-not $py) { $py = Cmd-Version "python" "--version" }
 if ($py -match '3\.11') { Add-Row "2" "Python 3.11" "PASS" $py } else { Add-Row "2" "Python 3.11" "FAIL" "$py (3.11 필요)" }
