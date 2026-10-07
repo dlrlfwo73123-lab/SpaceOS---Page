@@ -3,6 +3,8 @@ import { OrbitControls, Text } from '@react-three/drei';
 import { useEffect, useMemo, useState } from 'react';
 import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
+import GroundLayer from './GroundLayer';
+import { loadGround, type GroundData } from '@/lib/groundTiles';
 
 type NearbyVacancy = { id: string; lat: number; lng: number; dongName?: string };
 
@@ -12,6 +14,7 @@ type BuildingTwinProps = {
   lng?: number;
   nearbyVacancies?: NearbyVacancy[];
   aiRecommendedIndustries?: string[];
+  guCode?: string;
 };
 
 // ── 시드 기반 난수 ──────────────────────────────────────────────
@@ -202,7 +205,14 @@ function ScaleBar() {
 }
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────────
-export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyVacancies = [], aiRecommendedIndustries = [] }: BuildingTwinProps) {
+export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyVacancies = [], aiRecommendedIndustries = [], guCode }: BuildingTwinProps) {
+  const [ground, setGround] = useState<GroundData | null>(null);
+  useEffect(() => {
+    let alive = true;
+    setGround(null);
+    if (_lat && _lng) loadGround(guCode, _lat, _lng).then((g) => { if (alive) setGround(g); });
+    return () => { alive = false; };
+  }, [guCode, _lat, _lng]);
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
@@ -301,8 +311,8 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
               <meshStandardMaterial color="#111827" roughness={0.95} />
             </mesh>
 
-            {/* 도로 */}
-            <Roads />
+            {/* 도로: 실제 바닥 타일이 있으면 그것을, 없으면 절차 생성 격자 */}
+            {ground && _lat && _lng ? <GroundLayer data={ground} lat={_lat} lng={_lng} /> : <Roads />}
 
             {/* 주변 건물 (공실/AI추천만 표시) */}
             {neighbors.map((b, i) => {
@@ -348,6 +358,18 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
         </ErrorBoundary>
 
         <ScaleBar />
+
+        {ground && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-lg bg-black/70 px-2.5 py-2 text-[10px] text-slate-200 backdrop-blur-sm">
+            <p className="mb-1 font-semibold">바닥 · {ground.meta.synthetic ? '합성 샘플(실데이터 아님)' : ground.meta.attribution}</p>
+            <p>
+              <span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: '#454d5e' }} />차도
+              <span className="mx-1 inline-block h-2 w-3 align-middle" style={{ background: '#9aa4b5' }} />보도
+              <span className="mx-1 inline-block h-2 w-3 align-middle" style={{ background: '#e5e7eb' }} />횡단보도
+            </p>
+            <p className="text-slate-400">반투명 면 = 폭 추정 · 추정 면적 {Math.round(ground.meta.estimated_area_ratio * 100)}%</p>
+          </div>
+        )}
 
         {/* 층 선택 오버레이 */}
         {selectedFloor !== null && (() => {

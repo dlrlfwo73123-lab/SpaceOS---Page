@@ -4,3 +4,4 @@ __pycache__/
 .venv-print3d/
 *.stl
 *.3mf
+data/raw/

@@ -1,0 +1,83 @@
+import json
+from pathlib import Path
+
+import pytest
+from shapely.ops import transform as shp_transform
+
+import osm_ground as og
+import tiles as tl
+
+FIX = Path(__file__).resolve().parents[1] / "fixtures" / "synthetic_osm.json"
+OSM = json.loads(FIX.read_text(encoding="utf-8"))
+
+
+def surfaces():
+    return og.build_surfaces(OSM)
+
+
+def test_road_width_rules():
+    assert og.road_width({"highway": "primary", "width": "12 m"}) == (12.0, "tag")
+    assert og.road_width({"highway": "primary", "lanes": "4"}) == (12.0, "lanes")
+    assert og.road_width({"highway": "residential"}) == (6.0, "class_default")
+
+
+def test_kinds_present():
+    assert {s.kind for s in surfaces()} == {"carriageway", "sidewalk", "crosswalk"}
+
+
+def test_pedestrian_footway_is_not_carriageway():
+    only_footway = {"elements": [e for e in OSM["elements"]
+                                 if e["tags"] == {"highway": "footway"}]}
+    assert len(only_footway["elements"]) == 1
+    assert og.build_surfaces(only_footway) == []
+
+
+def test_estimated_flag_matches_width_source():
+    for s in surfaces():
+        if s.estimated:
+            assert s.width_sources - {"tag"}, s.kind
+        else:
+            assert s.width_sources == {"tag"}
+
+
+def test_sidewalk_does_not_overlap_carriageway():
+    s = surfaces()
+    car = og.unary_union([x.geom for x in s if x.kind == "carriageway"])
+    for x in s:
+        if x.kind == "sidewalk":
+            assert x.geom.intersection(car).area < 1e-6
+
+
+def test_estimated_ratio_in_range():
+    r = og.estimated_area_ratio(surfaces())
+    assert 0 < r < 1
+
+
+def test_tile_mesh_area_matches_clipped_polygon():
+    s = [x for x in surfaces() if x.kind == "carriageway"][0]
+    ts = tl.tiles_for([s])
+    assert len(ts) >= 2  # 타일 경계를 가로지름
+    total = 0.0
+    for t in ts.values():
+        L = t["layers"][0]
+        pos, idx = L["positions"], L["indices"]
+        assert max(idx) < len(pos) // 2 and len(idx) % 3 == 0
+        for a, b, c in zip(idx[0::3], idx[1::3], idx[2::3]):
+            pts = [og.TO_M(pos[2 * i], pos[2 * i + 1]) for i in (a, b, c)]
+            (x1, y1), (x2, y2), (x3, y3) = pts
+            total += abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)) / 2
+    assert total == pytest.approx(s.geom.area, rel=0.01)
+
+
+def test_tile_key_and_index(tmp_path):
+    assert tl.tile_key(37.5446, 127.0557) == "3754_12705"
+    ts = tl.tiles_for(surfaces())
+    p = tl.write_tiles(ts, tmp_path, {"synthetic": True})
+    idx = json.loads(p.read_text(encoding="utf-8"))
+    assert idx["tiles"] == sorted(ts) and idx["meta"]["synthetic"] is True
+    assert all((tmp_path / f"{k}.json").exists() for k in idx["tiles"])
+
+
+def test_overpass_query_has_bbox():
+    q = og.overpass_query((37.5, 127.0, 37.6, 127.1))
+    assert "37.5,127.0,37.6,127.1" in q and q.rstrip().endswith("out geom;")

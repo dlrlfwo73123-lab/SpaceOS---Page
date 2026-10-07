@@ -1,0 +1,23 @@
+{
+ "v": 1,
+ "tileDeg": 0.01,
+ "tiles": [
+  "3753_12705",
+  "3753_12706",
+  "3754_12704",
+  "3754_12705",
+  "3754_12706"
+ ],
+ "meta": {
+  "gu": "seongdong",
+  "guCode": "11200",
+  "generated": "2026-10-07",
+  "source": "OpenStreetMap contributors (ODbL)",
+  "attribution": "© OpenStreetMap contributors",
+  "input_sha256": "b64955913bf5e50882d5b6731eef4125a6564089f6d91de1e5a8e7f95482a773",
+  "synthetic": true,
+  "estimated_area_ratio": 0.7656,
+  "crs_in_tiles": "EPSG:4326",
+  "width_rules": "tag > lanes*3.0 > class default; sidewalk 2.0m, crosswalk 3.0m (estimated=true)"
+ }
+}

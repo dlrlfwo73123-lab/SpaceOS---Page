@@ -235,6 +235,7 @@ export default function App() {
                   buildingId={selectedBuildingId}
                   lat={vacancyCoords?.lat}
                   lng={vacancyCoords?.lng}
+                  guCode={twinVacancyDetail?.guCode}
                   nearbyVacancies={nearbyVacancies}
                   aiRecommendedIndustries={aiRecommendedIndustries}
                 />
