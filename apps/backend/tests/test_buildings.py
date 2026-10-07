@@ -59,3 +59,12 @@ def test_history_deterministic_for_same_building_id():
     first = client.get("/api/v1/buildings/gangnam-1/history").json()
     second = client.get("/api/v1/buildings/gangnam-1/history").json()
     assert first == second
+
+
+def test_floor_certainty_only_on_vacant_floors():
+    for building_id in ("demo-building", "gangnam-1", "x-42"):
+        for floor in client.get(f"/api/v1/buildings/{building_id}/floors").json():
+            if floor["vacant"]:
+                assert floor["certainty"] in ("confirmed", "probable")
+            else:
+                assert floor["certainty"] is None

@@ -30,6 +30,16 @@ def _floor_vacant(building_id: str, level: int) -> bool:
     return digest % 4 == 0
 
 
+def _floor_certainty(building_id: str, level: int) -> str | None:
+    """공실 층의 확실성: 'confirmed' | 'probable'. 공실이 아니면 None.
+
+    placeholder: 실제 Gold 연동 전까지는 건물 ID에서 결정적으로 만든 값이다.
+    """
+    if not _floor_vacant(building_id, level):
+        return None
+    return "confirmed" if (sum(ord(c) for c in building_id) + level) % 2 == 0 else "probable"
+
+
 def get_building_floors(building_id: str) -> list[dict]:
     """Return Gold-layer floor-by-floor occupancy for a building.
 
@@ -42,6 +52,7 @@ def get_building_floors(building_id: str) -> list[dict]:
             "level": level,
             "industry": _floor_industry(building_id, level),
             "vacant": _floor_vacant(building_id, level),
+            "certainty": _floor_certainty(building_id, level),
         }
         for level in range(1, count + 1)
     ]

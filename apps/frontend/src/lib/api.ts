@@ -26,10 +26,14 @@ export type BuildingHistoryEvent = {
   close_reason_summary: string | null;
 };
 
+export type FloorCertainty = 'confirmed' | 'probable';
+
 export type BuildingFloor = {
   level: number;
   industry: string;
   vacant: boolean;
+  /** 공실 층의 확실성. 없으면(구버전 API) 공실이어도 확정으로 보지 않는다. */
+  certainty?: FloorCertainty | null;
 };
 
 export type BuildingModel = {

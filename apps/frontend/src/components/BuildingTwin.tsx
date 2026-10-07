@@ -5,6 +5,11 @@ import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
 import GroundLayer from './GroundLayer';
 import { loadGround, type GroundData } from '@/lib/groundTiles';
+import { GuBoundaryRibbon, VacancyDecals, vacancyTone } from './DistrictOverlay';
+import { distanceToGuBoundary } from '@/lib/guBoundary';
+import { getMarketStats } from '@/lib/marketData';
+import { getRealVacancyRate, useRealStats } from '@/lib/useRealStats';
+import { SEOUL_GU } from '@/lib/seoul';
 
 type NearbyVacancy = { id: string; lat: number; lng: number; dongName?: string };
 
@@ -124,15 +129,22 @@ function Roads() {
 }
 
 // ── 선택 건물 — 층별 상세 ────────────────────────────────────────
-const FACADE_COLORS = ['#3b82f6', '#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
-const VACANT_COLOR  = '#94a3b8';
+const SLAB_CONFIRMED = '#e11d48';
+const SLAB_PROBABLE  = '#f97316';
+const SLAB_OTHER     = '#d4d4d8';
+
+/** 공실 층 색. certainty가 없으면 확정으로 승격하지 않고 probable 색으로 표시한다. */
+function slabColor(floor: Floor): string {
+  if (!floor.vacant) return SLAB_OTHER;
+  return floor.certainty === 'confirmed' ? SLAB_CONFIRMED : SLAB_PROBABLE;
+}
 
 function FloorMesh({ floor, index, selected, onClick }: {
   floor: Floor; index: number; selected: boolean; onClick: () => void;
 }) {
   const y = index * (FLOOR_H + GAP) + FLOOR_H / 2;
-  const wc = floor.vacant ? VACANT_COLOR : FACADE_COLORS[index % FACADE_COLORS.length];
-  const gc = floor.vacant ? '#c8d3de' : '#bfdbfe';
+  const wc = slabColor(floor);
+  const gc = floor.vacant ? '#fecdd3' : '#f4f4f5';
 
   return (
     <group onClick={onClick}>
@@ -140,7 +152,7 @@ function FloorMesh({ floor, index, selected, onClick }: {
         <boxGeometry args={[BLD_W, FLOOR_H - 0.25, BLD_D]} />
         <meshStandardMaterial
           color={selected ? '#f59e0b' : wc}
-          transparent opacity={floor.vacant ? 0.65 : 0.95}
+          transparent opacity={floor.vacant ? 0.97 : 0.7}
           roughness={0.35} metalness={0.12}
         />
       </mesh>
@@ -154,7 +166,7 @@ function FloorMesh({ floor, index, selected, onClick }: {
       </mesh>
       <Text
         position={[BLD_W / 2 + 1.5, y, 0]}
-        fontSize={1.2} color={floor.vacant ? '#94a3b8' : '#e2e8f0'}
+        fontSize={1.2} color={floor.vacant ? '#fda4af' : '#e2e8f0'}
         anchorX="left" anchorY="middle"
       >
         {`${floor.level}F  ${floor.industry}`}
@@ -207,6 +219,13 @@ function ScaleBar() {
 // ── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyVacancies = [], aiRecommendedIndustries = [], guCode }: BuildingTwinProps) {
   const [ground, setGround] = useState<GroundData | null>(null);
+  const realStats = useRealStats();
+  const gu = SEOUL_GU.find((g) => g.code === guCode);
+  const rawGuRate = guCode ? (getRealVacancyRate(realStats, guCode) ?? getMarketStats(guCode, '', 'ALL').vacancyRate) : null;
+  const guRate = rawGuRate === null ? null : Math.round(rawGuRate * 10) / 10; // 표시값 기준으로 구간 판정
+  const guRateIsReal = !!guCode && getRealVacancyRate(realStats, guCode) !== null && !realStats.is_demo;
+  const tone = vacancyTone(guRate);
+  const boundaryM = guCode && _lat && _lng ? distanceToGuBoundary(guCode, _lat, _lng) : null;
   useEffect(() => {
     let alive = true;
     setGround(null);
@@ -279,6 +298,13 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
           </p>
         </div>
         <div className="text-right text-xs">
+          {gu && guRate !== null && (
+            <p className="mb-0.5">
+              <span className="text-slate-400">{gu.name} 공실률 </span>
+              <span className="font-mono font-bold" style={{ color: tone.hex }}>{guRate.toFixed(1)}%</span>
+              <span className="text-slate-500"> ({tone.label}{guRateIsReal ? '' : ' · 데모'})</span>
+            </p>
+          )}
           <span className="font-mono text-amber-400">{vacantCount}</span>
           <span className="text-slate-400">/{floors.length}층 공실 ({vacancyPct}%)</span>
         </div>
@@ -327,6 +353,10 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
               return <NeighborMesh key={i} b={displayB} />;
             })}
 
+            {/* 구 경계(구 공실률 색) + 주변 공실 바닥 데칼 */}
+            {guCode && _lat && _lng && <GuBoundaryRibbon guCode={guCode} lat={_lat} lng={_lng} color={tone.hex} />}
+            {_lat && _lng && nearbyVacancies.length > 0 && <VacancyDecals lat={_lat} lng={_lng} points={nearbyVacancies} color="#f97316" />}
+
             {/* 선택 건물 하이라이트 */}
             <SelectionRing />
 
@@ -359,6 +389,14 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
 
         <ScaleBar />
 
+        <div className="absolute left-3 top-3 rounded-lg bg-black/70 px-2.5 py-2 text-[10px] text-slate-200 backdrop-blur-sm">
+          <p className="mb-1 font-semibold">층 슬래브</p>
+          <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_CONFIRMED }} />공실 (confirmed)</p>
+          <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_PROBABLE }} />공실 (probable·확실성 미상 포함)</p>
+          <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_OTHER }} />그 외 층 (반투명 = 층고 3.5m 가정)</p>
+          {gu && boundaryM !== null && <p className="mt-1 text-slate-400">{gu.name} 경계까지 약 {boundaryM >= 1000 ? `${(boundaryM / 1000).toFixed(1)}km` : `${Math.round(boundaryM)}m`}</p>}
+        </div>
+
         {ground && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-lg bg-black/70 px-2.5 py-2 text-[10px] text-slate-200 backdrop-blur-sm">
             <p className="mb-1 font-semibold">바닥 · {ground.meta.synthetic ? '합성 샘플(실데이터 아님)' : ground.meta.attribution}</p>
@@ -375,7 +413,7 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
         {selectedFloor !== null && (() => {
           const f = floors.find((fl) => fl.level === selectedFloor);
           return f ? (
-            <div className="absolute left-3 top-3 rounded-xl bg-black/75 px-3 py-2 text-xs backdrop-blur-sm">
+            <div className="absolute left-3 top-32 rounded-xl bg-black/75 px-3 py-2 text-xs backdrop-blur-sm">
               <p className="font-bold text-white">{f.level}층 · {f.industry}</p>
               <p className={f.vacant ? 'text-amber-400' : 'text-emerald-400'}>{f.vacant ? '공실' : '운영 중'}</p>
               <p className="text-slate-400 mt-0.5">{((f.level - 1) * 3.5).toFixed(1)}m ~ {(f.level * 3.5).toFixed(1)}m</p>
@@ -413,9 +451,9 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
               <span className="text-slate-500 text-[10px]">{(floor.level * 3.5).toFixed(1)}m</span>
             </span>
             <span className={`rounded-full px-2 py-0.5 font-semibold ${
-              floor.vacant ? 'bg-amber-900/50 text-amber-300' : 'bg-emerald-900/50 text-emerald-300'
+              floor.vacant ? (floor.certainty === 'confirmed' ? 'bg-rose-900/60 text-rose-300' : 'bg-orange-900/50 text-orange-300') : 'bg-emerald-900/50 text-emerald-300'
             }`}>
-              {floor.vacant ? '공실' : '운영'}
+              {floor.vacant ? (floor.certainty === 'confirmed' ? '공실·확정' : floor.certainty === 'probable' ? '공실·추정' : '공실·미상') : '운영'}
             </span>
           </button>
         ))}
