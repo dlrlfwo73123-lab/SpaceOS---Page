@@ -26,6 +26,7 @@ ROAD_DEFAULT_W = {
 LANE_W = 3.0
 SIDEWALK_W = 2.0
 CROSSWALK_W = 3.0
+SIMPLIFY_M = 0.2
 SIDEWALK_TAGS = {"both", "left", "right", "yes"}
 
 
@@ -134,7 +135,10 @@ def build_surfaces(osm: dict) -> list[Surface]:
             if not g.is_empty:
                 sidewalks.append(Surface("sidewalk", est, g, srcs))
     cw = group(cross, "crosswalk", lambda c: (c[1], c[2]))
-    return [s for s in car + sidewalks + cw if not s.geom.is_empty]
+    out = [s for s in car + sidewalks + cw if not s.geom.is_empty]
+    for s in out:  # 정점 수 절감: 0.2m 이내 단순화(화면에서 구분 불가, 면적 변화는 테스트로 제한)
+        s.geom = s.geom.simplify(SIMPLIFY_M, preserve_topology=True)
+    return out
 
 
 def estimated_area_ratio(surfaces: list[Surface]) -> float:

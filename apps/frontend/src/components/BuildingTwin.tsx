@@ -229,9 +229,9 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
   useEffect(() => {
     let alive = true;
     setGround(null);
-    if (_lat && _lng) loadGround(guCode, _lat, _lng).then((g) => { if (alive) setGround(g); });
+    if (_lat && _lng) loadGround(_lat, _lng).then((g) => { if (alive) setGround(g); });
     return () => { alive = false; };
-  }, [guCode, _lat, _lng]);
+  }, [_lat, _lng]);
   const [floors, setFloors] = useState<Floor[]>(FALLBACK_FLOORS);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
@@ -405,7 +405,7 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
               <span className="mx-1 inline-block h-2 w-3 align-middle" style={{ background: '#9aa4b5' }} />보도
               <span className="mx-1 inline-block h-2 w-3 align-middle" style={{ background: '#e5e7eb' }} />횡단보도
             </p>
-            <p className="text-slate-400">반투명 면 = 폭 추정 · 추정 면적 {Math.round(ground.meta.estimated_area_ratio * 100)}%</p>
+            <p className="text-slate-400">연한 면 = 폭 추정 · 추정 면적 {Math.round(ground.meta.estimated_area_ratio * 100)}%</p>
           </div>
         )}
 

@@ -4,10 +4,11 @@ import type { GroundData, GroundLayerData, GroundKind } from '../lib/groundTiles
 // 장면 좌표: 1 단위 = 1m, x=동, z=-북 (BuildingTwin.coordToGrid 와 같은 등장방형 근사)
 const M_PER_LAT = 111320;
 
-const STYLE: Record<GroundKind, { color: string; y: number; offset: number }> = {
-  carriageway: { color: '#454d5e', y: 0.04, offset: -1 },
-  sidewalk: { color: '#9aa4b5', y: 0.07, offset: -2 },
-  crosswalk: { color: '#e5e7eb', y: 0.10, offset: -3 },
+// 폭이 추정된 면(colorEst)은 투명도 대신 한 단계 연한 색으로 구분한다(투명 블렌딩은 프레임 비용이 커서 쓰지 않음).
+const STYLE: Record<GroundKind, { color: string; colorEst: string; y: number; offset: number }> = {
+  carriageway: { color: '#454d5e', colorEst: '#5a6378', y: 0.04, offset: -1 },
+  sidewalk: { color: '#9aa4b5', colorEst: '#b4bccb', y: 0.07, offset: -2 },
+  crosswalk: { color: '#e5e7eb', colorEst: '#e5e7eb', y: 0.10, offset: -3 },
 };
 
 function Layer({ layer, lat, lng }: { layer: GroundLayerData; lat: number; lng: number }) {
@@ -27,18 +28,16 @@ function Layer({ layer, lat, lng }: { layer: GroundLayerData; lat: number; lng: 
 
   const s = STYLE[layer.kind];
   return (
-    <mesh position={[0, s.y, 0]} receiveShadow>
+    <mesh position={[0, s.y, 0]}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-normal" args={[normals, 3]} />
         <bufferAttribute attach="index" args={[indices, 1]} />
       </bufferGeometry>
       <meshStandardMaterial
-        color={s.color}
+        color={layer.estimated ? s.colorEst : s.color}
         roughness={0.95}
         side={2 /* DoubleSide: 좌표 반전으로 감김 방향이 뒤집혀도 보이게 */}
-        transparent={layer.estimated}
-        opacity={layer.estimated ? 0.82 : 1}
         polygonOffset
         polygonOffsetFactor={s.offset}
         polygonOffsetUnits={s.offset}

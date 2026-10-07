@@ -5,3 +5,4 @@ __pycache__/
 *.stl
 *.3mf
 data/raw/
+apps/frontend/public/data/ground/_perf/

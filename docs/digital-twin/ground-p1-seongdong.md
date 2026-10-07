@@ -15,7 +15,7 @@ py -3.11 -m venv .venv-print3d
 .\.venv-print3d\Scripts\python.exe -m pip install -r tools/ground/requirements.txt
 .\.venv-print3d\Scripts\python.exe tools/ground/fetch_ground.py --gu seongdong
 ```
-- 결과: `apps/frontend/public/data/ground/seongdong/` (index.json + 타일). 원천 JSON은 `data/raw/osm/`(커밋 안 됨)에 저장되고 SHA-256이 index.json에 기록된다.
+- 결과: `apps/frontend/public/data/ground/seoul/` (index.json + 타일, P3부터 서울 전체 한 벌 — docs/digital-twin/p3-seoul-scale.md 참고). 원천 JSON은 `data/raw/osm/`(커밋 안 됨)에 저장되고 SHA-256이 index.json에 기록된다.
 - Overpass 내려받기가 오래 걸리거나 실패하면 받은 JSON으로: `--osm-json <파일>`.
 - 타일이 없으면 트윈은 기존 격자 도로를 그대로 쓴다(회귀 없음).
 

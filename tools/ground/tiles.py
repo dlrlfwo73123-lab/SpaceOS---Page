@@ -60,6 +60,7 @@ def tiles_for(surfaces: list[Surface]) -> dict[str, dict]:
     for ty, tx in sorted(keys):
         clip = _tile_polygon_m(ty, tx)
         layers = []
+        area = {"estimated": 0.0, "measured": 0.0}
         for s in surfaces:
             part = s.geom.intersection(clip)
             if part.is_empty:
@@ -67,19 +68,34 @@ def tiles_for(surfaces: list[Surface]) -> dict[str, dict]:
             m = mesh_for(part)
             if m:
                 layers.append({"kind": s.kind, "estimated": s.estimated, **m})
+                area["estimated" if s.estimated else "measured"] += part.area
         if layers:
-            out[f"{ty}_{tx}"] = {"v": 1, "tile": f"{ty}_{tx}", "layers": layers}
+            out[f"{ty}_{tx}"] = {"v": 1, "tile": f"{ty}_{tx}", "area_m2": {k: round(v, 1) for k, v in area.items()},
+                                 "layers": layers}
     return out
 
 
-def write_tiles(tiles: dict[str, dict], out_dir: str | Path, meta: dict) -> Path:
+def write_tiles(tiles: dict[str, dict], out_dir: str | Path, meta: dict,
+                gu_code: str | None = None, clean: bool = False) -> Path:
+    """타일을 쓰고 index.json 을 갱신한다. 기본은 병합: 같은 키의 타일은 새 것으로 교체하고 나머지는 보존.
+
+    구 경계 근처 타일은 이웃 구 실행에서도 만들어질 수 있다(bbox 에 1km 여유). 나중 실행이 이긴다.
+    """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    for old in out_dir.glob("*.json"):
-        old.unlink()
+    if clean:
+        for old in out_dir.glob("*.json"):
+            old.unlink()
+    index_path = out_dir / "index.json"
+    index = {"v": 1, "tileDeg": TILE_DEG, "tiles": [], "meta": {}, "gu": {}}
+    if index_path.exists() and not clean:
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index.setdefault("gu", {})
     for k, t in tiles.items():
         (out_dir / f"{k}.json").write_text(json.dumps(t, separators=(",", ":")), encoding="utf-8")
-    index = {"v": 1, "tileDeg": TILE_DEG, "tiles": sorted(tiles), "meta": meta}
-    p = out_dir / "index.json"
-    p.write_text(json.dumps(index, ensure_ascii=False, indent=1), encoding="utf-8")
-    return p
+    index["tiles"] = sorted(set(index["tiles"]) | set(tiles))
+    index["meta"] = {**index.get("meta", {}), **{k: meta[k] for k in ("source", "attribution", "synthetic", "generated") if k in meta}}
+    if gu_code:
+        index["gu"][gu_code] = {k: v for k, v in meta.items() if k not in ("source", "attribution")} | {"tiles": sorted(tiles)}
+    index_path.write_text(json.dumps(index, ensure_ascii=False, indent=1), encoding="utf-8")
+    return index_path

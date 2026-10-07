@@ -81,3 +81,25 @@ def test_tile_key_and_index(tmp_path):
 def test_overpass_query_has_bbox():
     q = og.overpass_query((37.5, 127.0, 37.6, 127.1))
     assert "37.5,127.0,37.6,127.1" in q and q.rstrip().endswith("out geom;")
+
+
+def test_write_tiles_merges_and_records_gu(tmp_path):
+    ts = tl.tiles_for(surfaces())
+    keys = sorted(ts)
+    tl.write_tiles({keys[0]: ts[keys[0]]}, tmp_path, {"source": "s", "attribution": "a", "synthetic": True, "generated": "d"}, gu_code="11200")
+    tl.write_tiles({k: ts[k] for k in keys[1:]}, tmp_path, {"source": "s", "attribution": "a", "synthetic": True, "generated": "d"}, gu_code="11680")
+    idx = json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))
+    assert idx["tiles"] == keys and set(idx["gu"]) == {"11200", "11680"}
+    assert all("area_m2" in json.loads((tmp_path / f"{k}.json").read_text(encoding="utf-8")) for k in keys)
+    tl.write_tiles({}, tmp_path, {}, clean=True)
+    assert json.loads((tmp_path / "index.json").read_text(encoding="utf-8"))["tiles"] == []
+
+
+def test_simplify_keeps_area_within_1_percent(monkeypatch):
+    monkeypatch.setattr(og, "SIMPLIFY_M", 0.0)
+    raw = {s.kind + str(s.estimated): s.geom.area for s in og.build_surfaces(OSM)}
+    monkeypatch.setattr(og, "SIMPLIFY_M", 0.2)
+    simp = {s.kind + str(s.estimated): s.geom.area for s in og.build_surfaces(OSM)}
+    assert raw.keys() == simp.keys()
+    for k in raw:
+        assert simp[k] == pytest.approx(raw[k], rel=0.01), k
