@@ -41,5 +41,18 @@ for x, y in ((0, 25), (0, -25), (200, 15), (-200, 15)):
     els.append(way({"highway": "footway", "footway": "crossing"}, [(x - 6, y), (x + 6, y)]))
 # 보행 전용(차도 아님) – 무시되어야 함
 els.append(way({"highway": "footway"}, [(-300, 300), (300, 300)]))
+# 건물: 도로 격자 칸마다 3동(높이 태그 / 층수 태그 / 태그 없음) + 걸러져야 하는 것 2개
+import random
+rnd = random.Random(7)
+def rect(x, y, w, d):
+    return [(x, y), (x + w, y), (x + w, y + d), (x, y + d), (x, y)]
+for gx in (-300, -100, 100, 300):
+    for gy in (-300, -100, 100, 300):
+        els.append(way({"building": "yes", "height": str(rnd.choice([9, 12.5, 21, 30]))}, rect(gx - 60, gy - 60, 40 + rnd.randint(0, 20), 30 + rnd.randint(0, 20))))
+        els.append(way({"building": "apartments", "building:levels": str(rnd.choice([3, 5, 8, 12, 15]))}, rect(gx + 10, gy - 55, 35 + rnd.randint(0, 25), 40 + rnd.randint(0, 15))))
+        els.append(way({"building": "yes"}, rect(gx - 55, gy + 10, 25 + rnd.randint(0, 15), 25 + rnd.randint(0, 15))))
+els.append(way({"building": "yes", "height": "10"}, [(0, 0), (10, 0), (10, 10)]))        # 열린 way → 제외
+els.append(way({"building": "shed"}, rect(40, 40, 1.5, 1.5)))                           # 5㎡ 미만 → 제외
+
 Path(__file__).with_name("synthetic_osm.json").write_text(
     json.dumps({"version": 0.6, "generator": "synthetic fixture", "elements": els}, indent=1), encoding="utf-8")

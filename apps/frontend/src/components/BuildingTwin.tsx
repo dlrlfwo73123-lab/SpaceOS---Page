@@ -1,9 +1,10 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text } from '@react-three/drei';
 import { useEffect, useMemo, useState } from 'react';
 import { getBuildingFloors, type BuildingFloor as Floor } from '@/lib/api';
 import { ErrorBoundary } from './ErrorBoundary';
 import GroundLayer from './GroundLayer';
+import BuildingLayer, { BUILDING_RADII } from './BuildingLayer';
 import { loadGround, type GroundData } from '@/lib/groundTiles';
 import { GuBoundaryRibbon, VacancyDecals, vacancyTone } from './DistrictOverlay';
 import { distanceToGuBoundary } from '@/lib/guBoundary';
@@ -128,6 +129,26 @@ function Roads() {
   return <>{lines}</>;
 }
 
+// ── 성능 보호: 프레임이 낮으면 건물 표시 반경을 한 단계씩 줄인다(되돌리지 않음) ──
+const FPS_FLOOR = 24;      // 이보다 낮으면 한 단계 하향
+const WARMUP_S = 2.5;      // 셰이더 컴파일/로딩 구간은 제외
+const WINDOW_S = 2.5;      // 측정 창
+function PerfGovernor({ onDegrade, enabled }: { onDegrade: () => void; enabled: boolean }) {
+  const st = useMemo(() => ({ t: 0, frames: 0, winStart: 0 }), []);
+  useFrame((_, dt) => {
+    if (!enabled) return;
+    st.t += Math.min(dt, 1); // 탭 전환 등으로 생긴 긴 프레임이 평균을 왜곡하지 않게 제한
+    if (st.t < WARMUP_S) { st.winStart = st.t; st.frames = 0; return; }
+    st.frames++;
+    if (st.t - st.winStart >= WINDOW_S) {
+      const fps = st.frames / (st.t - st.winStart);
+      st.winStart = st.t; st.frames = 0;
+      if (fps < FPS_FLOOR) onDegrade();
+    }
+  });
+  return null;
+}
+
 // ── 선택 건물 — 층별 상세 ────────────────────────────────────────
 const SLAB_CONFIRMED = '#e11d48';
 const SLAB_PROBABLE  = '#f97316';
@@ -219,6 +240,10 @@ function ScaleBar() {
 // ── 메인 컴포넌트 ────────────────────────────────────────────────
 export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyVacancies = [], aiRecommendedIndustries = [], guCode }: BuildingTwinProps) {
   const [ground, setGround] = useState<GroundData | null>(null);
+  const hasRealBuildings = !!ground && ground.buildings.length > 0;
+  const [bLevel, setBLevel] = useState(0);
+  useEffect(() => setBLevel(0), [_lat, _lng, buildingId]);
+  const bRadius = BUILDING_RADII[bLevel];
   const realStats = useRealStats();
   const gu = SEOUL_GU.find((g) => g.code === guCode);
   const rawGuRate = guCode ? (getRealVacancyRate(realStats, guCode) ?? getMarketStats(guCode, '', 'ALL').vacancyRate) : null;
@@ -294,7 +319,9 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
         <div>
           <p className="text-sm font-semibold">3D 디지털 트윈 · 주변 1000m 도시 블록</p>
           <p className="text-xs text-slate-400">
-            층고 3.5m · 셀 38m/블록 · {neighbors.length}동 주변 건물 · 데모 데이터
+            {hasRealBuildings
+              ? `층고 3.5m · 주변 건물 ${ground!.buildings.length}동(OSM, 높이 추정 ${Math.round((ground!.buildings.filter((b) => b.e).length / ground!.buildings.length) * 100)}%)`
+              : `층고 3.5m · 셀 38m/블록 · ${neighbors.length}동 주변 건물 · 데모 데이터`}
           </p>
         </div>
         <div className="text-right text-xs">
@@ -340,8 +367,11 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
             {/* 도로: 실제 바닥 타일이 있으면 그것을, 없으면 절차 생성 격자 */}
             {ground && _lat && _lng ? <GroundLayer data={ground} lat={_lat} lng={_lng} /> : <Roads />}
 
+            {/* 실제 건물 외곽(OSM) 입체: 있으면 이것을, 없으면 절차 생성 주변 건물 */}
+            {hasRealBuildings && _lat && _lng && <BuildingLayer buildings={ground!.buildings} lat={_lat} lng={_lng} radius={bRadius} />}
+
             {/* 주변 건물 (공실/AI추천만 표시) */}
-            {neighbors.map((b, i) => {
+            {!hasRealBuildings && neighbors.map((b, i) => {
               const key = `${b.gx},${b.gz}`;
               const isVacancy = vacancyGridCells.has(key);
               const isAI = aiGridCells.has(key);
@@ -356,6 +386,8 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
             {/* 구 경계(구 공실률 색) + 주변 공실 바닥 데칼 */}
             {guCode && _lat && _lng && <GuBoundaryRibbon guCode={guCode} lat={_lat} lng={_lng} color={tone.hex} />}
             {_lat && _lng && nearbyVacancies.length > 0 && <VacancyDecals lat={_lat} lng={_lng} points={nearbyVacancies} color="#f97316" />}
+
+            <PerfGovernor enabled={hasRealBuildings && bLevel < BUILDING_RADII.length - 1 && !new URLSearchParams(window.location.search).has('nogov')} onDegrade={() => setBLevel((l) => Math.min(l + 1, BUILDING_RADII.length - 1))} />
 
             {/* 선택 건물 하이라이트 */}
             <SelectionRing />
@@ -393,7 +425,9 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
           <p className="mb-1 font-semibold">층 슬래브</p>
           <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_CONFIRMED }} />공실 (confirmed)</p>
           <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_PROBABLE }} />공실 (probable·확실성 미상 포함)</p>
-          <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_OTHER }} />그 외 층 (반투명 = 층고 3.5m 가정)</p>
+          <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: SLAB_OTHER }} />그 외 층 (선택 건물은 층고 3.5m 가정)</p>
+          {hasRealBuildings && <p><span className="mr-1 inline-block h-2 w-3 align-middle" style={{ background: '#dde1e8' }} />연한 주변 건물 = 높이 추정</p>}
+          {hasRealBuildings && bLevel > 0 && <p className="mt-1 text-amber-300">성능 보호: 건물 표시 반경 {bRadius}m로 축소됨</p>}
           {gu && boundaryM !== null && <p className="mt-1 text-slate-400">{gu.name} 경계까지 약 {boundaryM >= 1000 ? `${(boundaryM / 1000).toFixed(1)}km` : `${Math.round(boundaryM)}m`}</p>}
         </div>
 
@@ -413,7 +447,7 @@ export default function BuildingTwin({ buildingId, lat: _lat, lng: _lng, nearbyV
         {selectedFloor !== null && (() => {
           const f = floors.find((fl) => fl.level === selectedFloor);
           return f ? (
-            <div className="absolute left-3 top-32 rounded-xl bg-black/75 px-3 py-2 text-xs backdrop-blur-sm">
+            <div className="absolute left-3 top-48 rounded-xl bg-black/75 px-3 py-2 text-xs backdrop-blur-sm">
               <p className="font-bold text-white">{f.level}층 · {f.industry}</p>
               <p className={f.vacant ? 'text-amber-400' : 'text-emerald-400'}>{f.vacant ? '공실' : '운영 중'}</p>
               <p className="text-slate-400 mt-0.5">{((f.level - 1) * 3.5).toFixed(1)}m ~ {(f.level * 3.5).toFixed(1)}m</p>

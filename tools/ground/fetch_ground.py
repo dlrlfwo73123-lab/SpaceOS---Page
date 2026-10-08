@@ -22,6 +22,7 @@ from datetime import date
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from osm_buildings import build_buildings  # noqa: E402
 from osm_ground import build_surfaces, estimated_area_ratio, overpass_query  # noqa: E402
 from tiles import tiles_for, write_tiles  # noqa: E402
 
@@ -87,17 +88,19 @@ def run_gu(code, a, osm=None, raw_hash=None) -> None:
     if osm is None:
         osm, raw_hash = load_gu_raw(code, a.chunk_deg, a.sleep, a.offline)
     surfaces = build_surfaces(osm)
-    tiles = tiles_for(surfaces)
+    buildings = build_buildings(osm)
+    tiles = tiles_for(surfaces, buildings)
     meta = {
         "gu": PRESETS[code]["slug"], "guCode": code, "generated": date.today().isoformat(),
         "source": "OpenStreetMap contributors (ODbL)", "attribution": "© OpenStreetMap contributors",
         "input_sha256": raw_hash, "synthetic": a.synthetic, "ways": len(osm["elements"]),
-        "estimated_area_ratio": estimated_area_ratio(surfaces), "crs_in_tiles": "EPSG:4326",
+        "estimated_area_ratio": estimated_area_ratio(surfaces), "buildings": len(buildings),
+        "buildings_estimated": sum(b["e"] for b in buildings), "crs_in_tiles": "EPSG:4326",
         "width_rules": "tag > lanes*3.0 > class default; sidewalk 2.0m, crosswalk 3.0m (estimated=true)",
     }
     p = write_tiles(tiles, a.out, meta, gu_code=code, clean=a.clean)
     print(f"[{code} {PRESETS[code]['name']}] ways={meta['ways']} tiles={len(tiles)} "
-          f"estimated={meta['estimated_area_ratio']} {time.time() - t0:.1f}s → {p}")
+          f"buildings={meta['buildings']}({meta['buildings_estimated']} est) estimated={meta['estimated_area_ratio']} {time.time() - t0:.1f}s → {p}")
 
 
 def main() -> None:

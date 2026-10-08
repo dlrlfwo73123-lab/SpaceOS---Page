@@ -12,17 +12,19 @@
   "source": "OpenStreetMap contributors (ODbL)",
   "attribution": "© OpenStreetMap contributors",
   "synthetic": true,
-  "generated": "2026-10-07"
+  "generated": "2026-10-08"
  },
  "gu": {
   "11200": {
    "gu": "seongdong",
    "guCode": "11200",
-   "generated": "2026-10-07",
-   "input_sha256": "b64955913bf5e50882d5b6731eef4125a6564089f6d91de1e5a8e7f95482a773",
+   "generated": "2026-10-08",
+   "input_sha256": "630388febe0bbf00bf29724f4515bb312211c1e41a351a2f85191cf1729ff88c",
    "synthetic": true,
-   "ways": 17,
+   "ways": 67,
    "estimated_area_ratio": 0.7656,
+   "buildings": 48,
+   "buildings_estimated": 32,
    "crs_in_tiles": "EPSG:4326",
    "width_rules": "tag > lanes*3.0 > class default; sidewalk 2.0m, crosswalk 3.0m (estimated=true)",
    "tiles": [

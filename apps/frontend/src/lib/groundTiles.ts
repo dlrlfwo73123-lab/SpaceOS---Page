@@ -19,9 +19,12 @@ export type GroundMeta = {
   estimated_area_ratio: number;
 };
 
-export type GroundData = { layers: GroundLayerData[]; meta: GroundMeta };
+/** 건물 외곽: r=[lon,lat,...], h=높이(m), l=층수|null, e=1이면 높이 추정(태그 없음/층수 환산/기본값) */
+export type GroundBuilding = { r: number[]; h: number; l: number | null; e: 0 | 1 };
 
-type TileJson = { layers: GroundLayerData[]; area_m2?: { estimated: number; measured: number } };
+export type GroundData = { layers: GroundLayerData[]; buildings: GroundBuilding[]; meta: GroundMeta };
+
+type TileJson = { layers: GroundLayerData[]; buildings?: GroundBuilding[]; area_m2?: { estimated: number; measured: number } };
 type IndexJson = { v: number; tiles: string[]; meta: Omit<GroundMeta, 'estimated_area_ratio'> };
 
 const TILE_DEG = 0.01;
@@ -87,10 +90,11 @@ export async function loadGround(lat: number, lng: number, radiusM = 1000): Prom
     (t): t is TileJson => t !== null,
   );
   const layers = mergeLayers(tiles.flatMap((t) => t.layers));
-  if (layers.length === 0) return null;
+  const buildings = tiles.flatMap((t) => t.buildings ?? []);
+  if (layers.length === 0 && buildings.length === 0) return null;
   const est = tiles.reduce((s, t) => s + (t.area_m2?.estimated ?? 0), 0);
   const mea = tiles.reduce((s, t) => s + (t.area_m2?.measured ?? 0), 0);
   performance.mark?.('ground-loaded');
   performance.measure?.('ground-load-ms', { start: t0, end: performance.now(), detail: { tiles: tiles.length } });
-  return { layers, meta: { ...index.meta, estimated_area_ratio: est + mea > 0 ? est / (est + mea) : 0 } };
+  return { layers, buildings, meta: { ...index.meta, estimated_area_ratio: est + mea > 0 ? est / (est + mea) : 0 } };
 }

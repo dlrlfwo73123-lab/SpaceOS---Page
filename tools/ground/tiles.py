@@ -48,7 +48,7 @@ def mesh_for(geom_m) -> dict | None:
     return {"positions": pos, "indices": idx} if idx else None
 
 
-def tiles_for(surfaces: list[Surface]) -> dict[str, dict]:
+def tiles_for(surfaces: list[Surface], buildings: list[dict] | None = None) -> dict[str, dict]:
     """{tile_key: {'v':1,'tile':key,'layers':[{kind,estimated,positions,indices}]}}"""
     keys = set()
     for s in surfaces:
@@ -56,6 +56,11 @@ def tiles_for(surfaces: list[Surface]) -> dict[str, dict]:
         for ty in range(math.floor(lat0 / TILE_DEG), math.floor(lat1 / TILE_DEG) + 1):
             for tx in range(math.floor(lon0 / TILE_DEG), math.floor(lon1 / TILE_DEG) + 1):
                 keys.add((ty, tx))
+    by_tile: dict[str, list[dict]] = {}
+    for b in buildings or []:
+        by_tile.setdefault(tile_key(*b["c"]), []).append(b)
+        ty, tx = (int(v) for v in tile_key(*b["c"]).split("_"))
+        keys.add((ty, tx))
     out = {}
     for ty, tx in sorted(keys):
         clip = _tile_polygon_m(ty, tx)
@@ -69,9 +74,12 @@ def tiles_for(surfaces: list[Surface]) -> dict[str, dict]:
             if m:
                 layers.append({"kind": s.kind, "estimated": s.estimated, **m})
                 area["estimated" if s.estimated else "measured"] += part.area
-        if layers:
-            out[f"{ty}_{tx}"] = {"v": 1, "tile": f"{ty}_{tx}", "area_m2": {k: round(v, 1) for k, v in area.items()},
-                                 "layers": layers}
+        blds = [{"r": b["r"], "h": b["h"], "l": b["l"], "e": int(b["e"])} for b in by_tile.get(f"{ty}_{tx}", [])]
+        if layers or blds:
+            tile = {"v": 1, "tile": f"{ty}_{tx}", "area_m2": {k: round(v, 1) for k, v in area.items()}, "layers": layers}
+            if blds:
+                tile["buildings"] = blds
+            out[f"{ty}_{tx}"] = tile
     return out
 
 

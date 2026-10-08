@@ -103,3 +103,32 @@ def test_simplify_keeps_area_within_1_percent(monkeypatch):
     assert raw.keys() == simp.keys()
     for k in raw:
         assert simp[k] == pytest.approx(raw[k], rel=0.01), k
+
+
+import osm_buildings as ob
+
+
+def test_building_height_rules():
+    assert ob.building_height({"height": "21 m"}) == (21.0, None, "tag")
+    assert ob.building_height({"building:levels": "5"}) == (17.5, 5, "levels")
+    assert ob.building_height({"height": "9", "building:levels": "3"}) == (9.0, 3, "tag")
+    assert ob.building_height({}) == (ob.DEFAULT_H, None, "default")
+
+
+def test_buildings_filtered_and_flagged():
+    b = ob.build_buildings(OSM)
+    assert len(b) == 48  # 4x4칸 x 3동. 열린 way와 5㎡ 미만은 제외
+    by_src = {x["src"] for x in b}
+    assert by_src == {"tag", "levels", "default"}
+    for x in b:
+        assert x["e"] == (x["src"] != "tag") and len(x["r"]) % 2 == 0 and len(x["r"]) >= 6
+
+
+def test_buildings_land_in_tiles(tmp_path):
+    b = ob.build_buildings(OSM)
+    ts = tl.tiles_for(surfaces(), b)
+    assert sum(len(t.get("buildings", [])) for t in ts.values()) == len(b)
+    for k, t in ts.items():
+        for x in t.get("buildings", []):
+            assert x["e"] in (0, 1) and x["h"] > 0
+    assert og.overpass_query((1, 2, 3, 4)).count('["building"]') == 1

@@ -40,7 +40,8 @@ class Surface:
 
 def overpass_query(bbox: tuple[float, float, float, float], timeout: int = 180) -> str:
     s, w, n, e = bbox
-    return f'[out:json][timeout:{timeout}];(way["highway"]({s},{w},{n},{e}););out geom;'
+    return (f'[out:json][timeout:{timeout}];(way["highway"]({s},{w},{n},{e});'
+            f'way["building"]({s},{w},{n},{e}););out geom;')
 
 
 def _num(v) -> float | None:
@@ -78,8 +79,10 @@ def build_surfaces(osm: dict) -> list[Surface]:
             continue
         tags = el.get("tags", {})
         hw = tags.get("highway")
+        if not hw:
+            continue
         line = _line(el)
-        if line is None or not hw:
+        if line is None:
             continue
         if hw == "footway" and tags.get("footway") == "crossing" or hw == "crossing":
             w = _num(tags.get("width"))
