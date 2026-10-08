@@ -29,7 +29,7 @@ jobs:
       - name: Install
         run: pip install -r tools/print3d/requirements.txt -r tools/ground/requirements.txt -r apps/backend/requirements-dev.txt
       - name: Tests (print3d, ground, backend)
-        run: python -m pytest tools/print3d/tests tools/ground/tests apps/backend/tests -q -W error::DeprecationWarning
+        run: python -m pytest tools/print3d/tests tools/ground/tests tools/qa/tests apps/backend/tests -q -W error::DeprecationWarning
       - name: Performance budget on synthetic dense city
         run: python tools/ground/perf_report.py --check
       - name: Sample tiles pass the output verifier
