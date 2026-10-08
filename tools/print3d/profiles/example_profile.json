@@ -1,0 +1,6 @@
+{
+  "_note": "예시 값입니다. 실제 장비·노즐·재료 값으로 교체해야 하며, 이 값으로 출력 확정하지 마세요.",
+  "printer": "EXAMPLE-FDM-220",
+  "bed_x_mm": 220, "bed_y_mm": 220, "bed_z_mm": 250,
+  "nozzle_mm": 0.4, "material": "PLA", "min_wall_mm": 0.8
+}

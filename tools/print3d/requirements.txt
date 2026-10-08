@@ -6,3 +6,5 @@ pytest>=8.0
 mapbox-earcut>=1.0
 scipy>=1.11
 networkx>=3.0
+lxml>=5.0
+matplotlib>=3.8  # preview_model.py 전용(선택)
