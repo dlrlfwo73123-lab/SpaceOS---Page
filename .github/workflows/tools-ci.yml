@@ -1,0 +1,58 @@
+name: Tools CI
+
+# tools/(바닥·건물 타일 파이프라인, 출력 모형)와 apps/ 변경 시 오프라인 검사만 실행한다.
+# Overpass 등 외부 서버에는 접속하지 않는다(합성 fixture 사용).
+on:
+  pull_request:
+    paths: ['tools/**', 'apps/**', '.github/workflows/tools-ci.yml']
+  push:
+    branches: [main]
+    paths: ['tools/**', 'apps/**', '.github/workflows/tools-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            tools/print3d/requirements.txt
+            tools/ground/requirements.txt
+            apps/backend/requirements-dev.txt
+      - name: Install
+        run: pip install -r tools/print3d/requirements.txt -r tools/ground/requirements.txt -r apps/backend/requirements-dev.txt
+      - name: Tests (print3d, ground, backend)
+        run: python -m pytest tools/print3d/tests tools/ground/tests apps/backend/tests -q -W error::DeprecationWarning
+      - name: Performance budget on synthetic dense city
+        run: python tools/ground/perf_report.py --check
+      - name: Sample tiles pass the output verifier
+        run: python tools/ground/verify_ground_output.py apps/frontend/public/data/ground/_sample
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
+      - run: npm ci
+      - name: Type check
+        run: npx tsc -b
+      - name: Extrusion checks
+        run: node scripts/check-extrude.mjs
+      - name: Build
+        run: npm run build
+        env:
+          VITE_NAVER_CLIENT_ID: 'ci'

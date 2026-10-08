@@ -8,9 +8,11 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import numpy as np
+import shapely
+
 from pyproj import Transformer
 from shapely.geometry import LineString
-from shapely.ops import transform as shp_transform
 from shapely.ops import unary_union
 
 CRS_M = "EPSG:5186"
@@ -28,6 +30,14 @@ SIDEWALK_W = 2.0
 CROSSWALK_W = 3.0
 SIMPLIFY_M = 0.2
 SIDEWALK_TAGS = {"both", "left", "right", "yes"}
+
+
+def reproject(geom, fn):
+    """fn(x, y) → (x', y') (pyproj Transformer.transform 형태)로 좌표를 바꾼다. shapely.ops.transform 의 대체(2.1에서 deprecated)."""
+    def go(c):
+        x, y = fn(c[:, 0], c[:, 1])
+        return np.column_stack([x, y])
+    return shapely.transform(geom, go)
 
 
 @dataclass
@@ -65,7 +75,7 @@ def _line(el) -> LineString | None:
     pts = [(p["lon"], p["lat"]) for p in el.get("geometry", [])]
     if len(pts) < 2:
         return None
-    return shp_transform(TO_M, LineString(pts))
+    return reproject(LineString(pts), TO_M)
 
 
 def _strip(line: LineString, width: float):

@@ -7,9 +7,8 @@ from pathlib import Path
 
 import shapely
 from shapely.geometry import Polygon
-from shapely.ops import transform as shp_transform
 
-from osm_ground import TO_LL, TO_M, Surface
+from osm_ground import TO_LL, TO_M, Surface, reproject
 
 TILE_DEG = 0.01
 
@@ -52,7 +51,7 @@ def tiles_for(surfaces: list[Surface], buildings: list[dict] | None = None) -> d
     """{tile_key: {'v':1,'tile':key,'layers':[{kind,estimated,positions,indices}]}}"""
     keys = set()
     for s in surfaces:
-        lon0, lat0, lon1, lat1 = shp_transform(TO_LL, s.geom).bounds
+        lon0, lat0, lon1, lat1 = reproject(s.geom, TO_LL).bounds
         for ty in range(math.floor(lat0 / TILE_DEG), math.floor(lat1 / TILE_DEG) + 1):
             for tx in range(math.floor(lon0 / TILE_DEG), math.floor(lon1 / TILE_DEG) + 1):
                 keys.add((ty, tx))

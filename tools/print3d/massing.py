@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import numpy as np
+import shapely
 import trimesh
 from shapely.geometry import Polygon, shape
-from shapely.ops import transform as shp_transform
 
 from coordinates import make_transformer, to_print_mm
 
@@ -22,7 +22,7 @@ def build_massing(usable: list[dict], scale_denominator: int = 1000,
     tf = make_transformer(crs)
     projected = []
     for f in usable:
-        g = shp_transform(tf.transform, shape(f["geometry"]))
+        g = shapely.transform(shape(f["geometry"]), lambda c: np.column_stack(tf.transform(c[:, 0], c[:, 1])))
         projected.append((f, g))
     minx = min(g.bounds[0] for _, g in projected)
     miny = min(g.bounds[1] for _, g in projected)

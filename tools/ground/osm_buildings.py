@@ -8,9 +8,8 @@ from __future__ import annotations
 import re
 
 from shapely.geometry import Polygon
-from shapely.ops import transform as shp_transform
 
-from osm_ground import TO_LL, TO_M
+from osm_ground import TO_LL, TO_M, reproject
 
 FLOOR_H = 3.5      # BuildingTwin.FLOOR_H 와 동일
 DEFAULT_H = 7.0    # 태그가 전혀 없을 때(추정): 2층 규모
@@ -45,7 +44,7 @@ def build_buildings(osm: dict) -> list[dict]:
         pts = [(p["lon"], p["lat"]) for p in el.get("geometry", [])]
         if len(pts) < 4 or pts[0] != pts[-1]:
             continue
-        poly = shp_transform(TO_M, Polygon(pts))
+        poly = reproject(Polygon(pts), TO_M)
         if not poly.is_valid:
             poly = poly.buffer(0)
         if poly.is_empty or poly.geom_type != "Polygon" or poly.area < MIN_AREA_M2:

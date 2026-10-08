@@ -15,7 +15,6 @@ import numpy as np
 import trimesh
 from shapely.geometry import Point, Polygon, box
 from shapely.geometry.polygon import orient
-from shapely.ops import transform as shp_transform
 from shapely.ops import unary_union
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ground"))
@@ -70,7 +69,7 @@ def build_model(osm: dict, center_lat: float, center_lng: float, profile: dict, 
     cx, cy = osm_ground.TO_M(center_lng, center_lat)
     x0, y0 = cx - half_m, cy - half_m
     aoi = box(x0, y0, cx + half_m, cy + half_m)
-    to_local = lambda g: shp_transform(lambda x, y, z=None: ((np.asarray(x) - x0) * k, (np.asarray(y) - y0) * k), g)  # noqa: E731
+    to_local = lambda g: osm_ground.reproject(g, lambda x, y: ((x - x0) * k, (y - y0) * k))  # noqa: E731
     W = 2 * half_m * k
     report = {"scale": f"1:{scale}", "half_m": half_m, "plate_mm": [W, W], "excluded": [], "dropped_thin": {}}
 
