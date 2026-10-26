@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS 시안 검증 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+.gnb{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:28px}
+.toc{position:sticky;top:76px;align-self:start;font-size:13px}
+.toc b{display:block;font-size:11px;color:var(--text-3);letter-spacing:.08em;margin-bottom:6px}
+.toc a{display:block;color:var(--text-2);text-decoration:none;padding:5px 10px;border-left:2px solid var(--line);}
+.toc a:hover{color:var(--brand);border-left-color:var(--brand)}
+main{min-width:0}
+.eyebrow{font-size:12px;font-weight:800;color:var(--brand);letter-spacing:.06em}
+h1{margin:6px 0 8px;font-size:28px;letter-spacing:-.03em;line-height:1.3}
+.lead{margin:0;color:var(--text-2);font-size:14.5px;max-width:860px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.meta span{font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--text-2)}
+section{margin-top:34px}
+h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+h2 .n{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--brand);color:#fff;font-size:13px;flex-shrink:0}
+.sub{margin:0 0 14px;color:var(--text-2);font-size:13.5px}
+h3{margin:18px 0 8px;font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.pad{padding:16px 18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.stat{padding:14px 16px}
+.stat .l{font-size:12px;color:var(--text-3);font-weight:700}
+.stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.stat .d{font-size:12px;color:var(--text-2)}
+.verdict{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.verdict ul{margin:0;padding-left:18px}
+.verdict li{margin:4px 0}
+.fit{width:100%;border-collapse:collapse;font-size:13px}
+.fit td,.fit th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.fit tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-size:11.5px;font-weight:800;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-mid{background:var(--warn-soft);color:var(--warn)}
+.p-no{background:var(--bad-soft);color:var(--bad)}
+.p-info{background:var(--brand-soft);color:var(--brand-ink)}
+.p-gray{background:#f1f5f9;color:var(--text-2)}
+.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.methods div{padding:14px 16px}
+.methods b{display:block;font-size:13.5px;margin-bottom:2px}
+.methods p{margin:0;font-size:12.5px;color:var(--text-2)}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.file h3{margin:0;font-size:15px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.file h3 a{font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}
+.file .fn{font-size:11.5px;color:var(--text-3);font-family:ui-monospace,Menlo,monospace}
+.scores{display:grid;gap:5px;margin:12px 0}
+.sc{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;font-size:12px}
+.dots{display:flex;gap:3px}
+.dots i{width:16px;height:8px;border-radius:3px;background:#e2e8f0}
+.dots i.on{background:var(--brand-2)}
+.dots.low i.on{background:#f59e0b}
+.dots.vlow i.on{background:#ef4444}
+.file ul{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2)}
+.file li{margin:3px 0}
+.tbl{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+.t th{background:var(--surface-2);font-size:12px;color:var(--text-3);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.t td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.t tr:last-child td{border-bottom:0}
+.t td small{color:var(--text-3)}
+.sev{font-size:11px;font-weight:800;border-radius:6px;padding:1px 7px;white-space:nowrap}
+.sev.h{background:var(--bad-soft);color:var(--bad)}
+.sev.m{background:var(--warn-soft);color:var(--warn)}
+.sev.l{background:#f1f5f9;color:var(--text-2)}
+.mx td,.mx th{text-align:center}
+.mx td:first-child,.mx th:first-child{text-align:left}
+.mx .y{color:var(--ok);font-weight:800}
+.mx .p{color:var(--warn);font-weight:800}
+.mx .n{color:#cbd5e1}
+.mx tr.us td{background:var(--brand-soft)}
+.diffs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.diff h3{margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.diff .tag{font-size:11px;font-weight:800;color:#fff;background:var(--brand);border-radius:6px;padding:1px 7px}
+.diff p{margin:0 0 8px;font-size:13px;color:var(--text-2)}
+.diff .row{display:grid;grid-template-columns:72px 1fr;gap:8px;font-size:12.5px;margin:4px 0}
+.diff .row b{color:var(--text-3);font-weight:700}
+.adds{display:grid;gap:10px}
+.add{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:14px 16px}
+.add .pr{display:grid;place-items:center;border-radius:12px;font-weight:800;font-size:13px;height:54px}
+.pr.p1{background:var(--bad-soft);color:var(--bad)}
+.pr.p2{background:var(--warn-soft);color:var(--warn)}
+.pr.p3{background:#f1f5f9;color:var(--text-2)}
+.add h4{margin:0 0 4px;font-size:14.5px}
+.add p{margin:0;font-size:13px;color:var(--text-2)}
+.add .src{margin-top:6px;font-size:12px;color:var(--text-3)}
+.calc{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.note{font-size:12.5px;color:var(--text-2);background:var(--surface-2);border:1px dashed var(--line-2);border-radius:12px;padding:12px 14px}
+.srcs{columns:2;column-gap:24px;font-size:12.5px;padding-left:20px;margin:0}
+.srcs li{margin:0 0 6px;break-inside:avoid}
+.srcs li span{color:var(--text-3)}
+.limits li{margin:4px 0}
+@media (max-width:1000px){
+  .wrap{grid-template-columns:1fr}
+  .toc{position:static;display:flex;flex-wrap:wrap;gap:4px}
+  .toc b{width:100%}
+  .toc a{border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:#fff;font-size:12px}
+  .stats{grid-template-columns:1fr 1fr}
+  .verdict,.diffs,.calc{grid-template-columns:1fr}
+  .methods{grid-template-columns:1fr 1fr}
+  .srcs{columns:1}
+}
+@media (max-width:600px){
+  .gnb{padding:0 12px;gap:10px}
+  .wrap{padding:18px 16px 48px}
+  h1{font-size:23px}
+  .methods{grid-template-columns:1fr}
+  .files{grid-template-columns:1fr}
+  .add{grid-template-columns:52px 1fr;gap:10px}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html" class="on">검증 리포트</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <aside class="toc" aria-label="목차">
+    <b>목차</b>
+    <a href="#summary">1. 결론 요약</a>
+    <a href="#method">2. 검증 방법</a>
+    <a href="#files">3. 파일별 정확성 · 신뢰도</a>
+    <a href="#issues">4. 문제점과 수정 내역</a>
+    <a href="#diff">5. 다른 서비스와 차별점</a>
+    <a href="#adds">6. 추가하면 좋을 정보</a>
+    <a href="#facts">7. 사실 확인 근거</a>
+    <a href="#limits">8. 검증 한계</a>
+    <a href="#sources">9. 출처</a>
+  </aside>
+
+  <main>
+    <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
+    <h1>시안 5개를 검증한 결과와 차별점, 추가할 정보</h1>
+    <p class="lead">앞서 만든 HTML 시안 5개(상권 구역 지도 · 층별 3D 트윈 · 거리뷰 층별보기 · 반경 업종 분석 · 손님 모으기)를 코드 · 화면 · 수치 · 법규 · 외부 서비스 기준으로 점검했습니다. 바로 고칠 수 있는 문제는 시안에 반영했고, 실데이터가 있어야 풀리는 문제는 남은 과제로 정리했습니다.</p>
+    <div class="meta"><span>검증일 2026-10-26</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 54개 링크</span></div>
+
+    <div class="stats">
+      <div class="card stat"><div class="l">이번에 고친 문제</div><div class="v">15건</div><div class="d">지도 깨짐 · 수치 보정 · 법규 누락 등</div></div>
+      <div class="card stat"><div class="l">남은 과제</div><div class="v">13건</div><div class="d">대부분 실데이터 연동이 필요</div></div>
+      <div class="card stat"><div class="l">화면 테스트</div><div class="v">0건</div><div class="d">콘솔 오류 · 모바일 가로 넘침 (7개 화면)</div></div>
+      <div class="card stat"><div class="l">시안 수치의 성격</div><div class="v">데모</div><div class="d">일부 기준치만 공개 자료로 보정</div></div>
+    </div>
+
+    <!-- 1 -->
+    <section id="summary">
+      <h2><span class="n">1</span>결론 요약</h2>
+      <p class="sub">기능 흐름을 보여주는 시안으로는 쓸 만하지만, 수치를 믿고 창업 판단을 하는 용도로는 쓸 수 없습니다.</p>
+      <div class="verdict">
+        <div class="card pad">
+          <h3 style="margin-top:0">핵심 판단</h3>
+          <ul>
+            <li><b>기능 · 화면 흐름은 신뢰할 만합니다.</b> 상권 → 공실 → 층 · 호실 → 거리 노출 → 주변 경쟁 → 운영으로 이어지는 흐름이 6개 화면에서 끊기지 않고 동작합니다.</li>
+            <li><b>수치는 대부분 가상입니다.</b> 성수 공실률 · 임대료, 수수료, 인테리어 단가처럼 공개 자료가 있는 값만 그 범위에 맞췄습니다. 점포 위치, 매출, 적합도 점수는 만든 값입니다.</li>
+            <li><b>치명적인 문제 1건을 고쳤습니다.</b> 지도 타일(CARTO)이 2026년 8~9월부터 API 키를 요구하게 바뀌어 Case 1 · 4 지도에 워터마크가 뜰 상황이었습니다. 키 없이 쓰는 OpenFreeMap으로 바꾸고, 안 되면 Esri 지도로 넘어가게 했습니다.</li>
+            <li><b>법규 정보가 차별점이 될 수 있습니다.</b> 다중이용업소 기준, 상가임대차 환산보증금, 성수 지속가능발전구역 프랜차이즈 제한, 담배소매인 거리처럼 <b>그 자리에 바로 적용되는 규칙</b>을 자동으로 알려주는 기능은 비교한 서비스들에서 확인되지 않았습니다.</li>
+          </ul>
+        </div>
+        <div class="card pad">
+          <h3 style="margin-top:0">용도별 사용 가능 여부</h3>
+          <table class="fit">
+            <tr><td>기획 · 디자인 검토</td><td><span class="pill p-ok">적합</span></td></tr>
+            <tr><td>내부 시연 · 투자자 설명</td><td><span class="pill p-ok">적합</span> <small class="muted">데모 표기를 유지한 채</small></td></tr>
+            <tr><td>고객 대상 공개</td><td><span class="pill p-mid">조건부</span> <small class="muted">실데이터 연동 후</small></td></tr>
+            <tr><td>실제 창업 · 임대 판단</td><td><span class="pill p-no">부적합</span> <small class="muted">수치가 가상</small></td></tr>
+            <tr><td>개발 착수용 화면 명세</td><td><span class="pill p-ok">적합</span> <small class="muted">데이터 출처표(6장) 함께 참고</small></td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="method">
+      <h2><span class="n">2</span>검증 방법</h2>
+      <p class="sub">무엇을 확인했고 무엇은 못 했는지 구분합니다. 확인하지 못한 항목은 8장에 따로 적었습니다.</p>
+      <div class="methods">
+        <div class="card"><b>① 화면 렌더링</b><p>Chromium(헤드리스)으로 6개 화면을 데스크톱 1440×900, 모바일 390×844에서 띄워 콘솔 오류와 가로 넘침을 확인했습니다. 지도 · 3D 라이브러리는 같은 버전의 로컬 사본으로 대신 불러왔습니다.</p></div>
+        <div class="card"><b>② 상호작용</b><p>시나리오 전환, 층 · 호실 선택, 층 분리 보기, 거리뷰 촬영 시점 바꾸기, 반경 50/70/100m, 장부 추가 · 저장, 행사 담기, 케이스 간 링크 파라미터(?s, ?f, ?zone, ?tab)를 실행해 결과를 확인했습니다.</p></div>
+        <div class="card"><b>③ 장애 상황</b><p>WebGL을 끈 브라우저, 지도 스타일 서버 차단 상황을 일부러 만들어 대체 화면과 대체 지도가 동작하는지 봤습니다.</p></div>
+        <div class="card"><b>④ 계산 로직</b><p>손익분기(고정비 ÷ (1 − 변동비율)), 월말 예상(영업일 환산), 면적 기준 공실률, 경쟁 강도, 필요 손님 수 계산을 손으로 다시 계산해 화면 값과 맞춰 봤습니다.</p></div>
+        <div class="card"><b>⑤ 수치 · 법규 대조</b><p>성수 공실률 · 임대료, 카드 · 배달 수수료, 인테리어 단가, 다중이용업소 · 상가임대차 · 근린생활시설 기준, 성동구 프랜차이즈 제한을 웹 검색으로 찾아 시안 값과 비교했습니다.</p></div>
+        <div class="card"><b>⑥ 외부 서비스 비교</b><p>소상공인365, 서울시 상권분석서비스, 오픈업, 네모, S-Map, Matterport, 큐픽스, 오늘의집, 아키스케치, 스페이슬리, 카카오 로드뷰, Placer.ai의 공개 소개 자료를 확인했습니다.</p></div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="files">
+      <h2><span class="n">3</span>파일별 정확성 · 신뢰도</h2>
+      <p class="sub">점수는 5점 만점으로, 이번 수정을 반영한 상태입니다. <b>데이터 사실성</b>은 수치가 현실과 얼마나 맞는지, <b>기술 안정성</b>은 다른 환경에서도 깨지지 않고 열리는지를 뜻합니다.</p>
+      <div class="files">
+        <div class="card pad file">
+          <h3>Case 1 · 상권 구역 지도 <a href="case1-district-map.html">열기 →</a></h3>
+          <div class="fn">case1-district-map.html</div>
+          <div class="scores">
+            <div class="sc"><span>기능 완성도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>데이터 사실성</span><div class="dots low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><b>2/5</b></div>
+            <div class="sc"><span>법규 · 제도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><b>3/5</b></div>
+            <div class="sc"><span>기술 안정성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+          </div>
+          <ul>
+            <li>역 좌표(성수 · 뚝섬 · 서울숲 · 망원 · 합정)는 실제 위치와 맞게 찍었습니다. 구역 경계는 손으로 그린 근사치이고 서울시 상권 영역이 아닙니다.</li>
+            <li>성수 공실률 · 임대료를 보도치 범위로 보정했습니다. 뚝도시장은 주소(성수이로 32-15) 쪽으로 옮겼지만 위치는 여전히 추정입니다.</li>
+            <li>상권 유형 6가지는 시안용 세분류입니다. 서울시 공식 구분은 골목 · 발달 · 전통시장 · 관광특구 4가지라는 주석을 달았습니다.</li>
+            <li>업종 적합도 점수는 근거 없는 가중치입니다. 실제 생존율 데이터로 검증해야 합니다.</li>
+          </ul>
+        </div>
+        <div class="card pad file">
+          <h3>Case 2 · 층별 3D 트윈 <a href="case2-3d-floor-twin.html">열기 →</a></h3>
+          <div class="fn">case2-3d-floor-twin.html</div>
+          <div class="scores">
+            <div class="sc"><span>기능 완성도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>데이터 사실성</span><div class="dots low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><b>2/5</b></div>
+            <div class="sc"><span>법규 · 제도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>기술 안정성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+          </div>
+          <ul>
+            <li>건물은 층수 · 바닥 크기만 반영한 상자 모델이고, 주변 건물은 무작위로 배치했습니다(기존 저장소 BuildingTwin과 같은 방식).</li>
+            <li>WebGL이 안 되는 기기에서 화면 전체가 멈추던 문제를 고쳤습니다. 이제 3D만 꺼지고 공실 목록과 층 정보는 그대로 보입니다.</li>
+            <li>공실률을 호실 수로 세던 것을 면적 기준으로 바꿨습니다. 예를 들어 1,180㎡ 전층 공실이 1호로만 세지던 문제가 있었습니다.</li>
+            <li>층별 체크포인트에 다중이용업소 판정과 지식산업센터 입점 업종 확인을 넣었습니다.</li>
+          </ul>
+        </div>
+        <div class="card pad file">
+          <h3>Case 3 · 거리뷰 · 층별보기 <a href="case3-streetview-floor.html">열기 →</a></h3>
+          <div class="fn">case3-streetview-floor.html</div>
+          <div class="scores">
+            <div class="sc"><span>기능 완성도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><b>3/5</b></div>
+            <div class="sc"><span>데이터 사실성</span><div class="dots low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><b>2/5</b></div>
+            <div class="sc"><span>법규 · 제도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><b>3/5</b></div>
+            <div class="sc"><span>기술 안정성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><b>5/5</b></div>
+          </div>
+          <ul>
+            <li>거리뷰는 실제 사진이 아닌 SVG 그림입니다. 화면에도 '실서비스: 네이버 지도 파노라마'라고 표시했고, 저장소의 지도 로더가 이미 파노라마 모듈을 불러오고 있습니다.</li>
+            <li>평면도는 건물 가로 · 세로로 만든 개략도입니다. 실측 도면처럼 보이지 않도록 '개략 배치도 · 실측 도면 아님'으로 바꿨습니다.</li>
+            <li>간판 노출도 점수는 층별 경험칙으로 정한 값이고, 실제 시야 분석 결과가 아닙니다.</li>
+            <li>과거 촬영본은 카카오 로드뷰가 2011년부터 '과거사진 보기'를 제공한 기록이 있습니다. 다만 지도 API로 받을 수 있는지는 확인하지 못했습니다.</li>
+          </ul>
+        </div>
+        <div class="card pad file">
+          <h3>Case 4 · 반경 업종 분석 <a href="case4-nearby-competitors.html">열기 →</a></h3>
+          <div class="fn">case4-nearby-competitors.html</div>
+          <div class="scores">
+            <div class="sc"><span>기능 완성도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>데이터 사실성</span><div class="dots vlow"><i class="on"></i><i></i><i></i><i></i><i></i></div><b>1/5</b></div>
+            <div class="sc"><span>법규 · 제도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>기술 안정성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+          </div>
+          <ul>
+            <li>점포 위치는 무작위로 만든 값입니다. 가짜 위치에 실제 브랜드명(스타벅스, CU 등)이 붙어 있어 오해 소지가 있었기 때문에 'A사 · B사' 익명 표기로 바꿨습니다.</li>
+            <li>거리는 직선거리입니다. 층(1층 · 지하 · 2층), 보행 경로, 대로 건너편 여부는 반영하지 않았고, 화면에 이 사실을 적었습니다.</li>
+            <li>경쟁 강도 공식은 같은 업종 ×10 + 체인 ×5 + 비슷한 업종 ×4를 면적으로 보정한 시안용 값이며, 검증된 지표가 아닙니다.</li>
+            <li>편의점 담배소매인 거리, 성수 지속가능발전구역의 프랜차이즈 제한을 해석 문구에 넣었습니다.</li>
+          </ul>
+        </div>
+        <div class="card pad file">
+          <h3>Case 5 · 손님 모으기 <a href="case5-customer-ledger.html">열기 →</a></h3>
+          <div class="fn">case5-customer-ledger.html</div>
+          <div class="scores">
+            <div class="sc"><span>기능 완성도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>데이터 사실성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><b>3/5</b></div>
+            <div class="sc"><span>법규 · 제도</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+            <div class="sc"><span>기술 안정성</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><b>4/5</b></div>
+          </div>
+          <ul>
+            <li>손익분기 · 필요 손님 수 계산은 맞습니다(A 기준 고정비 1,137만 ÷ (1 − 0.33) = 1,694만). 다만 월말 예상이 달력 일수로 계산되던 것을 영업일 기준으로 바꿨습니다.</li>
+            <li>'순이익'을 '영업이익(세전 · 감가상각 전)'으로 바꾸고, 부가세 · 종합소득세 · 감가상각 · 대출이자가 빠져 있다고 안내했습니다.</li>
+            <li>지출 적정선(임대료 15%, 인건비 30%, 재료비 35%)은 업계 통상치라 '공식 기준 아님'으로 표기했습니다. 카드 · 배달 수수료는 2025년 실제 기준을 적었습니다.</li>
+            <li>인테리어 평당 단가(90~230만원)는 공개된 업체 견적 범위(평당 90~350만원) 안에 있습니다. 행사 이름 · 일정은 예시이고, 링크는 모두 공식 기관 · 플랫폼 주소입니다.</li>
+          </ul>
+        </div>
+        <div class="card pad file">
+          <h3>공통 · 목차 <a href="index.html">열기 →</a></h3>
+          <div class="fn">index.html · 공통 헤더</div>
+          <ul>
+            <li>모바일에서 '데모 데이터' 표시가 사라지던 문제를 고쳐, 이제 '데모' 배지가 남습니다.</li>
+            <li>지도 · 3D · 폰트를 CDN(unpkg, jsDelivr, OpenFreeMap, Google Fonts)에서 불러옵니다. 오프라인이나 사내망에서는 지도와 3D가 안 보일 수 있습니다. 실서비스는 기존 저장소처럼 번들로 넣어야 합니다.</li>
+            <li>가계부 · 행사 계획은 브라우저(localStorage)에만 저장되어 다른 기기와 동기화되지 않습니다.</li>
+            <li>색으로만 구분하는 표시가 일부 남아 있고(지도 범례 등), 3D와 거리뷰의 클릭 영역은 마우스 위주입니다. 같은 기능을 키보드로 쓸 수 있는 버튼 목록은 함께 제공합니다.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="issues">
+      <h2><span class="n">4</span>문제점과 수정 내역</h2>
+      <p class="sub">이번 검증에서 바로 고친 것과, 실데이터나 제휴가 있어야 풀리는 것을 나눴습니다.</p>
+      <h3>이번에 고친 문제 (15건)</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>문제</th><th>근거</th><th>수정 내용</th><th>파일</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>지도 타일에 'API KEY REQUIRED' 워터마크</td><td>CARTO 기본 타일이 2026년 8~9월부터 API 키를 요구하도록 바뀜. 키 없는 OSM 공식 타일은 Referer가 없는 로컬 파일에서 차단될 수 있음</td><td>키 없이 쓰는 OpenFreeMap(벡터, 상업 이용 허용)으로 바꾸고, WebGL · CDN 문제 시 Esri 래스터로 자동 대체. 지명은 한국어 우선</td><td>1 · 4</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>가짜 위치에 실제 브랜드명 표시</td><td>무작위 좌표에 '스타벅스 성수연무장점' 같은 이름이 붙어 실제 매장 정보로 오해될 수 있음</td><td>'저가커피 A사', '편의점 B사' 같은 익명 표기로 변경. 실서비스에서는 공정위 정보공개서의 브랜드명을 실제 좌표에 표시</td><td>4</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>성수 공실률 · 임대료가 현실과 동떨어짐</td><td>시안 공실률 6.8~13.6%였는데, 보도치는 뚝섬 상권 1.3%(2026 2분기), 소규모 상가 5.94%(2024 2분기). 연무장길 1층 임대료 3.3㎡당 30~40만원(2024)인데 시안은 21.5만원</td><td>성수 7개 구역의 공실률을 2.4~7.5%, 임대료를 9.5~33만원(1층 기준)으로 보정하고, 공실률 색 구간도 다시 잡음</td><td>1</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>2층 공실 월세가 낮게 잡힘</td><td>84㎡(25.4평) 2층 월 280만원은 3.3㎡당 11만원. 1층 시세의 절반이면 15만원 안팎</td><td>201호 월세 380만원 · 보증금 4,000만원, 501호 230만원으로 조정. 3D · 거리뷰 · 가계부에 같은 값 반영</td><td>2 · 3 · 5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>뚝도시장 위치 오류</td><td>주소는 성수이로 32-15(성수동2가)인데, 시안에서는 성수이로와 떨어진 곳에 그려져 있었음</td><td>성수이로 남측으로 옮기고, 위치가 주소 기준 추정이라고 표기</td><td>1</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>WebGL이 없으면 3D 페이지 전체가 멈춤</td><td>렌더러 생성 오류로 스크립트가 중단돼 공실 목록과 패널까지 안 그려짐</td><td>3D만 끄고 안내 문구를 띄운 뒤, 층 버튼과 패널은 동작하게 처리. WebGL을 끈 브라우저에서 확인</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>공실률을 호실 수로 계산</td><td>1,180㎡ 전층 공실과 72㎡ 상가가 같은 1호로 세어짐</td><td>임대 가능 면적 기준 공실률로 변경</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>월말 예상 매출이 휴무일을 무시</td><td>평일만 여는 샐러드 가게도 달력 일수(25/31)로 환산되고 있었음</td><td>지금까지 영업한 날 ÷ 월 영업일로 환산. A는 22/27일, B는 17/22일</td><td>5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>'순이익'이 실제보다 크게 보임</td><td>부가세 납부분, 종합소득세, 감가상각, 대출이자, 사업주 4대보험이 빠져 있었음</td><td>'영업이익(세전 · 감가상각 전)'으로 이름을 바꾸고 빠진 항목을 안내</td><td>5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>지하 음식점 소방 의무 누락</td><td>지하층 66㎡ 이상 일반음식점은 다중이용업소에 해당해 안전시설등 완비 · 화재배상책임보험 대상인데 체크리스트에 없었음</td><td>B01호(지하 95㎡) 체크리스트에 추가하고, 주류 판매는 일반음식점이라는 점도 명시</td><td>2 · 5</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>성수 프랜차이즈 입점 제한 정보 없음</td><td>성동구는 2023년 지속가능발전구역을 성수동 전역으로 확대하고 대기업 · 프랜차이즈 입점 제한을 추진</td><td>상권 상세에 '규제 체크', 반경 분석 해석 문구에 안내 추가</td><td>1 · 4</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>편의점 조언이 부정확</td><td>실제 핵심 기준은 담배소매인 지정 거리(서울 2018년 100m 확대 발표)와 2018년 업계 자율규약</td><td>편의점 차별화 팁 문구 교체</td><td>4</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>개략 평면이 실측 도면처럼 보임</td><td>건물 가로 · 세로로 만든 배치인데 '평면도'로 표시하고 있었음</td><td>'개략 배치도 · 실측 도면 아님'으로 이름 변경</td><td>3</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>모바일에서 데모 표시가 사라짐</td><td>좁은 화면에서 헤더의 데모 배지가 숨겨지고 있었음</td><td>모든 화면에 짧은 '데모' 배지를 유지</td><td>1~5</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>장부 날짜 오류 · 기준치 표기</td><td>10/3(토 · 개천절)을 평일로 셈. 지출 적정선이 공식 기준처럼 보였음</td><td>날짜 · 금액을 고치고 '업계 통상 참고치(공식 기준 아님)'로 표기. 수수료 실제 기준 문구 추가</td><td>5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>남은 과제 (13건)</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>과제</th><th>왜 문제인가</th><th>해결 방향</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>모든 핵심 수치가 가상</td><td>유동인구 · 매출 · 점포 · 적합도가 만든 값이라 판단 근거로 쓸 수 없음</td><td>서울시 상권분석서비스 OpenAPI(분기), 소상공인 상가정보(좌표 포함), LOCALDATA 인허가 연동. 화면마다 출처 · 기준일 표시</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>점수 공식이 검증되지 않음</td><td>업종 적합도, 경쟁 강도, 간판 노출도 모두 임의 가중치</td><td>과거 개업 · 폐업 데이터로 '점수가 높을수록 오래 살아남았는가'를 백테스트한 뒤 공개. 그전까지는 '참고 지수'로 표시</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>상권 경계가 손으로 그린 근사치</td><td>실제 상권 범위와 다르면 추천 결과가 달라짐</td><td>서울시 상권 영역(골목 · 발달상권) 폴리곤 사용, 그 외 지역은 행정동 기준</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>3D 형태와 주변 건물이 실제가 아님</td><td>상자 모델 + 무작위 주변이라 조망 · 일조 · 가시성 판단에 못 씀</td><td>건축물대장 층수 · 면적으로 기본 형태를 만들고, 3D 도시 모델(S-Map 등)의 활용 가능성 검토</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>평면 · 호실 정보 확보</td><td>건축물현황도(평면도) 온라인 열람은 대상자 범위 규정이 있어 플랫폼이 마음대로 쓰기 어려울 수 있음</td><td>임대인 · 중개사 업로드, 현장 360° 스캔(Matterport · 큐픽스 류) 제휴, 도면 → 3D 자동 변환 도구 검토</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>거리뷰가 그림</td><td>실제 파노라마 위에 층 위치를 맞추려면 카메라 위치 · 건물 높이 매칭이 필요</td><td>네이버 파노라마(저장소에 이미 로드)에서 층 높이를 추정해 라벨을 얹는 기능을 개발. 과거 촬영본의 API 제공 여부 확인</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>반경 분석의 거리 · 층 미반영</td><td>대로 건너편 50m와 같은 블록 50m는 경쟁 강도가 다름. 지하 · 2층 점포도 1층과 같게 셈</td><td>보행 경로 거리, 횡단 여부, 층 정보(상가정보의 층 항목)를 반영</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>데이터 갱신 지연</td><td>상가정보는 분기 갱신, 서울시 상권 데이터는 분기 종료 후 약 2개월 뒤 공개</td><td>화면에 기준 분기를 표시하고, 개폐업은 LOCALDATA(수일 단위 갱신 지역 있음)로 보완</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>매출 데이터 공개 정책</td><td>오픈업은 매장별 추정 매출을 먼저 공개하고 요청 시 내리는 방식이라 점주 반발이 보도됨</td><td>개별 매장 매출은 집계 · 범위로만 보여주고, 내 가게 데이터는 동의를 받아 쓰는 방식 권장</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>지도 타일 약관</td><td>OpenFreeMap은 무료 · 상업 이용 허용이지만 기부로 운영되는 공용 인스턴스. Esri 키 없는 타일의 최신 약관은 확인하지 못함</td><td>실서비스는 계약된 지도(네이버 지도, 기존 저장소 방식)로 통일</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>CDN 의존</td><td>오프라인 · 사내망에서 지도 · 3D가 안 뜰 수 있음</td><td>시안 단계에서는 감수하고, 서비스에서는 번들링</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>가계부 저장 방식</td><td>브라우저에만 저장돼 기기를 바꾸면 사라지고, 서버에 둘 경우 매출이 민감 정보가 됨</td><td>로그인 후 암호화 저장, 매출 · 지출 데이터 이용 동의 절차 마련</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>접근성</td><td>3D · 거리뷰 클릭 영역이 마우스 위주이고, 일부 상태를 색으로만 구분</td><td>모든 상태에 글자 병기, 키보드 포커스 순서와 ARIA 라벨 보강</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="diff">
+      <h2><span class="n">5</span>다른 서비스와 차별점</h2>
+      <p class="sub">공개 소개 자료로 확인한 범위에서 비교했습니다. <span class="y" style="color:var(--ok);font-weight:800">●</span> 확인됨 · <span style="color:var(--warn);font-weight:800">◐</span> 일부 · 조건부 · <span style="color:#94a3b8">○</span> 확인 안 됨(없다는 뜻이 아님)</p>
+      <div class="card tbl">
+        <table class="t mx">
+          <thead><tr><th>서비스</th><th>상권 데이터</th><th>공실 · 매물</th><th>층 · 호실 임차 정보</th><th>3D</th><th>거리뷰 · 과거</th><th>주변 경쟁 · 체인</th><th>운영 · 가계부</th><th>인테리어</th><th>입지 규제 안내</th></tr></thead>
+          <tbody>
+            <tr><td><b>소상공인365</b><br><small>소상공인시장진흥공단, 2025.1 정식</small></td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="p">◐</td><td class="y">●</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>서울시 상권분석서비스</b><br><small>상권 단위 · 100개 업종 · 분기</small></td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="p">◐</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>오픈업</b><br><small>핀다 · 매장별 AI 추정 매출</small></td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>네모</b><br><small>상가 · 사무실 매물</small></td><td class="n">○</td><td class="y">●</td><td class="p">◐</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>서울 S-Map</b><br><small>서울 전역 3D 디지털 트윈</small></td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>Matterport · 큐픽스</b><br><small>실내 360° 스캔 3D 투어</small></td><td class="n">○</td><td class="p">◐</td><td class="p">◐</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>카카오맵 로드뷰</b><br><small>과거사진 보기 (2011 발표)</small></td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr><td><b>오늘의집 · 아키스케치 · 스페이슬리</b><br><small>3D · AI 인테리어</small></td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td></tr>
+            <tr><td><b>Placer.ai</b> <small>(해외)</small><br><small>방문 · 체류 · 교차방문 데이터</small></td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="n">○</td><td class="y">●</td><td class="n">○</td><td class="n">○</td><td class="n">○</td></tr>
+            <tr class="us"><td><b>PlaceOS 시안</b><br><small>이번 추가안 (데이터 미연동)</small></td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td><td class="p">◐</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:10px">소상공인365의 '내 가게 경영진단'은 매출 · 고객 관심도로 경쟁력 · 생존 가능성을 분석하고, '정책정보 올가이드'는 지원사업을 안내합니다. 그래서 운영 · 가계부 칸과 규제 칸은 PlaceOS와 일부 겹칩니다. 서울시 상권분석서비스와 오픈업의 경쟁 정보는 상권 단위 집계 · 매장 매출 중심이고, '같은 업종 · 비슷한 업종 · 함께 크는 업종' 같은 관계 분류는 확인되지 않았습니다.</p>
+
+      <h3>분야별로 본 PlaceOS의 차별점</h3>
+      <div class="diffs">
+        <div class="card pad diff">
+          <h3><span class="tag">창업 · 상권</span>"상권 평균"이 아니라 "이 자리"</h3>
+          <p>공공 서비스는 상권 · 행정동 단위 통계가 강하고, 오픈업은 매장별 추정 매출이 강합니다. PlaceOS는 <b>공실 하나를 기준으로 상권 → 층 → 주변 경쟁 → 운영 계획까지 한 흐름</b>으로 묶는 점이 다릅니다.</p>
+          <div class="row"><b>강점</b><span>상권 구역 추천과 공실 3D 트윈 연결, 업종 관계 분류(같은 · 비슷한 · 함께 크는), 입지 규제 자동 안내</span></div>
+          <div class="row"><b>약점</b><span>원천 데이터(카드 · 국세청 매출)는 소상공인365 · 오픈업 쪽이 앞섬 → 직접 경쟁보다 공공 데이터 연동이 현실적</span></div>
+        </div>
+        <div class="card pad diff">
+          <h3><span class="tag">공실 · 매물</span>매물 정보에 "창업 비용 단서"를 붙임</h3>
+          <p>네모 같은 매물 플랫폼은 매물 · 임대 시세가 중심입니다. PlaceOS 시안은 <b>전기 용량 · 배기 덕트 · 그리스트랩 · 층고 · 간판 가능 여부</b>처럼 업종 전환 비용을 좌우하는 설비 정보와, 직전 업종 · 공실 기간을 함께 보여줍니다.</p>
+          <div class="row"><b>강점</b><span>"이 자리에 이자카야가 들어가면 덕트를 재사용할 수 있다"처럼 업종과 공간을 맞춰 줌</span></div>
+          <div class="row"><b>약점</b><span>설비 정보는 공개 데이터에 없어 임대인 · 중개사 입력이나 현장 확인이 필요</span></div>
+        </div>
+        <div class="card pad diff">
+          <h3><span class="tag">3D 디지털 트윈</span>건물 외형이 아니라 "층별 임차 상태"</h3>
+          <p>S-Map은 도시 전체 3D(일조 등 행정 분석)에, Matterport · 큐픽스는 스캔한 실내 투어에 강합니다. PlaceOS 시안은 <b>층마다 운영 · 공실 · 주거를 색으로 나누고 호실 조건을 붙인 "임차 관점 트윈"</b>입니다. 스캔 없이 건축물대장 수준 데이터로 만들 수 있다는 점이 장점입니다.</p>
+          <div class="row"><b>강점</b><span>층 분리 · 공실만 강조 · 지하층 표현, 거리뷰 · 반경 분석과 같은 층 ID로 연결</span></div>
+          <div class="row"><b>약점</b><span>형태 정확도는 S-Map, 실내 정확도는 스캔 서비스보다 낮음 → 필요하면 스캔 결과를 층에 붙이는 연동이 좋음</span></div>
+        </div>
+        <div class="card pad diff">
+          <h3><span class="tag">인테리어</span>"내 취향"이 아니라 "상권 무드"에서 출발</h3>
+          <p>오늘의집 · 아키스케치 · 스페이슬리는 공간을 3D · AI로 꾸미고 렌더링하는 도구입니다(오늘의집은 주거 중심). PlaceOS 시안은 <b>주변 매장 리뷰 · SNS 키워드로 상권 무드를 읽고, 층 위치(2층 창가 · 지하 입구)와 업종에 맞는 컨셉 · 예산 · 인허가 체크</b>까지 이어집니다.</p>
+          <div class="row"><b>강점</b><span>간판 노출도와 인테리어 팁 연결(예: 2층 노출도 72점 → 계단 입구 브랜딩)</span></div>
+          <div class="row"><b>약점</b><span>렌더링 품질은 전문 도구가 압도적 → 직접 만들기보다 결과물을 렌더링 도구로 넘기는 연동 권장</span></div>
+        </div>
+      </div>
+      <div class="card pad" style="margin-top:12px">
+        <h3 style="margin-top:0">한 줄 정리</h3>
+        <p style="margin:0;font-size:13.5px;color:var(--text-2)">기능 하나하나는 이미 다른 곳에 있습니다. PlaceOS만의 가치는 <b>"이 공실, 이 층에서 이 업종을 하면?"이라는 하나의 질문에 상권 · 건물 · 거리 · 경쟁 · 규제 · 운영 · 공간 답을 한 화면 흐름으로 주는 것</b>입니다. 그래서 차별화 우선순위는 ① 규제 · 계약 자동 판정 ② 층 · 호실 단위 데이터 ③ 공공 데이터 연동의 신뢰 표시 순서를 권합니다.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="adds">
+      <h2><span class="n">6</span>추가하면 좋을 정보</h2>
+      <p class="sub">P1은 공개 기준만으로 바로 만들 수 있고 효과가 큰 것, P2는 데이터 제휴나 개발이 필요한 것, P3은 장기 과제입니다.</p>
+      <div class="adds">
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>상가임대차 보호 범위 자동 판정 (환산보증금)</h4>
+          <p>환산보증금 = 보증금 + 월세 × 100입니다. 서울은 9억원 이하면 상가임대차보호법이 대부분 적용됩니다. 초과하면 차임 증액 5% 상한은 적용되지 않지만, 계약갱신요구권(10년)과 권리금 회수기회 보호는 적용된다는 해석이 일반적입니다. 공실 카드에 "이 조건이면 보호 범위 안/밖"을 바로 표시하면 좋습니다.</p>
+          <div class="src">근거: 상가건물 임대차보호법 · 시행령 해설 (로톡, korea.legal) — 계약 전 법령 원문 확인 필요</div>
+        </div></div>
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>다중이용업소 · 소방 의무 자동 판정</h4>
+          <p>휴게 · 일반음식점은 영업장 바닥면적 100㎡ 이상(지하층은 66㎡ 이상)이면 다중이용업소입니다. 지상 1층이나 지면과 바로 붙은 층에서 출입구가 바깥 지면과 바로 이어지면 제외됩니다. 대상이면 안전시설등 완비증명서와 화재배상책임보험(미가입 시 과태료)이 필요합니다. 층 · 면적 · 업종만으로 판정할 수 있어 3D 트윈의 호실 정보와 잘 맞습니다.</p>
+          <div class="src">근거: 다중이용업소법 시행령 해석(법제처 유권해석 정리), 소방 · 지자체 안내 — 면적 산정은 관할 소방서 해석에 따라 다를 수 있음</div>
+        </div></div>
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>건축물 용도 · 업종 맞춤 확인</h4>
+          <p>휴게음식점 · 제과점은 같은 건물에서 300㎡ 미만이면 제1종, 일반음식점은 제2종 근린생활시설입니다. 건축물대장 용도와 하려는 업종을 비교해 "용도변경 필요 가능성"을 알려 주세요. 지식산업센터 지원시설은 지자체 · 관리기관 기준에 따라 입점 업종이 달라 별도 확인이 필요합니다. 1종↔2종 변경 절차는 자료마다 해석이 갈려 구청 확인을 권해야 합니다.</p>
+          <div class="src">근거: 건축법 시행령 별표1 해설, 구리시 · 수원시 지식산업센터 안내</div>
+        </div></div>
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>구역 규제 레이어 (성수 지속가능발전구역 등)</h4>
+          <p>성동구는 2015년 젠트리피케이션 방지 조례를 만들었고, 2017년 서울숲길 일대에서 대기업 · 프랜차이즈의 휴게음식점 · 제과점 · 화장품점 · 일반음식점 입점을 제한했습니다. 2023년에는 지속가능발전구역을 성수동 전역으로 넓힌다고 발표했습니다. 가맹점 창업자에게는 결정적인 정보라 지도에 구역 레이어로 보여주면 좋습니다. 현재 시행 범위는 구청 확인이 필요합니다.</p>
+          <div class="src">근거: 서울신문(2017), 아시아경제(2023), 서울파이(seoulpi.io) 보도</div>
+        </div></div>
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>수수료 · 비용 기준 자동 반영</h4>
+          <p>카드 우대수수료(2025.2.14~): 연매출 3억 이하 0.40%, 3~5억 1.00%, 5~10억 1.15%, 10~30억 1.45%. 배민 상생요금제(2025.2.26~): 중개수수료 2.0~7.8%(직전 3개월 매출 구간별). 가계부에서 연매출 구간을 입력하면 수수료가 자동 계산되게 하면 정확도가 올라갑니다.</p>
+          <div class="src">근거: 금융위원회 보도자료(2025.2.13), 비즈워치 · 딜사이트 보도(2025.1)</div>
+        </div></div>
+        <div class="card add"><div class="pr p1">P1</div><div>
+          <h4>폐업 · 생존 리스크 표시</h4>
+          <p>2025년 폐업률은 8.64%(부동산임대업 제외 10.14%)였고, 음식점업 15.14% · 소매업 15.4%로 높았습니다. 3년 안에 폐업한 사업장이 전체 폐업의 절반을 넘었습니다. 업종 추천 옆에 이런 업종별 리스크를 함께 보여주면 추천의 신뢰도가 올라갑니다.</p>
+          <div class="src">근거: 중소벤처기업부 · 국세청 자료 인용 한국경제 보도(2026.6)</div>
+        </div></div>
+        <div class="card add"><div class="pr p2">P2</div><div>
+          <h4>권리금 · 임대료 시세와 회수 리스크</h4>
+          <p>연무장길은 2024년 1층 59㎡ 권리금 3~4억원, 3.3㎡당 임대료 30~40만원이 시세로 보도됐습니다. 2026년 보도에서는 5년 전보다 권리금 20배, 임대료 3배로 올랐다고 합니다. 권리금은 창업 비용의 큰 몫인데 공개 데이터가 없어, 중개사 제휴 · 거래 사례 수집이 필요합니다.</p>
+          <div class="src">근거: 다음(2024.11) · 비즈워치(2026.10) 보도</div>
+        </div></div>
+        <div class="card add"><div class="pr p2">P2</div><div>
+          <h4>실데이터 연동 묶음</h4>
+          <p>① 서울시 상권분석서비스: 상권 단위 점포 · 추정매출 · 유동인구(분기, OpenAPI) ② 소상공인 상가(상권)정보: 업소별 좌표 · 업종(분기) ③ LOCALDATA 인허가: 인허가일자 · 영업상태(좌표는 TM 좌표라 변환 필요) → <b>점포 이력 · 간판 시점 데이터의 원천</b> ④ 공정위 가맹사업 API: 브랜드별 가맹점 수 → 체인 판별 ⑤ 한국부동산원 R-ONE: 상업용 임대동향(Open API 메뉴 있음, 상권별 제공 범위 확인 필요).</p>
+          <div class="src">근거: 공공데이터포털 · 서울열린데이터광장 · R-ONE 안내 페이지</div>
+        </div></div>
+        <div class="card add"><div class="pr p2">P2</div><div>
+          <h4>층 · 보행 거리를 반영한 경쟁 분석</h4>
+          <p>같은 업종이라도 대로 건너편, 지하, 2층 점포는 경쟁 강도가 다릅니다. 보행 경로 거리, 횡단 여부, 층, 영업시간이 겹치는지를 반영하면 직선 반경보다 훨씬 현실적인 경쟁 지도가 됩니다. 편의점처럼 담배소매인 거리 제한(서울 100m 확대 발표)이 걸리는 업종은 "출점 가능 여부"까지 판정할 수 있습니다.</p>
+          <div class="src">근거: 편의점 자율규약 · 담배소매인 거리 보도(이투데이, 머니투데이, 2018)</div>
+        </div></div>
+        <div class="card add"><div class="pr p2">P2</div><div>
+          <h4>실측 공간 데이터 · 3D 정확도</h4>
+          <p>공실 실내는 360° 스캔(Matterport · 큐픽스 류)이나 2D 도면 → 3D 자동 변환(어반베이스 '오토 스케치' 등) 결과를 호실에 붙이고, 외형은 건축물대장 층수 · 면적과 서울 S-Map 같은 3D 도시 모델 활용을 검토하세요. 세움터 건축물현황도는 온라인 열람 대상자 규정이 있어 사용 범위를 확인해야 합니다.</p>
+          <div class="src">근거: Matterport · 큐픽스 소개, 벤처스퀘어(어반베이스), 서울시 S-Map 보도, 국토부 입법예고 자료</div>
+        </div></div>
+        <div class="card add"><div class="pr p2">P2</div><div>
+          <h4>데이터 신뢰 표시</h4>
+          <p>숫자마다 출처 · 기준일 · 추정 여부를 붙이세요. 기존 저장소에도 데이터 신뢰성 패널이 있으니 확장하면 됩니다. 예: "공실률 2.4% · 시안 추정 · 2026 2분기 보도치 1.3~5.9% 범위". 오픈업 사례를 보면 개별 매장 매출 공개는 반발을 부를 수 있으니 집계 · 범위 공개를 권합니다.</p>
+          <div class="src">근거: 비즈한국 오픈업 보도</div>
+        </div></div>
+        <div class="card add"><div class="pr p3">P3</div><div>
+          <h4>행사 · 지원사업 자동 매칭</h4>
+          <p>구청 행사 공지, 소상공인24 · 소상공인마당 공고를 모아 업종 · 지역 · 일정으로 추천하세요. 소상공인365도 정책정보 안내를 하고 있어, 차별화하려면 <b>"행사 일정 + 내 가게 영업시간 + 마케팅 예산"</b>을 한 번에 맞춰 주는 쪽이 낫습니다.</p>
+          <div class="src">근거: 소상공인365 소개 보도(뉴시스 2024.12)</div>
+        </div></div>
+        <div class="card add"><div class="pr p3">P3</div><div>
+          <h4>방문 데이터 기반 상권 분석</h4>
+          <p>Placer.ai는 방문 수 · 체류 시간 · 교차 방문 · 상권 범위를 제공합니다. 국내에서는 통신 · 카드 데이터 제휴가 필요하지만, "팝업 방문객이 우리 층까지 올라오는가" 같은 질문에 답할 수 있게 됩니다.</p>
+          <div class="src">근거: Placer.ai 소개(제3자 정리 자료)</div>
+        </div></div>
+      </div>
+
+      <h3>시안 공실로 계산해 본 예시</h3>
+      <div class="calc">
+        <div class="card tbl">
+          <table class="t" style="min-width:0">
+            <thead><tr><th>공실</th><th>환산보증금</th><th>서울 기준 9억</th></tr></thead>
+            <tbody>
+              <tr><td>A · 201호 (2층)</td><td>4,000만 + 380만×100 = <b>4.2억</b></td><td><span class="pill p-ok">보호 범위 안</span></td></tr>
+              <tr><td>B · 102호 (1층)</td><td>5,000만 + 420만×100 = <b>4.7억</b></td><td><span class="pill p-ok">보호 범위 안</span></td></tr>
+              <tr><td>B · 901호 (전층)</td><td>2.4억 + 1,650만×100 = <b>18.9억</b></td><td><span class="pill p-mid">초과 · 5% 상한 없음</span></td></tr>
+              <tr><td>C · B01호 (지하)</td><td>2,000만 + 160만×100 = <b>1.8억</b></td><td><span class="pill p-ok">보호 범위 안</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card tbl">
+          <table class="t" style="min-width:0">
+            <thead><tr><th>공실 · 업종</th><th>층 · 면적</th><th>다중이용업소</th></tr></thead>
+            <tbody>
+              <tr><td>A · 201호 디저트 카페</td><td>2층 · 84㎡</td><td><span class="pill p-ok">비대상</span> <small>100㎡ 미만</small></td></tr>
+              <tr><td>B · 102호 샐러드</td><td>1층 · 72㎡</td><td><span class="pill p-ok">제외</span> <small>1층 · 외부 직결</small></td></tr>
+              <tr><td>C · B01호 이자카야</td><td>지하 · 95㎡</td><td><span class="pill p-no">대상</span> <small>지하 66㎡ 이상</small></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="note" style="margin-top:10px">위 판정은 시안 데이터로 계산한 예시입니다. 실제 계약 · 인허가 전에는 법령 원문과 관할 구청 · 소방서 확인이 필요하며, 서비스 화면에도 이 안내를 함께 넣어야 합니다.</p>
+    </section>
+
+    <!-- 7 -->
+    <section id="facts">
+      <h2><span class="n">7</span>사실 확인 근거</h2>
+      <p class="sub">시안 수정이나 추천에 쓴 사실과 확인 수준입니다. '확인'은 공식 자료나 복수 보도로 확인한 것, '부분'은 2차 자료로만 확인했거나 시점이 오래된 것입니다.</p>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>항목</th><th>확인 내용</th><th>수준</th><th>시안 반영</th></tr></thead>
+          <tbody>
+            <tr><td>CARTO 타일 키 필요</td><td>2026년 8~9월부터 키 없는 요청에 'API key required' 워터마크. 무료 키는 비상업 월 500만 요청</td><td><span class="pill p-ok">확인</span></td><td>지도 교체</td></tr>
+            <tr><td>OSM 공식 타일 Referer</td><td>브라우저는 Referer가 필요하고, 없으면 403. 로컬 파일 차단 사례 있음</td><td><span class="pill p-ok">확인</span></td><td>OSM 공식 타일 미사용</td></tr>
+            <tr><td>OpenFreeMap</td><td>등록 · API 키 없음, 상업 이용 허용, 벡터 타일(MapLibre)</td><td><span class="pill p-ok">확인</span></td><td>기본 지도</td></tr>
+            <tr><td>성수 공실률</td><td>뚝섬 상권 1.3%(2026 2분기), 중대형 4.5%(2026 2분기 다른 발표), 소규모 5.94%(2024 2분기)</td><td><span class="pill p-mid">부분</span></td><td>2.4~7.5%로 보정</td></tr>
+            <tr><td>연무장길 임대료 · 권리금</td><td>1층 3.3㎡당 30~40만원, 59㎡ 권리금 3~4억(2024). 2026년 5년 전 대비 임대료 3배</td><td><span class="pill p-mid">부분</span></td><td>33만원(1층)</td></tr>
+            <tr><td>뚝도시장 주소</td><td>성동구 성수이로 32-15 (성수동2가)</td><td><span class="pill p-ok">확인</span></td><td>위치 이동(좌표는 추정)</td></tr>
+            <tr><td>다중이용업소 기준</td><td>100㎡ 이상(지하 66㎡ 이상), 1층 · 지면 직결 출입 제외</td><td><span class="pill p-ok">확인</span></td><td>체크리스트 추가</td></tr>
+            <tr><td>화재배상책임보험</td><td>다중이용업소 의무, 미가입 과태료 30~200만원</td><td><span class="pill p-mid">부분</span></td><td>체크리스트 추가</td></tr>
+            <tr><td>상가임대차 환산보증금</td><td>보증금 + 월세×100, 서울 9억. 초과 시에도 갱신요구권 10년 · 권리금 보호 적용</td><td><span class="pill p-mid">부분</span></td><td>리포트 예시</td></tr>
+            <tr><td>카드 우대수수료</td><td>3억 이하 0.40% ~ 30억 이하 1.45% (2025.2.14~)</td><td><span class="pill p-ok">확인</span></td><td>가계부 안내</td></tr>
+            <tr><td>배민 중개수수료</td><td>2.0~7.8% 차등 (2025.2.26~, 기존 9.8%)</td><td><span class="pill p-ok">확인</span></td><td>가계부 안내</td></tr>
+            <tr><td>편의점 · 담배소매인</td><td>법정 50m, 지자체별 50~100m. 서울 100m 확대 발표(2018). 자율규약 공정위 승인(2018.12)</td><td><span class="pill p-mid">부분</span></td><td>편의점 팁</td></tr>
+            <tr><td>성수 지속가능발전구역</td><td>2015 조례, 2017 서울숲길 프랜차이즈 제한, 2023 성수동 전역 확대 발표</td><td><span class="pill p-mid">부분</span></td><td>규제 안내</td></tr>
+            <tr><td>근린생활시설 구분</td><td>휴게음식점 · 제과점 300㎡ 미만 1종, 일반음식점 2종</td><td><span class="pill p-ok">확인</span></td><td>리포트 권고</td></tr>
+            <tr><td>인테리어 평당 단가</td><td>업체 자료 평당 90~350만원(기준 제각각), 철거 평당 15~25만원</td><td><span class="pill p-mid">부분</span></td><td>단가 범위 유지</td></tr>
+            <tr><td>폐업률</td><td>2025년 8.64%, 음식점 15.14%, 3년 내 폐업이 절반 이상</td><td><span class="pill p-ok">확인</span></td><td>리포트 권고</td></tr>
+            <tr><td>서울시 상권 데이터 주기</td><td>분기, 분기 종료 약 2개월 후 공개, OpenAPI 제공</td><td><span class="pill p-ok">확인</span></td><td>남은 과제</td></tr>
+            <tr><td>카카오 로드뷰 과거사진</td><td>2011년 '과거사진 보기' 발표. 현재 API 제공 여부는 미확인</td><td><span class="pill p-mid">부분</span></td><td>안내 문구</td></tr>
+            <tr><td>네이버 파노라마</td><td>저장소 지도 로더가 <code>submodules=panorama</code>로 이미 불러옴 (코드 확인)</td><td><span class="pill p-ok">확인</span></td><td>안내 문구</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section id="limits">
+      <h2><span class="n">8</span>검증 한계</h2>
+      <div class="card pad">
+        <ul class="limits" style="margin:0;padding-left:18px">
+          <li><b>원본 압축폴더를 보지 못했습니다.</b> 바탕화면의 'PlaceOS_3d 디지털 트윈 및 홈페이지 추가사항 정리' 파일에 접근할 수 없어, 요구사항과 시안이 어긋나는지는 확인하지 못했습니다.</li>
+          <li><b>placeos.co.kr과 외부 사이트를 직접 열지 못했습니다.</b> 작업 환경의 네트워크 제한 때문입니다. 링크는 웹 검색으로 공식 도메인인지만 확인했고, 각 페이지가 지금 열리는지는 확인하지 못했습니다.</li>
+          <li><b>실제 지도 타일 위의 모습은 보지 못했습니다.</b> 테스트에서는 타일 대신 빈 배경을 넣었습니다. 구역 경계가 실제 길과 얼마나 맞는지는 실제 브라우저에서 확인해야 합니다. 대체 경로(OpenFreeMap 실패 → Esri)는 동작을 확인했습니다.</li>
+          <li><b>좌표 지오코딩은 하지 못했습니다.</b> 뚝도시장은 주소만 확인했습니다. 연무장길은 '성수동 남단'이라는 보도와 맞지만, 정확한 도로 구간은 확인하지 못했습니다.</li>
+          <li><b>법규는 해설 자료 위주로 확인했습니다.</b> 국가법령정보센터 원문 대조는 하지 못했습니다. 특히 다중이용업소 면적 산정, 근생 1종↔2종 변경 절차, 성수 지속가능발전구역의 현재 시행 범위는 기관 확인이 필요합니다.</li>
+          <li><b>경쟁 서비스 비교는 공개 소개 자료 기준입니다.</b> 유료 기능이나 최근 업데이트는 빠졌을 수 있습니다. '○'는 기능이 없다는 뜻이 아니라 확인하지 못했다는 뜻입니다. 마이프차 · 랜드북 · 집닥 등은 자료를 찾지 못해 비교에서 뺐습니다.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section id="sources">
+      <h2><span class="n">9</span>출처</h2>
+      <p class="sub">웹 검색으로 확인한 자료입니다. 날짜가 표시된 것은 기사 · 공지 기준일입니다.</p>
+      <div class="card pad">
+        <ol class="srcs">
+          <li><a href="https://github.com/timmaurice/lovelace-blitzortung-lightning-card/issues/90" target="_blank" rel="noopener">CARTO basemaps now require an API key (GitHub 이슈)</a> <span>· 2026</span></li>
+          <li><a href="https://docs.carto.com/faqs/carto-basemaps" target="_blank" rel="noopener">CARTO Basemaps FAQ</a> · <a href="https://www.carto.com/basemaps/apikey/" target="_blank" rel="noopener">API key 안내</a></li>
+          <li><a href="https://wiki.openstreetmap.org/wiki/Blocked_tiles" target="_blank" rel="noopener">OpenStreetMap Wiki · Blocked tiles</a> · <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener">Tile Usage Policy</a></li>
+          <li><a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> · <a href="https://simonwillison.net/2024/Sep/28/openfreemap" target="_blank" rel="noopener">소개 글</a> <span>· 2024</span></li>
+          <li><a href="https://news.bizwatch.co.kr/article/real_estate/2026/10/20/0023/" target="_blank" rel="noopener">비즈워치 · 성수 상권 (뚝섬 공실률 1.3%, 연무장길 권리금)</a> <span>· 2026.10</span></li>
+          <li><a href="https://v.daum.net/v/20241108112856416" target="_blank" rel="noopener">"성수동 공실, 임대료 비싼 팝업 쏠림 탓"</a> <span>· 2024.11</span></li>
+          <li><a href="https://economist.co.kr/article/view/ecn202609170020" target="_blank" rel="noopener">이코노미스트 · 성수 중대형 상가 공실률</a> <span>· 2026.9</span></li>
+          <li><a href="https://info.koreacharts.com/tour/2745620/contents.html" target="_blank" rel="noopener">뚝도시장 주소 (한국관광공사 데이터)</a></li>
+          <li><a href="https://www.guard1004.com/489" target="_blank" rel="noopener">일반음식점 다중이용업 면적 기준 정리</a> · <a href="https://safehomes.kr/insights/ah-20260910-t4tb" target="_blank" rel="noopener">면적 산정 주의</a></li>
+          <li><a href="https://www.incheon.go.kr/119/NE030401/1827608" target="_blank" rel="noopener">화재배상책임보험 의무가입 안내 (인천소방)</a></li>
+          <li><a href="https://www.lawtalk.co.kr/posts/170782" target="_blank" rel="noopener">환산보증금 초과 상가임대차 보호규정 (로톡)</a> · <a href="https://korea.legal/wiki/%EC%83%81%EA%B0%80%EC%9E%84%EB%8C%80%EC%B0%A8/" target="_blank" rel="noopener">korea.legal 상가임대차</a></li>
+          <li><a href="https://fsc.go.kr/po010101/83999?curPage=58" target="_blank" rel="noopener">금융위원회 · 카드 우대수수료율 인하</a> <span>· 2025.2</span></li>
+          <li><a href="https://news.bizwatch.co.kr/article/consumer/2025/01/22/0015" target="_blank" rel="noopener">비즈워치 · 배민 차등수수료 2.0~7.8%</a> · <a href="https://dealsite.co.kr/articles/135452" target="_blank" rel="noopener">딜사이트</a> <span>· 2025</span></li>
+          <li><a href="https://www.etoday.co.kr/news/view/1695118" target="_blank" rel="noopener">이투데이 · 편의점 50~100m 출점 제한</a> · <a href="https://www.mt.co.kr/living/2018/11/25/2018112514214244102" target="_blank" rel="noopener">머니투데이</a> <span>· 2018</span></li>
+          <li><a href="https://m.go.seoul.co.kr/news/2017/07/04/20170704014019" target="_blank" rel="noopener">서울신문 · 서울숲길 대기업 · 프랜차이즈 입점 제한</a> <span>· 2017</span></li>
+          <li><a href="https://view.asiae.co.kr/article/2023080106323487215" target="_blank" rel="noopener">아시아경제 · 성수동 지속가능발전구역 확대</a> <span>· 2023</span> · <a href="https://seoulpi.io/article/00604529135767805952" target="_blank" rel="noopener">서울파이</a></li>
+          <li><a href="https://glasswallet.com/blog/neighborhood-facility-guide" target="_blank" rel="noopener">근린생활시설 1종 · 2종 구분 정리</a></li>
+          <li><a href="https://www.guri.go.kr/www/contents.do?key=5274" target="_blank" rel="noopener">구리시 · 지식산업센터 지원시설 안내</a> · <a href="https://view.asiae.co.kr/article/2026041407362631883" target="_blank" rel="noopener">아시아경제 2026</a></li>
+          <li><a href="https://www.yeonsu.go.kr/main/general/part/advertise_songdo.asp" target="_blank" rel="noopener">연수구 돌출간판 기준</a> · <a href="https://www.suwon.go.kr/sw-www/deptHome/dep_city/city08/city08_01/city08_01_02.jsp" target="_blank" rel="noopener">수원시 옥외광고물 기준</a></li>
+          <li><a href="https://www.ajd.co.kr/contents/basic-tip/detail/%EC%83%81%EA%B0%80_%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4_%EB%B9%84%EC%9A%A9_%ED%8F%89%EB%8B%B9_%EB%8B%A8%EA%B0%80_%EB%B0%8F_%EC%8B%9C%EA%B3%B5%EB%B3%84_%EC%98%88%EC%83%81_%EA%B2%AC%EC%A0%81-54500" target="_blank" rel="noopener">상가 인테리어 평당 단가 (업체 자료)</a></li>
+          <li><a href="https://www.hankyung.com/article/202606306062i" target="_blank" rel="noopener">한국경제 · 2025년 폐업률 8.64%</a> <span>· 2026.6</span></li>
+          <li><a href="https://www.newsis.com/view/NISX20241218_0003001986" target="_blank" rel="noopener">뉴시스 · 소상공인365 오픈</a> · <a href="https://mobile.newsis.com/view/NISX20250227_0003080353" target="_blank" rel="noopener">이용 현황</a></li>
+          <li><a href="https://golmok.seoul.go.kr/introduce.do" target="_blank" rel="noopener">서울시 상권분석서비스 소개</a> · <a href="https://data.seoul.go.kr/dataList/3/literacyView.do" target="_blank" rel="noopener">서울열린데이터광장</a></li>
+          <li><a href="https://www.bizhankook.com/bk/article/28109" target="_blank" rel="noopener">비즈한국 · 오픈업 매장별 매출 공개 논란</a> · <a href="https://magazine.hankyung.com/money/article/202510287234c" target="_blank" rel="noopener">오픈업 프로</a></li>
+          <li><a href="https://apps.apple.com/es/app/%EB%84%A4%EB%AA%A8-%EC%83%81%EA%B0%80-%EC%82%AC%EB%AC%B4%EC%8B%A4-%EC%B0%BD%EC%97%85%ED%95%A0-%EB%95%8C-%EB%84%A4%EB%AA%A8/id1209888606?l=ca" target="_blank" rel="noopener">네모 앱 소개</a></li>
+          <li><a href="https://mediahub.seoul.go.kr/archives/2001139" target="_blank" rel="noopener">서울시 · 디지털트윈 S-Map</a> · <a href="https://smartcity.go.kr/?p=16647" target="_blank" rel="noopener">스마트시티 보도</a></li>
+          <li><a href="https://matterport.com/commercial-real-estate" target="_blank" rel="noopener">Matterport · Commercial Real Estate</a> · <a href="https://www.cupix.com/kr/resource-center/case-studies" target="_blank" rel="noopener">큐픽스 사례</a></li>
+          <li><a href="https://www.venturesquare.net/1117136/" target="_blank" rel="noopener">아키스케치 · 국토부 장관상</a> · <a href="https://spacely.ai//use-cases/architects" target="_blank" rel="noopener">스페이슬리</a> · <a href="https://www.venturesquare.net/782948/" target="_blank" rel="noopener">어반베이스</a></li>
+          <li><a href="https://byline.network/2026/01/19_ohouse/" target="_blank" rel="noopener">바이라인네트워크 · 오늘의집 3D · AI 인테리어</a> <span>· 2026.1</span></li>
+          <li><a href="https://www.kakaocorp.com/page/detail/6635" target="_blank" rel="noopener">카카오 · 로드뷰 과거사진 보기</a> <span>· 2011</span></li>
+          <li><a href="https://safehomes.kr/insights/kn-20260521-138-summarizing-how-to-get-building-ledger-via-seumter/" target="_blank" rel="noopener">세움터 건축물대장 · 도면 발급 정리</a> · <a href="https://opinion.lawmaking.go.kr/file/download/7978911/421D4YICXOLFGJY0QSHB" target="_blank" rel="noopener">국토부 입법예고</a></li>
+          <li><a href="https://www.data.go.kr/data/15091259/fileData.do" target="_blank" rel="noopener">공공데이터포털 · 상가(상권)정보</a> · <a href="https://www.data.go.kr/data/3072264/fileData.do" target="_blank" rel="noopener">인허가 데이터</a></li>
+          <li><a href="https://data.go.kr/data/15143710/openapi.do" target="_blank" rel="noopener">공정위 브랜드별 가맹점 · 직영점 API</a></li>
+          <li><a href="https://www.reb.or.kr/r-one/portal/openapi/openApiListPage.do" target="_blank" rel="noopener">한국부동산원 R-ONE Open API</a></li>
+          <li><a href="https://us.fitgap.com/products/placer-ai" target="_blank" rel="noopener">Placer.ai 기능 정리 (제3자)</a></li>
+        </ol>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

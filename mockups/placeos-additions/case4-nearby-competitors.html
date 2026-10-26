@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" integrity="sha256-eSrJl9z2rm9kPrTi3uRjDIXnBWUmvY+4X/6Dxn1sQbQ=" crossorigin="">
 <style>
 *{box-sizing:border-box}
 :root{
@@ -158,7 +159,8 @@ button{cursor:pointer}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
-  .demo-pill{display:none}
+  .demo-pill{font-size:0;padding:3px 7px}
+  .demo-pill:after{content:'데모';font-size:10.5px}
   .phead{padding:14px 16px 10px}
   .toolbar{margin:0 16px 12px}
   .radius input{width:120px}
@@ -179,6 +181,7 @@ button{cursor:pointer}
     <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
     <a href="case4-nearby-competitors.html" class="on"><b>4</b>이 자리와 업종</a>
     <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html">검증 리포트</a>
   </nav>
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
@@ -229,8 +232,10 @@ button{cursor:pointer}
 </main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js" integrity="sha256-B+bKcaW22DWnw4A/tITwpuXw3L+hMUB2Zu256TFlZPk=" crossorigin=""></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js" integrity="sha256-HDM2eWLndVwaFtH4Vlj9yWtbqjb4Gt/KlJMXTNG1Js4=" crossorigin=""></script>
 <script>
-// [데모 데이터] 점포 위치 · 이름 · 개폐업은 시안 확인용 가상값입니다 (체인 브랜드명은 업종 예시로만 사용).
+// [데모 데이터] 점포 위치 · 이름 · 개폐업은 시안 확인용 가상값입니다. 가짜 위치에 실제 브랜드명을 붙이지 않도록 체인은 'A사 · B사'로 표기합니다.
 // 실서비스: 소상공인시장진흥공단 상가(상권)정보 API 좌표 + 프랜차이즈 정보공개서 브랜드 목록으로 분류합니다.
 const CATS = {
   cafe:{n:'카페',e:'☕'}, bakery:{n:'베이커리',e:'🥐'}, dessert:{n:'디저트',e:'🍰'}, salad:{n:'샐러드·도시락',e:'🥗'},
@@ -241,9 +246,9 @@ const CATS = {
   flower:{n:'꽃집',e:'💐'}, studio:{n:'사진 스튜디오',e:'📷'}, laundry:{n:'세탁',e:'🧺'}, realty:{n:'부동산',e:'🏠'},
 };
 const BRANDS = {
-  cafe:['메가MGC커피','컴포즈커피','스타벅스','빽다방','이디야커피','투썸플레이스'], bakery:['파리바게뜨','뚜레쥬르'], dessert:['설빙','배스킨라빈스'],
-  salad:['샐러디'], snack:['김밥천국','바르다김선생'], pub:['역전할머니맥주','이자카야 가맹점'], chicken:['교촌치킨','BBQ','bhc'],
-  conv:['CU','GS25','세븐일레븐','이마트24'], hair:['준오헤어'], gym:['애니타임피트니스'], study:['작심스터디카페'], laundry:['크린토피아'], pilates:['필라테스 가맹점'],
+  cafe:['저가커피 A사','저가커피 B사','글로벌커피 C사','저가커피 D사','중가커피 E사','디저트카페 F사'], bakery:['베이커리 A사','베이커리 B사'], dessert:['빙수 A사','아이스크림 B사'],
+  salad:['샐러드 A사'], snack:['김밥 A사','김밥 B사'], pub:['맥주 A사','이자카야 B사'], chicken:['치킨 A사','치킨 B사','치킨 C사'],
+  conv:['편의점 A사','편의점 B사','편의점 C사','편의점 D사'], hair:['미용 A사'], gym:['24시 헬스 A사'], study:['스터디카페 A사'], laundry:['세탁 A사'], pilates:['필라테스 A사'],
 };
 const INDIE = {
   cafe:['카페 소소','로스터리 하루','커피 모노','브루잉랩','카페 언더','그린빈 로스터스','카페 담','오후 세시','커피 정류장','카페 결','온도 커피','카페 무드'],
@@ -270,7 +275,7 @@ const TARGETS = {
   dessert:{n:'베이커리·디저트',e:'🥐',same:['bakery','dessert'],similar:['cafe'],syn:['select','popup','flower','studio'],tip:'대표 메뉴 1~2개에 집중하고 선물용 포장으로 객단가를 올리세요'},
   salad:{n:'샐러드·도시락',e:'🥗',same:['salad'],similar:['snack','korean'],syn:['office','gym','pilates','clinic','study'],tip:'점심 사전주문 · 정기구독으로 11~14시 몰림을 분산하세요'},
   pub:{n:'주점·이자카야',e:'🍶',same:['pub'],similar:['wine','chicken'],syn:['korean','conv'],tip:'1차 식당 손님을 받는 2차 안주 특화 · 늦은 영업으로 차별화하세요'},
-  conv:{n:'편의점',e:'🏪',same:['conv'],similar:[],syn:['office','pub','study','chicken'],tip:'같은 브랜드 근접 출점 제한(가맹 영업지역)을 먼저 확인하세요'},
+  conv:{n:'편의점',e:'🏪',same:['conv'],similar:[],syn:['office','pub','study','chicken'],tip:'담배소매인 지정 거리(서울은 2018년 50m→100m 확대 발표, 구 조례 확인)와 편의점 업계 근접출점 자율규약 · 가맹 영업지역을 먼저 확인하세요'},
   nail:{n:'네일·뷰티',e:'💅',same:['nail'],similar:['hair'],syn:['cafe','select','pilates','dessert'],tip:'예약제 · 1인 프라이빗 공간으로 2층 이상 입지의 약점을 강점으로 바꾸세요'},
   pilates:{n:'필라테스·운동',e:'🧘',same:['pilates'],similar:['gym'],syn:['salad','cafe','nail','clinic','office'],tip:'퇴근 시간대 소수 정원 클래스 · 체험권으로 직장인 수요를 잡으세요'},
 };
@@ -315,8 +320,35 @@ const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const rel = p => { const t = TARGETS[state.ind]; return t.same.includes(p.cat) ? 'same' : t.similar.includes(p.cat) ? 'similar' : t.syn.includes(p.cat) ? 'syn' : 'other'; };
 
 // ── map ───────────────────────────────────────────────
-const map = L.map('map', { zoomControl:true });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom:20, subdomains:'abcd', attribution:'&copy; OpenStreetMap contributors &copy; CARTO' }).addTo(map);
+// 배경지도 — CARTO 기본 타일은 2026년부터 API 키가 없으면 워터마크가 떠서,
+// 키 없이 쓸 수 있는 OpenFreeMap(벡터)을 쓰고 WebGL · CDN 문제로 못 띄우면 Esri 래스터 타일로 바꿉니다.
+function addBasemap(map){
+  let done = false;
+  const fallback = () => {
+    if (done) return; done = true;
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom:20, maxNativeZoom:19, attribution:'Tiles &copy; Esri' }).addTo(map);
+  };
+  const webgl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+  if (!webgl || !window.maplibregl || !L.maplibreGL) return fallback();
+  try {
+    const gl = L.maplibreGL({ style:'https://tiles.openfreemap.org/styles/liberty', attributionControl:{ customAttribution:'<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' } }).addTo(map);
+    const m = gl.getMaplibreMap();
+    const giveUp = () => { if (done) return; clearTimeout(timer); map.removeLayer(gl); fallback(); };
+    const timer = setTimeout(giveUp, 8000);
+    m.on('error', giveUp);
+    m.on('load', () => {
+      if (done) return;
+      done = true; clearTimeout(timer);
+      // 지명은 한국어 우선
+      m.getStyle().layers.forEach(l => {
+        const tf = l.layout && l.layout['text-field'];
+        if (l.type === 'symbol' && tf && JSON.stringify(tf).includes('name')) m.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get', 'name:ko'], ['get', 'name']]);
+      });
+    });
+  } catch (e) { fallback(); }
+}
+const map = L.map('map', { zoomControl:true, center:SCN[state.s].center, zoom:18, maxZoom:20 });
+addBasemap(map);
 const ringLayer = L.layerGroup().addTo(map);
 const poiLayer = L.layerGroup().addTo(map);
 let pois = [], markers = [];
@@ -401,6 +433,7 @@ function renderSide(){
   if (st.sameChain.length) pts.push(`같은 업종 중 체인점 <b>${st.sameChain.length}곳</b>(${brandSet.slice(0,3).map(esc).join(' · ')}) — 가격으로 맞서기보다 차별화로 승부해야 합니다.`);
   else pts.push('같은 업종에 체인점이 없어 <b>가격 경쟁 압박은 낮은 편</b>입니다.');
   if (st.syn.length) pts.push(`함께 크는 업종 <b>${st.syn.length}곳</b>(${[...new Set(st.syn.map(p => CATS[p.cat].n))].slice(0,3).join(' · ')}) 손님이 넘어올 수 있습니다.`);
+  pts.push('성수동은 성동구 <b>지속가능발전구역</b>(2023 성수동 전역 확대)이라 대기업 · 프랜차이즈 휴게음식점 · 제과점 · 일반음식점 입점 제한이 추진됐습니다 — 체인 경쟁이 쉽게 늘지 않는 대신, 가맹점 창업이면 입점 가능 여부부터 확인하세요.');
   pts.push(`최근 1년 같은 업종 개업 <b>${recentOpen}</b> · 폐업 <b>${recentClose}</b>${recentOpen > recentClose ? ' — 아직 들어오는 업종입니다.' : recentClose > recentOpen ? ' — 빠지는 흐름이니 주의하세요.' : '.'}`);
   const verdict = score >= 75 ? ['no','경쟁 과밀 · 차별화 없으면 재검토'] : score >= 45 ? ['mid','조건부 적합 · 차별화 필요'] : ['go','적합 · 경쟁 여유 있음'];
 
@@ -436,6 +469,7 @@ function renderSide(){
           <tr><td>전체 점포</td><td>${s50.act.length}</td><td>${s100.act.length}</td></tr>
         </tbody>
       </table>
+      <p class="muted" style="font-size:11px;margin:8px 0 0">거리는 이 자리에서의 직선거리입니다. 실서비스는 보행 경로 거리, 대로 건너편 여부, 층(1층 · 지하 · 2층)을 함께 반영하는 게 좋습니다.</p>
     </div>
     <div class="sec">
       <div class="sh"><h3>같은 업종 · 체인점 목록</h3><small>가까운 순 · 누르면 지도 이동</small></div>

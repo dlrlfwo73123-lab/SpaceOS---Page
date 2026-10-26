@@ -204,7 +204,8 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
-  .demo-pill{display:none}
+  .demo-pill{font-size:0;padding:3px 7px}
+  .demo-pill:after{content:'데모';font-size:10.5px}
   .phead{padding:14px 16px 10px}
   .wrap{padding:0 16px 28px}
   .kpis{grid-template-columns:1fr 1fr}
@@ -229,6 +230,7 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
     <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
     <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
     <a href="case5-customer-ledger.html" class="on"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html">검증 리포트</a>
   </nav>
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
@@ -332,7 +334,7 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
           </form>
         </div>
         <div class="card box">
-          <div class="bh"><h3>지출 구조</h3><small>매출 대비 비율 · 검은 선 = 업계 적정선</small></div>
+          <div class="bh"><h3>지출 구조</h3><small>매출 대비 비율 · 검은 선 = 업계 통상 참고치 (공식 기준 아님)</small></div>
           <div class="ex" id="exBars"></div>
           <p class="note" id="exNote"></p>
         </div>
@@ -393,18 +395,18 @@ const CHANNEL_OPTS = ['매장','포장','배달','예약','온라인 판매','�
 const SC = {
   A:{ status:['run','운영 6개월'], icon:'🥐', zone:'연무장길 카페·팝업거리', zoneId:'yeonmu', floor:'2층',
       profile:{name:'온도 성수 (가상)',ind:'디저트 카페',place:'성수 아뜰리에빌딩 2층 201호',area:84,seats:28,ticket:14500,open:'11:00',close:'21:00',mkt:60,targets:['20대 여성','30대 직장인','관광 · 외부 방문객'],channels:['매장','포장','예약'],menu:'시그니처 휘낭시에 · 핸드드립'},
-      goal:3200, days:27, hist:[1850,2650,2900,3050,2780,3120], zoneAvg:2850, top25:4100, month:'2026년 10월', asOf:25, monthDays:31, plan:false,
+      goal:3200, days:27, hist:[1850,2650,2900,3050,2780,3120], zoneAvg:2850, top25:4100, month:'2026년 10월', asOf:25, opDone:22, monthDays:31, plan:false,
       visitors:{'20대 여성':31,'20대 남성':12,'30대 직장인':24,'40대 이상':15,'관광 · 외부 방문객':38,'가족 단위':8,'반려동물 동반':6,'동네 주민':10},
       entries:[
-        ['2026-10-05','in','sales','10/1~10/5 매출 (카드 · 현금)',520],['2026-10-12','in','sales','10/6~10/12 매출',760],['2026-10-19','in','sales','10/13~10/19 매출 (팝업 주간)',690],['2026-10-25','in','sales','10/20~10/25 매출',610],
-        ['2026-10-01','out','rent','월세 + 관리비 (201호)',305],['2026-10-10','out','labor','매니저 1 · 파트타임 3명 급여',640],['2026-10-05','out','food','버터 · 밀가루 · 원두',420],['2026-10-18','out','food','과일 · 생크림 · 포장 디저트 재료',330],
+        ['2026-10-04','in','sales','10/1~10/4 매출 (카드 · 현금, 월요일 휴무)',520],['2026-10-12','in','sales','10/6~10/12 매출',760],['2026-10-19','in','sales','10/13~10/19 매출 (팝업 주간)',690],['2026-10-25','in','sales','10/20~10/25 매출',610],
+        ['2026-10-01','out','rent','월세 + 관리비 (201호)',405],['2026-10-10','out','labor','매니저 1 · 파트타임 3명 급여',640],['2026-10-05','out','food','버터 · 밀가루 · 원두',420],['2026-10-18','out','food','과일 · 생크림 · 포장 디저트 재료',330],
         ['2026-10-15','out','util','전기 · 수도 · 인터넷',62],['2026-10-21','out','etc','세무 기장 · 화재보험',30],['2026-10-12','out','mkt','인스타그램 광고',45],['2026-10-25','out','fee','카드 수수료',31],['2026-10-20','out','supply','테이크아웃 컵 · 박스',22]] },
   B:{ status:['new','오픈 2개월'], icon:'🥗', zone:'성수역 지식산업센터 오피스', zoneId:'office', floor:'1층',
       profile:{name:'그린볼 성수 (가상)',ind:'샐러드 · 포케',place:'성수 테크타워 1층 102호',area:72,seats:16,ticket:11800,open:'08:00',close:'20:00',mkt:80,targets:['30대 직장인','20대 여성'],channels:['매장','포장','배달','예약','정기구독'],menu:'포케 · 샐러드 정기구독'},
-      goal:3800, days:22, hist:[null,null,null,null,null,3150], zoneAvg:3400, top25:4800, month:'2026년 10월', asOf:25, monthDays:31, plan:false,
+      goal:3800, days:22, hist:[null,null,null,null,null,3150], zoneAvg:3400, top25:4800, month:'2026년 10월', asOf:25, opDone:17, monthDays:31, plan:false,
       visitors:{'20대 여성':20,'20대 남성':14,'30대 직장인':52,'40대 이상':18,'관광 · 외부 방문객':6,'가족 단위':3,'반려동물 동반':1,'동네 주민':5},
       entries:[
-        ['2026-10-03','in','sales','10/1~10/3 매출 (평일 3일)',520],['2026-10-10','in','sales','10/6~10/10 매출',940],['2026-10-17','in','sales','10/13~10/17 매출',910],['2026-10-24','in','sales','10/20~10/24 매출',1020],
+        ['2026-10-02','in','sales','10/1~10/2 매출 (평일 2일)',390],['2026-10-10','in','sales','10/6~10/10 매출',940],['2026-10-17','in','sales','10/13~10/17 매출',910],['2026-10-24','in','sales','10/20~10/24 매출',1020],
         ['2026-10-01','out','rent','월세 + 관리비 (102호)',468],['2026-10-10','out','labor','주방 2 · 홀 1 급여',780],['2026-10-06','out','food','채소 · 연어 · 곡물',520],['2026-10-20','out','food','채소 · 단백질 재료',460],
         ['2026-10-15','out','util','전기 · 가스 · 수도',52],['2026-10-25','out','fee','배달앱 중개 · 카드 수수료',140],['2026-10-08','out','mkt','입주사 샘플링 · 전단',70],['2026-10-14','out','supply','친환경 포장 용기',58]] },
   C:{ status:['pre','11월 20일 오픈 예정'], icon:'🍶', zone:'뚝섬역 먹자골목', zoneId:'ttuk', floor:'지하 1층',
@@ -475,7 +477,7 @@ const INTERIOR = {
          els:{'바닥':'체크 타일','벽':'우드 웨인스코팅','조명':'2400K 패브릭 스탠드','가구':'체리우드 · 벨벳 소파','사인':'황동 각인 간판'},photo:'벨벳 소파 + 레트로 조명 코너',unit:[100,145,210]},
       ],
       tips:[['🪟','통창 쪽에 1인 바 테이블을 길게 — 거리에서 보이는 “앉아 있는 손님”이 2층 간판 역할'],['🪜','계단 입구 첫 3칸에 브랜드 컬러 · 메뉴 사진 (거리뷰 노출도 72점 보완)'],['🍰','쇼케이스는 계단에서 올라오자마자 정면에 — 입장 3초 안에 상품이 보이게']],
-      checks:['옥외광고물 표시 허가 (2층 돌출간판 · 창문 이용 광고)','휴게음식점 영업신고 · 위생교육','2층 피난 동선 · 소화기 위치','건물주 원상복구 범위 · 인테리어 공사 기간 무상 협의'] },
+      checks:['옥외광고물 표시 허가 · 신고 (돌출간판 규격은 성동구 조례 확인)','휴게음식점 영업신고 · 위생교육 (매장에서 구운 빵 · 과자가 중심이면 제과점영업 검토)','2층 피난 동선 · 소화기 위치','건물주 원상복구 범위 · 인테리어 공사 기간 무상 협의'] },
   B:{ mood:[['깔끔함',46],['빠른 픽업',41],['초록 식물',28],['밝은 조명',26],['1인석',22],['친환경',17]], floorTip:'1층 · 성수이로 전면 유리',
       concepts:[
         {name:'클린 그린',fit:90,desc:'흰 타일 · 식물 · 오크로 “건강하다”는 인상을 가장 빨리 전달.',pal:['#ffffff','#d1fae5','#10b981','#b07a4a','#0f172a'],
@@ -503,7 +505,7 @@ const INTERIOR = {
          els:{'바닥':'방수 타일','벽':'녹색 타일','조명':'5000K 형광','가구':'스테인리스 원형 테이블','사인':'노란 형광 간판'},photo:'녹색 타일 벽 + 소주잔',unit:[100,140,190]},
       ],
       tips:[['💡','계단 입구 조명을 거리에서 보이게 — 거리뷰 노출도 31점이라 입구 연출이 매출을 좌우'],['🌀','배기 덕트 재사용 + 숯불 사용 시 환기 용량 재점검'],['🪑','바 좌석 위주로 1~2인 2차 손님 회전 높이기']],
-      checks:['일반음식점 영업신고 · 지하층 소방 시설 (피난 · 제연)','숯불 사용 시 환기 · 화재 안전 점검','침수 대비 (역류 방지 · 배수 펌프) 확인','계단 입구 돌출간판 · 입간판 도로점용 여부'] },
+      checks:['일반음식점 영업신고 (주류 판매 — 휴게음식점은 음주 불가)','지하 95㎡ ≥ 66㎡ → 다중이용업소: 안전시설등 완비증명서 · 화재배상책임보험 의무가입','숯불 사용 시 환기 · 화재 안전 점검','침수 대비 (역류 방지 · 배수 펌프) 확인','계단 입구 돌출간판 · 입간판 도로점용 여부'] },
 };
 
 // ── 상태 ──────────────────────────────────────────────
@@ -534,10 +536,10 @@ function calc(){
   const byCat = {}; out.forEach(e => byCat[e.c] = (byCat[e.c] || 0) + e.a);
   const fixed = out.filter(e => CAT[e.c].t === 'fixed').reduce((a,e) => a + e.a, 0);
   const varc = exp - fixed;
-  // 진행 중인 달은 월말까지 일할 환산
+  // 진행 중인 달은 지금까지 영업한 날 기준으로 월 영업일까지 환산 (휴무일 · 주말 휴업 반영)
   // 오픈 준비(plan)는 첫 달 영업일 매출을 월 영업일로 환산
-  const proj = d.plan ? rev / d.planDays * S.days : rev / d.asOf * d.monthDays;
-  const projFixed = fixed, projVar = d.plan ? varc : varc / d.asOf * d.monthDays;
+  const proj = d.plan ? rev / d.planDays * S.days : rev / d.opDone * S.days;
+  const projFixed = fixed, projVar = d.plan ? varc : varc / d.opDone * S.days;
   const varRate = proj > 0 ? projVar / proj : .45;
   const bep = varRate < 1 ? projFixed / (1 - varRate) : Infinity;
   const hist = d.hist.filter(v => v !== null);
@@ -559,13 +561,13 @@ function renderKpis(){
   const timePct = d.plan ? 100 : d.asOf / d.monthDays * 100;
   $('#kpis').innerHTML = `
     <div class="card kpi"><div class="l">${d.plan ? '11월 예상 매출 (오픈 첫 달)' : '이번 달 매출 (10/' + d.asOf + ' 기준)'}</div><div class="v">${man(c.rev)}<small>원</small></div>
-      <div class="d">${d.plan ? `${d.planDays}영업일 · 월 ${S.days}일 환산 ${man(c.proj)}원` : `월말 예상 ${man(c.proj)}원`}</div></div>
+      <div class="d">${d.plan ? `${d.planDays}영업일 · 월 ${S.days}일 환산 ${man(c.proj)}원` : `영업 ${d.opDone}/${S.days}일 · 월말 예상 ${man(c.proj)}원`}</div></div>
     <div class="card kpi"><div class="l">목표 달성률 (${d.plan ? '월 환산' : '월말 예상'})</div><div class="v ${pct >= 100 ? 'good' : pct < 85 ? 'bad' : ''}">${pct.toFixed(0)}<small>%</small></div>
       <div class="prog"><i style="width:${Math.min(100, pct)}%;background:${pct >= 100 ? 'var(--ok)' : 'var(--brand)'}"></i></div><div class="d">목표 ${man(S.goal)}원</div></div>
     <div class="card kpi"><div class="l">최근 월평균 매출</div><div class="v">${c.avg === null ? '—' : man(c.avg)}<small>${c.avg === null ? '' : '원'}</small></div>
       <div class="d">${c.avg === null ? '오픈 전 · 상권 평균 ' + man(d.zoneAvg) + '원' : `상권 평균 ${man(d.zoneAvg)}원 대비 <b class="${c.avg >= d.zoneAvg ? 'good' : 'bad'}">${c.avg >= d.zoneAvg ? '+' : ''}${((c.avg / d.zoneAvg - 1) * 100).toFixed(0)}%</b>`}</div></div>
     <div class="card kpi"><div class="l">${d.plan ? '11월 예상 지출' : '이번 달 지출'}</div><div class="v">${man(c.exp)}<small>원</small></div>
-      <div class="d">순이익 <b class="${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : ''}${man(c.profit)}원</b>${d.plan ? '' : ` · 월말 예상 ${c.projProfit >= 0 ? '+' : ''}${man(c.projProfit)}`}</div></div>
+      <div class="d">영업이익 <b class="${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : ''}${man(c.profit)}원</b>${d.plan ? '' : ` · 월말 예상 ${c.projProfit >= 0 ? '+' : ''}${man(c.projProfit)}`}</div></div>
     <div class="card kpi"><div class="l">손익분기 월매출</div><div class="v">${isFinite(c.bep) ? man(c.bep) : '—'}<small>원</small></div>
       <div class="d">고정비 ${man(c.fixed)} · 변동비율 ${(c.varRate * 100).toFixed(0)}%</div></div>`;
 }
@@ -673,14 +675,15 @@ function renderLedger(){
     if (bad) over.push(CAT[k].n);
     return `<div class="r"><span>${CAT[k].n}<br><small class="muted">${CAT[k].t === 'fixed' ? '고정비' : '변동비'}</small></span><div class="bar"><i style="width:${Math.min(100, pct / 50 * 100)}%;background:${bad ? 'var(--bad)' : '#6366f1'}"></i><em style="left:${CAT[k].max / 50 * 100}%"></em></div><b class="${bad ? 'bad' : ''}">${man(v)}<small>${pct.toFixed(1)}% · 적정 ${CAT[k].max}%↓</small></b></div>`;
   }).join('');
-  $('#exNote').innerHTML = (over.length ? `<b class="bad">${over.join(' · ')}</b> 비율이 적정선을 넘었습니다. ` : '모든 항목이 적정선 안에 있습니다. ') + (d.plan ? '오픈 첫 달은 매출이 9영업일분이라 비율이 높게 나옵니다.' : '진행 중인 달은 매출이 덜 잡혀 비율이 높게 보일 수 있습니다.');
+  $('#exNote').innerHTML = (over.length ? `<b class="bad">${over.join(' · ')}</b> 비율이 참고치를 넘었습니다. ` : '모든 항목이 참고치 안에 있습니다. ') + (d.plan ? '오픈 첫 달은 매출이 9영업일분이라 비율이 높게 나옵니다. ' : '진행 중인 달은 매출이 덜 잡혀 비율이 높게 보일 수 있습니다. ') + '수수료 참고: 카드 우대수수료 연매출 3억 이하 0.4% ~ 30억 이하 1.45% (2025.2.14~), 배민 중개수수료 2.0~7.8% (2025.2.26~, 매출 구간별).';
   $('#pl').innerHTML = `
     <span>${d.plan ? '예상 매출' : '매출 (현재까지)'}</span><b class="good">+${man(c.rev)}</b>
     <span>고정비 (임대료 · 인건비 · 공과금)</span><b>−${man(c.fixed)}</b>
     <span>변동비 (재료 · 수수료 · 마케팅 · 소모품)</span><b>−${man(c.varc)}</b>
-    <span class="tot">${d.plan ? '예상 순이익' : '현재 순이익'}</span><b class="tot ${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : '−'}${man(Math.abs(c.profit))}</b>
-    <span class="muted">손익분기 월매출</span><b class="muted">${isFinite(c.bep) ? man(c.bep) : '—'}</b>`;
-  $('#plSub').textContent = d.plan ? '오픈 첫 달 시뮬레이션' : `10/${d.asOf} 기준 · 월말 예상 순이익 ${c.projProfit >= 0 ? '+' : '−'}${man(Math.abs(c.projProfit))}`;
+    <span class="tot">${d.plan ? '예상 영업이익' : '영업이익 (현재까지)'}</span><b class="tot ${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : '−'}${man(Math.abs(c.profit))}</b>
+    <span class="muted">손익분기 월매출</span><b class="muted">${isFinite(c.bep) ? man(c.bep) : '—'}</b>
+    <span class="muted" style="grid-column:1/-1;font-size:11.5px">세전 · 감가상각 전 금액입니다. 부가세 납부분, 종합소득세, 인테리어 · 설비 감가상각, 대출이자, 사업주 4대보험은 빠져 있어 실제 손에 남는 돈은 더 적습니다.</span>`;
+  $('#plSub').textContent = d.plan ? '오픈 첫 달 시뮬레이션' : `10/${d.asOf} 기준 · 월말 예상 영업이익 ${c.projProfit >= 0 ? '+' : '−'}${man(Math.abs(c.projProfit))}`;
 }
 function renderLedgerAll(){ renderGoal(); renderChart(); renderLedger(); renderKpis(); }
 function bindLedger(){

@@ -157,7 +157,8 @@ button{cursor:pointer}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
-  .demo-pill{display:none}
+  .demo-pill{font-size:0;padding:3px 7px}
+  .demo-pill:after{content:'데모';font-size:10.5px}
   .phead{padding:14px 16px 10px}
   .layout{grid-template-columns:1fr;padding:0 16px 24px}
   .viewer{grid-column:auto;height:64vh;min-height:420px;order:1}
@@ -185,6 +186,7 @@ button{cursor:pointer}
     <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
     <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
     <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html">검증 리포트</a>
   </nav>
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
@@ -254,7 +256,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-// [데모 데이터] 건물·호실·임대 조건은 시안 확인용 가상값입니다.
+// [데모 데이터] 건물·호실·임대 조건은 시안 확인용 가상값입니다. 3D 형태는 층수 · 바닥 크기만 반영한 상자 모델이고, 주변 건물은 무작위 배치입니다.
 // 실제 서비스: 건축물대장(층별개요·전유부) + 공실 매물 DB + 소상공인 상가정보로 층/호실을 채웁니다.
 const u = (no, name, a, st, extra = {}) => ({ no, name, a, st, ...extra });
 const OFFICE = ['패션 브랜드 본사','IT 개발사','디자인 에이전시','콘텐츠 스튜디오','공유오피스','바이오 스타트업','건축사무소','커머스 기업','광고 대행사','교육 스타트업','세무회계사무소','게임 개발사'];
@@ -270,14 +272,14 @@ const BUILDINGS = {
       {lv:-1,h:3.4,units:[u('B01','와인바 셀러',118,'op',{ind:'주점',since:'2022.03'})]},
       {lv:1,h:4.4,units:[u('101','베이커리카페',68,'op',{ind:'베이커리',since:'2021.11',w:.6}),u('102','편집숍',45,'op',{ind:'소매',since:'2023.05',w:.4})]},
       {lv:2,h:3.6,units:[
-        u('201','공실',84,'vac',{w:.68,prev:'네일·속눈썹샵 (2021.04~2026.06)',months:4,dep:3000,rent:280,fee:25,
+        u('201','공실',84,'vac',{w:.68,prev:'네일·속눈썹샵 (2021.04~2026.06)',months:4,dep:4000,rent:380,fee:25,
           fac:{elec:'20kW (증설 가능)',water:'급배수 있음 · 내부 화장실',gas:'없음 (인덕션 권장)',duct:'없음',ceil:'3.3m',window:'남측 통창 · 연무장길 조망',sign:'2층 돌출간판 1개 가능'},
           fits:['디저트 카페 (창가석)','네일·속눈썹','1:1 PT · 필라테스','쇼룸형 편집숍'],
-          checks:['계단 입구에 입간판·벽면 사인 필수','엘리베이터로 장비 반입 가능','통창 창가석이 SNS 노출 포인트']}),
+          checks:['계단 입구에 입간판·벽면 사인 필수','엘리베이터로 장비 반입 가능','통창 창가석이 SNS 노출 포인트','84㎡라 다중이용업소(지상 100㎡ 이상) 대상은 아님 — 202호까지 합쳐 넓히면 재확인']}),
         u('202','사진 스튜디오',36,'op',{ind:'서비스',since:'2024.02',w:.32})]},
       {lv:3,h:3.6,units:[u('301','필라테스 스튜디오',126,'op',{ind:'운동',since:'2022.08'})]},
       {lv:4,h:3.6,units:[u('401','디자인 스튜디오',126,'op',{ind:'사무실',since:'2020.01'})]},
-      {lv:5,h:3.4,units:[u('501','공실',118,'vac',{prev:'IT 스타트업 사무실 (2020.09~2026.03)',months:7,dep:2000,rent:190,fee:22,
+      {lv:5,h:3.4,units:[u('501','공실',118,'vac',{prev:'IT 스타트업 사무실 (2020.09~2026.03)',months:7,dep:3000,rent:230,fee:22,
           fac:{elec:'30kW',water:'공용 화장실',gas:'없음',duct:'없음',ceil:'2.9m',window:'3면 창 · 루프탑 출입',sign:'외벽 사인 불가'},
           fits:['공방 · 작업실','소규모 사무실','예약제 쇼룸'],
           checks:['루프탑 활용은 용도·안전 확인 필요','고층이라 목적형 방문 업종만 적합']})]},
@@ -297,7 +299,7 @@ const BUILDINGS = {
           u('102','공실',72,'vac',{w:.25,prev:'샐러드 카페 (2023.01~2026.08)',months:2,dep:5000,rent:420,fee:48,
             fac:{elec:'30kW',water:'급배수 · 그리스트랩 있음',gas:'LNG 인입',duct:'주방 배기 덕트 (옥상까지)',ceil:'4.6m',window:'전면 유리 · 성수이로 방향',sign:'1층 전면 파사드 사인'},
             fits:['샐러드 · 포케','도시락 · 한식 테이크아웃','베이커리 카페','건강음료 · 스무디'],
-            checks:['평일 11~14시에 매출 몰림','주말 매출 비중 22%로 낮음','로비와 외부 양쪽 출입 가능']}),
+            checks:['평일 11~14시에 매출 몰림','주말 매출 비중 22%로 낮음','로비와 외부 양쪽 출입 가능','지식산업센터 지원시설 입점 업종은 관리단 · 구청 기준 확인']}),
           u('103','김밥 · 분식',52,'op',{ind:'분식',since:'2019.03',w:.22}),
           u('104','약국',80,'op',{ind:'약국',since:'2018.11',w:.31})]},
         {lv:2,h:4.2,units:[
@@ -337,7 +339,7 @@ const BUILDINGS = {
       {lv:-1,h:3.2,units:[u('B01','공실',95,'vac',{prev:'이자카야 (2019.06~2026.01)',months:9,dep:2000,rent:160,fee:15,
         fac:{elec:'25kW',water:'급배수 · 그리스트랩 있음',gas:'LNG 인입',duct:'배기 덕트 남아 있음 (재사용 가능)',ceil:'3.0m',window:'창 없음 · 계단 채광',sign:'계단 입구 돌출간판 · 입간판'},
         fits:['이자카야 · 요리주점','와인바 · LP 바','방탈출 · 취미 공간'],
-        checks:['우천 시 침수 이력 확인 (데모: 이력 없음)','환기·제연 설비 점검 필요','계단 입구 조명·사인으로 노출 보완']})]},
+        checks:['지하 66㎡ 이상 음식점 → 다중이용업소: 안전시설등 완비증명서 · 화재배상책임보험 필요','주류 판매는 일반음식점 영업신고 (휴게음식점은 음주 불가)','우천 시 침수 이력 확인 (데모: 이력 없음)','계단 입구 조명·사인으로 노출 보완']})]},
       {lv:1,h:3.8,units:[u('101','코너 카페',55,'op',{ind:'카페',since:'2023.04'})]},
       {lv:2,h:3.2,units:[u('201','네일샵',48,'op',{ind:'뷰티',since:'2022.10'})]},
       {lv:3,h:3.0,units:[u('301','주거 (원룸 3세대)',72,'res')]},
@@ -360,21 +362,30 @@ const pyeong = a => (a / 3.3058).toFixed(1);
 
 // ── three.js 기본 세팅 ─────────────────────────────────────────
 const view = document.getElementById('view');
-const renderer = new THREE.WebGLRenderer({ antialias:true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-view.appendChild(renderer.domElement);
+// WebGL을 못 쓰는 기기에서도 공실 목록 · 층 버튼 · 오른쪽 패널은 동작하게 3D만 끕니다.
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  view.appendChild(renderer.domElement);
+  document.getElementById('loading').remove();
+} catch (e) {
+  renderer = null;
+  document.getElementById('loading').textContent = '이 기기에서는 3D(WebGL)를 표시할 수 없어요. 오른쪽 층 버튼과 패널로 층별 정보를 볼 수 있습니다.';
+}
 const labelRenderer = new CSS2DRenderer();
 labelRenderer.domElement.className = 'labels';
+if (!renderer) labelRenderer.domElement.style.display = 'none';
 view.appendChild(labelRenderer.domElement);
-document.getElementById('loading').remove();
+const canvasEl = renderer ? renderer.domElement : labelRenderer.domElement;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#eef2f7');
 scene.fog = new THREE.Fog('#eef2f7', 220, 520);
 const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 2000);
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, canvasEl);
 controls.enableDamping = true; controls.dampingFactor = .08;
 controls.maxPolarAngle = Math.PI * .49; controls.minDistance = 12; controls.maxDistance = 420;
 
@@ -633,21 +644,21 @@ const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2();
 const tip = document.getElementById('tip');
 let downAt = null, hoverLv = null;
 function pick(ev){
-  const r = renderer.domElement.getBoundingClientRect();
+  const r = canvasEl.getBoundingClientRect();
   ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(ptr, camera);
   const targets = [...unitObjs.map(o => o.mesh), ...floors.filter(F => F.data.lv !== state.lv).map(F => F.vol)];
   const hit = ray.intersectObjects(targets, false)[0];
   return hit ? hit.object.userData : null;
 }
-renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
-renderer.domElement.addEventListener('pointerup', e => {
+canvasEl.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+canvasEl.addEventListener('pointerup', e => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
   const h = pick(e);
   if (!h) return;
   if (h.no) selectUnit(h.lv, h.no); else selectFloor(h.lv);
 });
-renderer.domElement.addEventListener('pointermove', e => {
+canvasEl.addEventListener('pointermove', e => {
   const h = pick(e);
   const r = view.getBoundingClientRect();
   if (h){
@@ -658,18 +669,19 @@ renderer.domElement.addEventListener('pointermove', e => {
     tip.innerHTML = un
       ? `${flName(h.lv)} ${un.no}호 · ${un.st === 'vac' ? `<b>공실</b> ${un.a}㎡ · 월 ${un.rent}만원` : un.name}`
       : `${flName(h.lv)} · ${F.data.units.map(x => x.st === 'vac' ? `<b>${x.no} 공실</b>` : x.name).join(' / ')}`;
-    renderer.domElement.style.cursor = 'pointer';
-  } else { tip.style.display = 'none'; renderer.domElement.style.cursor = ''; }
+    canvasEl.style.cursor = 'pointer';
+  } else { tip.style.display = 'none'; canvasEl.style.cursor = ''; }
   hoverLv = h ? h.lv : null;
 });
-renderer.domElement.addEventListener('pointerleave', () => { tip.style.display = 'none'; hoverLv = null; });
+canvasEl.addEventListener('pointerleave', () => { tip.style.display = 'none'; hoverLv = null; });
 
 // ── 렌더 루프 ────────────────────────────────────────────────
 const needle = document.getElementById('needle');
 function resize(){
   const { clientWidth:w, clientHeight:h } = view;
   if (!w || !h) return;
-  renderer.setSize(w, h); labelRenderer.setSize(w, h);
+  if (renderer) renderer.setSize(w, h);
+  labelRenderer.setSize(w, h);
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(view);
@@ -698,7 +710,7 @@ function loop(now){
   }
   controls.update();
   needle.style.transform = `rotate(${THREE.MathUtils.radToDeg(controls.getAzimuthalAngle())}deg)`;
-  renderer.render(scene, camera);
+  if (renderer) renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
 requestAnimationFrame(loop);
@@ -742,7 +754,10 @@ function renderBuilding(){
   const cnt = st => all.filter(x => x.st === st).length;
   const parts = [['op','운영'],['vac','공실'],['res','주거'],['park','주차']].filter(([s]) => cnt(s));
   $('#occBar').innerHTML = parts.map(([s]) => `<i style="width:${cnt(s)/all.length*100}%;background:${COL[s]}"></i>`).join('');
-  $('#occLegend').innerHTML = parts.map(([s,n]) => `<span><em style="background:${COL[s]}"></em>${n} ${cnt(s)}호</span>`).join('') + `<span class="muted">공실률 ${(cnt('vac') / all.filter(x => x.st !== 'park' && x.st !== 'res').length * 100).toFixed(0)}%</span>`;
+  const leasable = all.filter(x => x.st === 'op' || x.st === 'vac');
+  const area = arr => arr.reduce((a,x) => a + x.a, 0);
+  const vacRate = area(leasable.filter(x => x.st === 'vac')) / area(leasable) * 100;
+  $('#occLegend').innerHTML = parts.map(([s,n]) => `<span><em style="background:${COL[s]}"></em>${n} ${cnt(s)}호</span>`).join('') + `<span class="muted">면적 기준 공실률 ${vacRate.toFixed(1)}%</span>`;
   $('#aiNote').innerHTML = `<b>🤖 AI 한 줄 분석</b>${b.ai}`;
 }
 

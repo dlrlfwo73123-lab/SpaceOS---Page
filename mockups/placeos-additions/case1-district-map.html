@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" integrity="sha256-eSrJl9z2rm9kPrTi3uRjDIXnBWUmvY+4X/6Dxn1sQbQ=" crossorigin="">
 <style>
 *{box-sizing:border-box}
 :root{
@@ -155,7 +156,8 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
-  .demo-pill{display:none}
+  .demo-pill{font-size:0;padding:3px 7px}
+  .demo-pill:after{content:'데모';font-size:10.5px}
   .phead{padding:14px 16px 10px}
   .layout{grid-template-columns:1fr;padding:0 16px 90px}
   .mapwrap{height:58vh;min-height:380px;order:1}
@@ -178,6 +180,7 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
     <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
     <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
     <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html">검증 리포트</a>
   </nav>
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
@@ -229,8 +232,12 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js" integrity="sha256-B+bKcaW22DWnw4A/tITwpuXw3L+hMUB2Zu256TFlZPk=" crossorigin=""></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js" integrity="sha256-HDM2eWLndVwaFtH4Vlj9yWtbqjb4Gt/KlJMXTNG1Js4=" crossorigin=""></script>
 <script>
 // [데모 데이터] 수치는 시안 확인용 가상값입니다. 실제 서비스에서는 서울시 상권분석서비스(골목상권/발달상권 영역)·생활인구·소상공인 상가정보로 교체합니다.
+// 성수 구역의 공실률 · 임대료는 2024~2026 보도치(뚝섬 상권 공실률 1~6%대, 연무장길 1층 3.3㎡당 30~40만원)에 맞춰 보정한 값입니다.
+// 구역 경계는 대략 그린 것이며 서울시 상권 영역 데이터가 아닙니다.
 const INDS = [
   {k:'cafe',n:'카페',e:'☕'},
   {k:'bakery',n:'베이커리·디저트',e:'🥐'},
@@ -265,7 +272,7 @@ const HOODS = {
        poly:[[37.5442,127.0498],[37.5440,127.0545],[37.5436,127.0600],[37.5418,127.0606],[37.5414,127.0560],[37.5420,127.0500]],
        sum:'공장·창고를 고친 카페와 브랜드 팝업스토어가 몰린 성수 대표 상권. 주말 외부 방문객 비중이 높고 회전이 빠릅니다.',
        tags:['주말 방문객 58%','20~30대 여성','팝업스토어 밀집','SNS 언급량 상위'],
-       m:{pop:58200,stores:412,vac:6.8,rent:21.5,sales:142,growth:12.4},
+       m:{pop:58200,stores:412,vac:2.4,rent:33.0,sales:142,growth:12.4},
        time:[5,15,25,30,18,7], age:[38,31,15,9,7], female:63, weekend:58, vacs:4,
        fit:{cafe:71,bakery:88,korean:60,pub:64,conv:42,beauty:69,fitness:48,select:93,academy:18},
        why:{select:'팝업 방문객이 근처 편집숍까지 둘러보는 동선이 강함',bakery:'디저트 테이크아웃 객단가가 높고 줄 서는 매장 비율이 높음',cafe:'수요는 크지만 경쟁이 매우 치열함',beauty:'20~30대 여성 체류 시간이 길어 예약형 뷰티 수요 있음',pub:'저녁 시간대 와인·내추럴와인 바 수요 증가'},
@@ -275,7 +282,7 @@ const HOODS = {
        poly:[[37.5490,127.0565],[37.5492,127.0640],[37.5440,127.0648],[37.5438,127.0606],[37.5447,127.0575],[37.5462,127.0563]],
        sum:'IT·패션 기업이 입주한 지식산업센터가 모인 곳. 평일 11~14시 점심 수요가 몰리고 주말에는 한산합니다.',
        tags:['평일 점심 피크','30대 직장인','1층 상가 회전 빠름','배달·포장 비중 큼'],
-       m:{pop:71400,stores:338,vac:9.4,rent:16.8,sales:121,growth:6.1},
+       m:{pop:71400,stores:338,vac:4.8,rent:19.5,sales:121,growth:6.1},
        time:[14,34,16,24,8,4], age:[27,41,20,9,3], female:48, weekend:22, vacs:6,
        fit:{cafe:66,bakery:58,korean:90,pub:62,conv:84,beauty:44,fitness:76,select:35,academy:30},
        why:{korean:'평일 점심 회전 수요가 크고 객단가가 안정적임',conv:'지식산업센터 1층 상가 상주 인구 수요',fitness:'퇴근 시간대(18~21시) 운동 수요 증가',cafe:'오피스 테이크아웃 수요는 많지만 저가 체인과 경쟁',pub:'퇴근 후 회식 수요가 있지만 금요일에 쏠림'},
@@ -285,7 +292,7 @@ const HOODS = {
        poly:[[37.5472,127.0458],[37.5476,127.0505],[37.5460,127.0512],[37.5446,127.0500],[37.5448,127.0462]],
        sum:'역 남쪽 골목에 고깃집·이자카야·노포가 모인 저녁 상권. 지하·2층 매물이 많고 임대료가 비교적 낮습니다.',
        tags:['저녁 17~24시','노포 · 이자카야','지하 매물 多','임대료 중간'],
-       m:{pop:39800,stores:226,vac:11.2,rent:13.4,sales:108,growth:3.8},
+       m:{pop:39800,stores:226,vac:5.6,rent:16.0,sales:108,growth:3.8},
        time:[4,14,10,38,26,8], age:[30,34,19,11,6], female:46, weekend:44, vacs:5,
        fit:{cafe:52,bakery:46,korean:79,pub:89,conv:61,beauty:40,fitness:38,select:30,academy:22},
        why:{pub:'저녁 체류 시간이 길고 2차 수요가 꾸준함',korean:'퇴근 후 식사·회식 수요가 큼',conv:'심야 유동이 있어 편의점 야간 매출 양호',cafe:'저녁 위주 상권이라 낮 카페 매출이 낮음'},
@@ -295,7 +302,7 @@ const HOODS = {
        poly:[[37.5482,127.0398],[37.5480,127.0440],[37.5466,127.0455],[37.5446,127.0452],[37.5444,127.0420],[37.5458,127.0396]],
        sum:'서울숲과 이어진 주택가 골목에 공방·갤러리·브런치 카페가 들어선 곳. 산책 수요와 연계되고 체류 시간이 깁니다.',
        tags:['서울숲 산책객','브런치 · 공방','반려동물 동반','체류 시간 길음'],
-       m:{pop:33600,stores:184,vac:7.9,rent:18.2,sales:126,growth:9.2},
+       m:{pop:33600,stores:184,vac:3.1,rent:24.0,sales:126,growth:9.2},
        time:[9,22,30,24,11,4], age:[29,36,19,10,6], female:61, weekend:61, vacs:3,
        fit:{cafe:84,bakery:81,korean:57,pub:50,conv:40,beauty:63,fitness:61,select:78,academy:26},
        why:{cafe:'공원 산책 후 체류형 카페 수요가 크고 반려동물 동반 가능 매장 선호',bakery:'브런치·베이커리 결합 매장의 주말 매출이 높음',select:'공방·리빙 소품 구매 수요',beauty:'주거 배후 단골 수요'},
@@ -305,7 +312,7 @@ const HOODS = {
        poly:[[37.5492,127.0538],[37.5490,127.0562],[37.5462,127.0563],[37.5447,127.0575],[37.5444,127.0545],[37.5462,127.0534]],
        sum:'수제화 공장·판매점이 모인 전통 특화거리. 역세권이지만 업종 전환이 진행 중이라 1층 공실이 생기고 있습니다.',
        tags:['역세권 도보 1분','업종 전환 중','1층 공실 증가','관광객 유입'],
-       m:{pop:46100,stores:271,vac:13.6,rent:15.1,sales:97,growth:-2.4},
+       m:{pop:46100,stores:271,vac:6.9,rent:21.0,sales:97,growth:-2.4},
        time:[8,24,22,28,13,5], age:[24,30,21,15,10], female:52, weekend:41, vacs:7,
        fit:{cafe:74,bakery:70,korean:72,pub:56,conv:66,beauty:52,fitness:55,select:81,academy:25},
        why:{select:'수제화·가죽 소품과 어울리는 라이프스타일 편집숍 수요',cafe:'역 앞 대기·환승 수요',korean:'오피스 상권과 붙어 있어 점심 수요가 넘어옴',bakery:'역세권 테이크아웃 수요'},
@@ -315,17 +322,17 @@ const HOODS = {
        poly:[[37.5520,127.0420],[37.5522,127.0500],[37.5492,127.0536],[37.5478,127.0505],[37.5482,127.0440]],
        sum:'아파트·빌라 단지 배후의 생활 상권. 학원·병원·세탁 등 생활 서비스 수요가 꾸준하고 임대료가 낮습니다.',
        tags:['가족 단위','평일 오후 학원 수요','단골 위주','임대료 낮음'],
-       m:{pop:28700,stores:163,vac:8.6,rent:10.9,sales:88,growth:2.1},
+       m:{pop:28700,stores:163,vac:4.2,rent:12.0,sales:88,growth:2.1},
        time:[16,18,24,26,12,4], age:[14,27,28,17,14], female:55, weekend:38, vacs:2,
        fit:{cafe:58,bakery:68,korean:70,pub:34,conv:78,beauty:74,fitness:72,select:32,academy:86},
        why:{academy:'초·중등 학령 인구가 많고 학원가 수요가 꾸준함',conv:'주거 배후 생활 수요',beauty:'단골형 미용실·네일 재방문률이 높음',fitness:'주부·직장인 생활 운동 수요'},
        avoid:[{k:'pub',w:'주거지 인접으로 심야 영업 민원 가능성'},{k:'select',w:'외부 방문객 유입 적음'}],
        twin:'C'},
       {id:'ttukdo', name:'뚝도시장 상점가', short:'뚝도시장', type:'전통시장', dong:'성수동2가',
-       poly:[[37.5410,127.0462],[37.5412,127.0505],[37.5396,127.0510],[37.5390,127.0470]],
-       sum:'오래된 전통시장으로 반찬·정육·분식 위주. 최근 청년 상인 점포와 시장 투어 수요가 늘고 있습니다.',
+       poly:[[37.5402,127.0522],[37.5404,127.0562],[37.5388,127.0567],[37.5384,127.0527]],
+       sum:'성수이로 32-15 일대 전통시장(위치는 주소 기준 추정). 반찬·정육·분식 위주. 최근 청년 상인 점포와 시장 투어 수요가 늘고 있습니다.',
        tags:['50대 이상 비중 큼','오전 장보기','청년상인 지원','온누리상품권'],
-       m:{pop:21400,stores:142,vac:12.8,rent:8.7,sales:79,growth:4.6},
+       m:{pop:21400,stores:142,vac:7.5,rent:9.5,sales:79,growth:4.6},
        time:[26,22,20,22,7,3], age:[12,18,21,24,25], female:58, weekend:47, vacs:3,
        fit:{cafe:55,bakery:64,korean:76,pub:48,conv:52,beauty:38,fitness:28,select:42,academy:20},
        why:{korean:'반찬·분식 등 시장 연계 먹거리 수요',bakery:'시장 투어 방문객의 간식 수요',cafe:'청년 상인 레트로 카페 사례 증가'},
@@ -402,7 +409,7 @@ const HOODS = {
 };
 
 const FIT_STEPS = [[90,'#047857'],[80,'#10b981'],[70,'#34d399'],[60,'#6ee7b7'],[50,'#a7f3d0'],[0,'#d1fae5']];
-const VAC_STEPS = [[14,'#dc2626'],[11,'#f87171'],[8,'#fca5a5'],[5,'#fecaca'],[0,'#fee2e2']];
+const VAC_STEPS = [[10,'#dc2626'],[7,'#f87171'],[5,'#fca5a5'],[3,'#fecaca'],[0,'#fee2e2']];
 const stepColor = (steps, v) => steps.find(([t]) => v >= t)[1];
 
 const params = new URLSearchParams(location.search);
@@ -424,11 +431,35 @@ function zoneColor(z){
 }
 
 // ── map ───────────────────────────────────────────────
-const map = L.map('map', {zoomControl:true, scrollWheelZoom:true});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  maxZoom: 19, subdomains:'abcd',
-  attribution:'&copy; OpenStreetMap contributors &copy; CARTO'
-}).addTo(map);
+// 배경지도 — CARTO 기본 타일은 2026년부터 API 키가 없으면 워터마크가 떠서,
+// 키 없이 쓸 수 있는 OpenFreeMap(벡터)을 쓰고 WebGL · CDN 문제로 못 띄우면 Esri 래스터 타일로 바꿉니다.
+function addBasemap(map){
+  let done = false;
+  const fallback = () => {
+    if (done) return; done = true;
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom:20, maxNativeZoom:19, attribution:'Tiles &copy; Esri' }).addTo(map);
+  };
+  const webgl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+  if (!webgl || !window.maplibregl || !L.maplibreGL) return fallback();
+  try {
+    const gl = L.maplibreGL({ style:'https://tiles.openfreemap.org/styles/liberty', attributionControl:{ customAttribution:'<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' } }).addTo(map);
+    const m = gl.getMaplibreMap();
+    const giveUp = () => { if (done) return; clearTimeout(timer); map.removeLayer(gl); fallback(); };
+    const timer = setTimeout(giveUp, 8000);
+    m.on('error', giveUp);
+    m.on('load', () => {
+      if (done) return;
+      done = true; clearTimeout(timer);
+      // 지명은 한국어 우선
+      m.getStyle().layers.forEach(l => {
+        const tf = l.layout && l.layout['text-field'];
+        if (l.type === 'symbol' && tf && JSON.stringify(tf).includes('name')) m.setLayoutProperty(l.id, 'text-field', ['coalesce', ['get', 'name:ko'], ['get', 'name']]);
+      });
+    });
+  } catch (e) { fallback(); }
+}
+const map = L.map('map', {zoomControl:true, scrollWheelZoom:true, center:HOODS[state.hood].center, zoom:HOODS[state.hood].zoom});
+addBasemap(map);
 const zoneLayer = L.layerGroup().addTo(map);
 const poiLayer = L.layerGroup().addTo(map);
 let polys = {};
@@ -484,12 +515,13 @@ function renderLegend(){
   if (state.mode === 'type'){
     const used = [...new Set(hood().zones.map(z => z.type))];
     el.innerHTML = '<h4>상권 유형</h4><div class="cols">' + used.map(t => `<div class="row" title="${TYPES[t].d}"><span class="sw" style="background:${TYPES[t].c}"></span><span>${t}</span></div>`).join('')
-      + '<div class="row"><span class="vacdot" style="margin:0 2px"></span><span>공실 매물</span></div></div>';
+      + '<div class="row"><span class="vacdot" style="margin:0 2px"></span><span>공실 매물</span></div></div>'
+      + '<div class="ends" style="margin-top:4px;white-space:normal">시안용 세분류 · 서울시 공식 구분은 골목 · 발달 · 전통시장 · 관광특구</div>';
   } else if (state.mode === 'fit'){
     const i = IND[state.ind];
     el.innerHTML = `<h4>${i.e} ${i.n} 적합도</h4><div class="grad">${[...FIT_STEPS].reverse().map(s => `<span style="background:${s[1]}"></span>`).join('')}</div><div class="ends"><span>50 미만</span><span>90 이상</span></div>`;
   } else {
-    el.innerHTML = `<h4>공실률 (낮을수록 안정)</h4><div class="grad">${[...VAC_STEPS].reverse().map(s => `<span style="background:${s[1]}"></span>`).join('')}</div><div class="ends"><span>5% 미만</span><span>14% 이상</span></div>`;
+    el.innerHTML = `<h4>공실률 (낮을수록 안정)</h4><div class="grad">${[...VAC_STEPS].reverse().map(s => `<span style="background:${s[1]}"></span>`).join('')}</div><div class="ends"><span>3% 미만</span><span>10% 이상</span></div>`;
   }
 }
 
@@ -534,7 +566,7 @@ function renderDetail(){
         ${kpi('일평균 유동인구', fmt(z.m.pop)+'명', z.m.pop - popAvg, v => `${v>0?'▲':'▼'} ${fmt(Math.abs(Math.round(v)))}명`, true)}
         ${kpi('점포 수', fmt(z.m.stores)+'개', null)}
         ${kpi('공실률', z.m.vac+'%', z.m.vac - vacAvg, v => `${v>0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%p`, false)}
-        ${kpi('평균 임대료 (3.3㎡)', z.m.rent+'만원', z.m.rent - rentAvg, v => `${v>0?'▲':'▼'} ${Math.abs(v).toFixed(1)}만원`, false)}
+        ${kpi('1층 임대료 (3.3㎡당 월)', z.m.rent+'만원', z.m.rent - rentAvg, v => `${v>0?'▲':'▼'} ${Math.abs(v).toFixed(1)}만원`, false)}
         ${kpi('매출지수 (서울=100)', z.m.sales, z.m.sales - 100, v => `${v>0?'▲':'▼'} ${Math.abs(v)}`, true)}
         ${kpi('1년 매출 증감', (z.m.growth>0?'+':'')+z.m.growth+'%', z.m.growth, v => v>0?'성장 중':'감소 중', true)}
       </div>
@@ -546,6 +578,7 @@ function renderDetail(){
         <div class="bar"><i style="width:${s}%"></i></div>
         <p>${z.why[k] || '상권 지표상 수요 대비 공급이 적정한 업종'}</p></div></div>`).join('')}
     </div>
+    ${state.hood === 'seongsu' ? `<div class="sec"><h3>규제 체크</h3><div class="avoid" style="background:var(--warn-soft);border-color:#fde68a"><b style="color:#b45309">📜 지속가능발전구역</b><span>성동구는 2023년 성수동 전역으로 구역을 넓히고 대기업 · 프랜차이즈 휴게음식점 · 제과점 · 일반음식점 등의 입점 제한을 추진했습니다. 가맹점으로 창업하려면 구청에 입점 가능 여부를 먼저 확인하세요.</span></div></div>` : ''}
     <div class="sec">
       <h3>피해야 할 업종</h3>
       ${z.avoid.map(a => `<div class="avoid"><b>${IND[a.k].e} ${IND[a.k].n}</b><span>${a.w}</span></div>`).join('')}
@@ -612,7 +645,7 @@ function openCompare(){
     ['일평균 유동인구', z => z.m.pop, 'max', v => fmt(v)+'명'],
     ['점포 수', z => z.m.stores, null, v => fmt(v)+'개'],
     ['공실률', z => z.m.vac, 'min', v => v+'%'],
-    ['임대료 (3.3㎡)', z => z.m.rent, 'min', v => v+'만원'],
+    ['1층 임대료 (3.3㎡)', z => z.m.rent, 'min', v => v+'만원'],
     ['매출지수', z => z.m.sales, 'max'],
     ['1년 매출 증감', z => z.m.growth, 'max', v => (v>0?'+':'')+v+'%'],
     ['여성 비율', z => z.female, null, v => v+'%'],

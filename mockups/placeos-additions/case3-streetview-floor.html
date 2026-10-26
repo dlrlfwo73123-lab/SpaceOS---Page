@@ -175,7 +175,8 @@ button{cursor:pointer}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
-  .demo-pill{display:none}
+  .demo-pill{font-size:0;padding:3px 7px}
+  .demo-pill:after{content:'데모';font-size:10.5px}
   .phead{padding:14px 16px 10px}
   .before{padding:0 16px 24px}
   .fauxmap{min-height:520px}
@@ -203,6 +204,7 @@ button{cursor:pointer}
     <a href="case3-streetview-floor.html" class="on"><b>3</b>거리뷰 · 층별보기</a>
     <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
     <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+    <a href="verification-report.html">검증 리포트</a>
   </nav>
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
@@ -252,7 +254,7 @@ button{cursor:pointer}
       <li><i>1</i><div><b>거리뷰 + 층 라벨(AR)</b><span>건너편 보도에서 본 건물 위에 층마다 업종 · 공실 라벨을 붙입니다. 지하층은 땅 아래로 투시해서 보여줍니다.</span></div></li>
       <li><i>2</i><div><b>층별 안내판 + 평면도</b><span>로비 안내판처럼 층 목록을 보여주고, 층을 고르면 호실 · 계단 · 엘리베이터 · 화장실 · 출입구 평면이 나옵니다.</span></div></li>
       <li><i>3</i><div><b>서로 연동</b><span>거리뷰에서 층을 누르면 평면도가 바뀌고, 평면도에서 층을 고르면 거리뷰가 그 층으로 확대됩니다.</span></div></li>
-      <li><i>4</i><div><b>촬영 시점 비교 · 간판 노출도</b><span>2019 · 2022 · 2024 · 2026 촬영본으로 간판이 어떻게 바뀌었는지(점포 이력) 보고, 그 층 간판이 길에서 얼마나 보이는지 점수로 보여줍니다.</span></div></li>
+      <li><i>4</i><div><b>촬영 시점 비교 · 간판 노출도</b><span>2019 · 2022 · 2024 · 2026 촬영본으로 간판이 어떻게 바뀌었는지(점포 이력) 보고, 그 층 간판이 길에서 얼마나 보이는지 점수로 보여줍니다. 과거 촬영본을 지도 API로 받을 수 있는지는 지도사 확인이 필요합니다.</span></div></li>
     </ul>
     <button class="btn btn-primary" id="openBtn2" style="width:100%">거리뷰 · 층별보기 열기</button>
   </div>
@@ -292,7 +294,7 @@ button{cursor:pointer}
 </div>
 
 <script>
-// [데모 데이터] 건물 · 간판 · 점포 이력은 시안 확인용 가상값입니다.
+// [데모 데이터] 건물 · 간판 · 점포 이력은 시안 확인용 가상값입니다. 거리뷰는 그림으로 대신했고, 평면은 건물 가로 · 세로로 만든 개략 배치입니다.
 // 실서비스: 네이버 지도 파노라마(거리뷰) + 건축물대장 층별개요 + 점포 이력 DB를 연결합니다.
 const YEARS = [2019, 2022, 2024, 2026];
 const B = {
@@ -301,10 +303,10 @@ const B = {
     floors:[
       {lv:-1,h:3.4,units:[{no:'B01',name:'와인바 셀러',a:118,st:'op'}],hist:{2019:'코인노래연습장',2022:'와인바 셀러'}},
       {lv:1,h:4.4,units:[{no:'101',name:'베이커리카페',a:68,st:'op',w:.6},{no:'102',name:'편집숍',a:45,st:'op',w:.4}],hist:{2019:'○○철물 · 인쇄',2022:'베이커리카페 · 구제의류',2024:'베이커리카페 · 편집숍'}},
-      {lv:2,h:3.6,units:[{no:'201',name:'공실',a:84,st:'vac',w:.68,rent:280,dep:3000,fee:25,months:4,prev:'네일·속눈썹샵'},{no:'202',name:'사진 스튜디오',a:36,st:'op',w:.32}],hist:{2019:'○○세무회계',2022:'네일·속눈썹샵',2024:'네일·속눈썹샵 · 사진 스튜디오'}},
+      {lv:2,h:3.6,units:[{no:'201',name:'공실',a:84,st:'vac',w:.68,rent:380,dep:4000,fee:25,months:4,prev:'네일·속눈썹샵'},{no:'202',name:'사진 스튜디오',a:36,st:'op',w:.32}],hist:{2019:'○○세무회계',2022:'네일·속눈썹샵',2024:'네일·속눈썹샵 · 사진 스튜디오'}},
       {lv:3,h:3.6,units:[{no:'301',name:'필라테스 스튜디오',a:126,st:'op'}],hist:{2019:'○○교회',2022:'필라테스 스튜디오'}},
       {lv:4,h:3.6,units:[{no:'401',name:'디자인 스튜디오',a:126,st:'op'}],hist:{2019:'디자인 스튜디오'}},
-      {lv:5,h:3.4,units:[{no:'501',name:'공실',a:118,st:'vac',rent:190,dep:2000,fee:22,months:7,prev:'IT 스타트업 사무실'}],hist:{2019:'주거',2022:'IT 스타트업',2024:'IT 스타트업'}},
+      {lv:5,h:3.4,units:[{no:'501',name:'공실',a:118,st:'vac',rent:230,dep:3000,fee:22,months:7,prev:'IT 스타트업 사무실'}],hist:{2019:'주거',2022:'IT 스타트업',2024:'IT 스타트업'}},
     ]},
   B: { name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 지식산업센터', road:'성수이로', W:34, D:22, ev:true, start:1,
     shot:'성수이로 건너편 보도 · 동쪽 방향', facade:{2019:'#9fb4c9'}, kind:'glass',
@@ -662,7 +664,7 @@ function renderPanel(){
       }).join('')}
     </div>
     <div class="card plan">
-      <div class="ch"><h3>${flName(f.lv)} 평면도</h3><small>층고 ${f.h}m · 호실을 누르면 정보가 바뀝니다</small></div>
+      <div class="ch"><h3>${flName(f.lv)} 개략 배치도</h3><small>층고 ${f.h}m · 실측 도면 아님 · 호실을 누르면 정보가 바뀝니다</small></div>
       ${planSvg(f)}
       <div class="ulist">${f.units.map(q => `<button class="${q.st === 'vac' ? 'vac' : ''} ${q.no === u.no ? 'on' : ''}" data-no="${q.no}">${q.no}${q.st === 'vac' ? ' 공실' : ''}</button>`).join('')}</div>
     </div>
