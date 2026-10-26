@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS · 반경 업종 분석</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --same:#dc2626;--chain:#7c3aed;--similar:#f59e0b;--syn:#10b981;--other:#94a3b8;
+  --head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.gnb{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;letter-spacing:-.01em;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.gnb nav a.on b{background:var(--brand);color:#fff}
+.demo-pill{white-space:nowrap;font-size:11px;font-weight:700;color:#fde68a;border:1px solid rgba(253,230,138,.4);padding:3px 9px;border-radius:999px;flex-shrink:0}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px 20px 12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.phead h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.phead p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.muted{color:var(--text-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--text);text-align:center}
+.btn:hover{border-color:var(--brand-2);background:var(--brand-soft)}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 20px 12px;padding:10px 14px}
+.tgroup{display:flex;align-items:center;gap:8px}
+.tgroup>label{font-size:11.5px;font-weight:800;color:var(--text-2);white-space:nowrap}
+.sel{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700}
+.radius{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tgroup{flex-wrap:wrap}
+.radius input{width:150px;accent-color:var(--brand)}
+.radius output{min-width:52px;font-weight:800;color:var(--brand);font-size:14px}
+.qbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 8px;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.qbtn.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.fchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px 4px 7px;font-size:12px;font-weight:700;color:var(--text-2)}
+.fchip i{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.fchip.off{opacity:.45;text-decoration:line-through}
+.fchip[data-k=chain].off{opacity:1;text-decoration:none}
+.fchip[data-k=chain]:not(.off){background:#f5f3ff;border-color:var(--chain);color:var(--chain)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:12px;padding:0 20px 20px;height:calc(100vh - 56px - 92px - 70px);min-height:600px}
+.mapwrap{position:relative;overflow:hidden;padding:0}
+#map{position:absolute;inset:0;border-radius:var(--r);background:#e8edf3}
+.legend{position:absolute;left:12px;bottom:12px;z-index:500;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:11px;box-shadow:var(--sh);display:grid;grid-template-columns:auto auto;gap:3px 14px}
+.legend span{display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--text-2)}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.legend i.ring{background:#fff;border:3px solid var(--chain)}
+.maptag{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(15,23,42,.8);color:#fff;font-size:12px;padding:6px 14px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.poi{position:relative;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--other);font-size:14px;box-shadow:0 2px 6px rgba(15,23,42,.25);transition:opacity .2s,transform .2s}
+.poi.same{border-color:var(--same);background:#fee2e2}
+.poi.similar{border-color:var(--similar);background:#fef3c7}
+.poi.syn{border-color:var(--syn);background:#d1fae5}
+.poi.chain{box-shadow:0 0 0 3px var(--chain),0 2px 8px rgba(15,23,42,.3)}
+.poi .cb{position:absolute;right:-8px;top:-8px;background:var(--chain);color:#fff;font-size:8.5px;font-weight:800;border-radius:999px;padding:0 4px;line-height:14px;border:1.5px solid #fff}
+.poi .nb{position:absolute;left:-10px;bottom:-8px;background:#0ea5e9;color:#fff;font-size:8px;font-weight:800;border-radius:999px;padding:0 4px;line-height:13px;border:1.5px solid #fff}
+.poi.out{opacity:.22;transform:scale(.8)}
+.poi.closed{background:#f1f5f9;border-style:dashed;filter:grayscale(1)}
+.poi.closed:after{content:'✕';position:absolute;inset:0;display:grid;place-items:center;color:#dc2626;font-weight:800;font-size:18px}
+.poi.hl{transform:scale(1.35);z-index:10}
+.me{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--brand);color:#fff;font-size:20px;border:3px solid #fff;box-shadow:0 0 0 4px rgba(79,70,229,.35),0 6px 14px rgba(15,23,42,.35)}
+.me-lab{background:var(--brand);color:#fff;border:0;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-weight:800;font-size:11.5px;padding:3px 8px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.me-lab:before{border-top-color:var(--brand)!important}
+.rlab{font:800 11px 'Noto Sans KR',sans-serif;color:var(--brand-ink);background:rgba(255,255,255,.9);border-radius:6px;padding:1px 6px;white-space:nowrap;border:1px solid #c7d2fe}
+.leaflet-tooltip.ptip{font-family:'Noto Sans KR',sans-serif;font-size:12px;border-radius:10px;padding:7px 10px;box-shadow:0 6px 18px rgba(15,23,42,.2)}
+.ptip b{display:block;font-size:12.5px}
+.ptip small{color:#64748b}
+
+.side{overflow-y:auto}
+.sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sh h3{margin:0;font-size:12.5px;font-weight:800}
+.sh small{font-size:11px;color:var(--text-3)}
+.spot{display:flex;gap:10px;align-items:center}
+.spot .ic{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--brand);color:#fff;font-size:20px;flex-shrink:0}
+.spot b{display:block;font-size:15px}
+.spot span{font-size:12px;color:var(--text-3)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tile{border-radius:10px;padding:8px 6px;text-align:center;border:1px solid var(--line);background:var(--surface-2)}
+.tile b{display:block;font-size:20px;font-weight:800;line-height:1.2}
+.tile span{font-size:10.5px;color:var(--text-2);font-weight:700}
+.tile small{display:block;font-size:10px;color:var(--text-3)}
+.tile.same b{color:var(--same)}
+.tile.chain b{color:var(--chain)}
+.tile.similar b{color:#b45309}
+.tile.syn b{color:var(--ok)}
+.comp{display:flex;align-items:center;gap:14px}
+.meter{flex:1}
+.meter .track{position:relative;height:12px;border-radius:999px;background:linear-gradient(90deg,#d1fae5,#fde68a 45%,#fca5a5 75%,#dc2626)}
+.meter .knob{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--text);transform:translate(-50%,-50%);transition:left .3s}
+.meter .ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-3);margin-top:4px}
+.score{text-align:center;min-width:76px}
+.score b{display:block;font-size:28px;font-weight:800;line-height:1}
+.score span{font-size:11.5px;font-weight:800}
+.stack{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#eef2f7;margin:4px 0 8px}
+.stack i{display:block;height:100%}
+.cmp{width:100%;border-collapse:collapse;font-size:12px}
+.cmp th,.cmp td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--line)}
+.cmp th:first-child,.cmp td:first-child{text-align:left}
+.cmp th{font-size:11px;color:var(--text-3)}
+.cmp td b{font-size:13px}
+.plist{list-style:none;margin:0;padding:0}
+.plist li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:7px 6px;border-radius:10px;cursor:pointer}
+.plist li:hover{background:var(--surface-2)}
+.plist .e{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;font-size:13px;border:2px solid var(--other)}
+.plist .e.same{border-color:var(--same);background:#fee2e2}
+.plist .e.similar{border-color:var(--similar);background:#fef3c7}
+.plist .t b{font-size:12.5px;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.plist .t small{font-size:11px;color:var(--text-3)}
+.plist .d{text-align:right;font-size:12px;font-weight:800}
+.plist .d small{display:block;font-size:10.5px;color:var(--text-3);font-weight:500}
+.pill{font-size:9.5px;font-weight:800;border-radius:999px;padding:0 6px;line-height:16px}
+.pill.chain{background:#ede9fe;color:var(--chain)}
+.pill.new{background:#e0f2fe;color:#0369a1}
+.pill.closed{background:#fee2e2;color:var(--bad)}
+.brands{display:flex;flex-wrap:wrap;gap:6px}
+.brands span{font-size:11.5px;font-weight:700;background:#f5f3ff;color:var(--chain);border:1px solid #ddd6fe;border-radius:999px;padding:2px 9px}
+.insight{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:12px;padding:12px;font-size:12.5px;color:#312e81}
+.insight ul{margin:6px 0 0;padding-left:18px}
+.insight li{margin:3px 0}
+.verdict{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;margin-bottom:4px}
+.verdict.go{background:#d1fae5;color:#047857}
+.verdict.mid{background:#fef3c7;color:#b45309}
+.verdict.no{background:#fee2e2;color:#b91c1c}
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px 16px}
+.more{border:0;background:transparent;color:var(--brand);font-weight:700;font-size:12px;padding:6px}
+
+@media (max-width:1100px){
+  .layout{grid-template-columns:1fr;height:auto}
+  .mapwrap{height:560px}
+}
+@media (max-width:760px){
+  .gnb{padding:0 12px;gap:10px}
+  .demo-pill{display:none}
+  .phead{padding:14px 16px 10px}
+  .toolbar{margin:0 16px 12px}
+  .radius input{width:120px}
+  .layout{padding:0 16px 24px}
+  .mapwrap{height:60vh;min-height:380px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .legend{grid-template-columns:auto;font-size:10.5px}
+  .maptag{font-size:11px;white-space:normal;width:max-content;max-width:calc(100% - 24px);text-align:center}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html" class="on"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+  </nav>
+  <span class="demo-pill">추가안 시안 · 데모 데이터</span>
+</header>
+
+<div class="phead">
+  <div>
+    <div class="eyebrow">CASE 4 · 이 자리와 업종</div>
+    <h1>공실 주변 50~100m 안의 같은 업종 · 체인점을 지도에 표시</h1>
+    <p>하려는 업종을 고르면 반경 안 점포를 <b style="color:var(--same)">같은 업종</b> · <b style="color:var(--chain)">체인점</b> · <b style="color:#b45309">비슷한 업종</b> · <b style="color:var(--ok)">함께 크는 업종</b>으로 나눠 보여주고 경쟁 강도를 계산합니다.</p>
+  </div>
+  <div class="seg" id="scSeg" aria-label="시나리오">
+    <button data-s="A">A · 연무장길 2층</button>
+    <button data-s="B">B · 성수이로 1층</button>
+    <button data-s="C">C · 먹자골목 지하</button>
+  </div>
+</div>
+
+<div class="card toolbar">
+  <div class="tgroup"><label for="indSel">하려는 업종</label><select class="sel" id="indSel"></select></div>
+  <div class="tgroup"><label for="rad">분석 반경</label>
+    <div class="radius"><input type="range" id="rad" min="50" max="100" step="10" value="100"><output id="radOut">100m</output>
+      <button class="qbtn" data-r="50">50m</button><button class="qbtn" data-r="70">70m</button><button class="qbtn on" data-r="100">100m</button></div>
+  </div>
+  <div class="chips" id="fchips">
+    <button class="fchip" data-k="same"><i style="background:var(--same)"></i>같은 업종</button>
+    <button class="fchip" data-k="chain"><i style="background:#fff;border:3px solid var(--chain);box-sizing:border-box"></i>체인점만</button>
+    <button class="fchip" data-k="similar"><i style="background:var(--similar)"></i>비슷한 업종</button>
+    <button class="fchip" data-k="syn"><i style="background:var(--syn)"></i>함께 크는 업종</button>
+    <button class="fchip" data-k="other"><i style="background:var(--other)"></i>기타</button>
+    <button class="fchip off" data-k="closed"><i style="background:#fff;border:2px dashed var(--bad);box-sizing:border-box"></i>최근 폐업</button>
+  </div>
+</div>
+
+<main class="layout">
+  <section class="card mapwrap">
+    <div id="map" aria-label="반경 업종 지도"></div>
+    <div class="maptag" id="maptag"></div>
+    <div class="legend">
+      <span><i style="background:var(--same)"></i>같은 업종</span>
+      <span><i class="ring"></i>체인점 (보라 테두리)</span>
+      <span><i style="background:var(--similar)"></i>비슷한 업종</span>
+      <span><i style="background:#0ea5e9"></i>NEW 1년 내 개업</span>
+      <span><i style="background:var(--syn)"></i>함께 크는 업종</span>
+      <span><i style="background:var(--other)"></i>기타 점포</span>
+    </div>
+  </section>
+  <aside class="card side" id="side"></aside>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// [데모 데이터] 점포 위치 · 이름 · 개폐업은 시안 확인용 가상값입니다 (체인 브랜드명은 업종 예시로만 사용).
+// 실서비스: 소상공인시장진흥공단 상가(상권)정보 API 좌표 + 프랜차이즈 정보공개서 브랜드 목록으로 분류합니다.
+const CATS = {
+  cafe:{n:'카페',e:'☕'}, bakery:{n:'베이커리',e:'🥐'}, dessert:{n:'디저트',e:'🍰'}, salad:{n:'샐러드·도시락',e:'🥗'},
+  korean:{n:'한식',e:'🍚'}, snack:{n:'분식·김밥',e:'🍙'}, pub:{n:'주점·이자카야',e:'🍶'}, wine:{n:'와인바',e:'🍷'},
+  chicken:{n:'치킨·호프',e:'🍗'}, conv:{n:'편의점',e:'🏪'}, nail:{n:'네일·속눈썹',e:'💅'}, hair:{n:'미용실',e:'💇'},
+  pilates:{n:'필라테스',e:'🧘'}, gym:{n:'헬스·PT',e:'🏋️'}, select:{n:'편집숍·의류',e:'👕'}, popup:{n:'팝업스토어',e:'🎪'},
+  pharmacy:{n:'약국',e:'💊'}, clinic:{n:'의원',e:'🏥'}, office:{n:'사무실',e:'🏢'}, study:{n:'스터디카페',e:'📖'},
+  flower:{n:'꽃집',e:'💐'}, studio:{n:'사진 스튜디오',e:'📷'}, laundry:{n:'세탁',e:'🧺'}, realty:{n:'부동산',e:'🏠'},
+};
+const BRANDS = {
+  cafe:['메가MGC커피','컴포즈커피','스타벅스','빽다방','이디야커피','투썸플레이스'], bakery:['파리바게뜨','뚜레쥬르'], dessert:['설빙','배스킨라빈스'],
+  salad:['샐러디'], snack:['김밥천국','바르다김선생'], pub:['역전할머니맥주','이자카야 가맹점'], chicken:['교촌치킨','BBQ','bhc'],
+  conv:['CU','GS25','세븐일레븐','이마트24'], hair:['준오헤어'], gym:['애니타임피트니스'], study:['작심스터디카페'], laundry:['크린토피아'], pilates:['필라테스 가맹점'],
+};
+const INDIE = {
+  cafe:['카페 소소','로스터리 하루','커피 모노','브루잉랩','카페 언더','그린빈 로스터스','카페 담','오후 세시','커피 정류장','카페 결','온도 커피','카페 무드'],
+  bakery:['동네빵집 밀','르뱅 베이커리','버터 공방'], dessert:['구움과자 상점','젤라또 바','케이크 하우스'], salad:['그린볼','포케 하우스'],
+  korean:['성수 국밥','한상 백반','고깃집 불판','솥밥 정식','돼지 한판','냉면 명가','순두부 집','쌈밥 식당','칼국수 공방'], snack:['떡볶이 연구소','김밥 공방'],
+  pub:['이자카야 하나','오뎅바 유키','요리주점 달','포차 골목','선술집 등','하이볼 바'], wine:['내추럴 와인바','와인 셀러 바'], chicken:['동네 치킨','옛날 통닭'],
+  conv:['24 마트'], nail:['네일 살롱 봄','속눈썹 연구소','젤 네일 룸'], hair:['헤어 아틀리에','살롱 드 헤어'], pilates:['기구 필라테스 숨','요가 스튜디오'],
+  gym:['1:1 PT 센터'], select:['빈티지 편집숍','리빙 소품숍','브랜드 쇼룸','셀렉트숍 오브제','스니커즈 숍','디자이너 의류','문구 편집숍','가죽 공방숍'],
+  popup:['브랜드 팝업 A','브랜드 팝업 B','브랜드 팝업 C','브랜드 팝업 D','팝업 갤러리'], pharmacy:['온누리 약국','건강 약국'],
+  clinic:['내과 의원','치과 의원','피부과 의원','정형외과'], office:['IT 스타트업','디자인 스튜디오','패션 본사','콘텐츠 랩','건축사무소','공유오피스'],
+  study:['스터디룸 공간'], flower:['플라워 스튜디오'], studio:['셀프 사진관','프로필 스튜디오'], laundry:['코인 세탁'], realty:['공인중개사','부동산 중개'],
+};
+// [업종, 개수, 체인 수]
+const SCN = {
+  A:{ name:'성수 아뜰리에빌딩 2층 201호', zone:'연무장길 카페·팝업거리', center:[37.5427,127.0560], branch:'성수연무장', def:'cafe', floorNote:'2층',
+      quota:[['cafe',14,4],['bakery',4,1],['dessert',3,1],['select',8,0],['popup',5,0],['nail',3,0],['hair',2,1],['pilates',2,0],['wine',2,0],['korean',3,0],['conv',2,2],['studio',2,0],['flower',1,0],['realty',1,0]] },
+  B:{ name:'성수 테크타워 1층 102호', zone:'성수역 지식산업센터 오피스', center:[37.5458,127.0590], branch:'성수역', def:'salad', floorNote:'1층',
+      quota:[['korean',8,0],['snack',4,2],['salad',3,1],['cafe',9,5],['conv',4,4],['pharmacy',2,0],['clinic',3,0],['gym',2,1],['pilates',2,0],['study',2,1],['office',6,0],['chicken',2,2],['pub',2,0],['bakery',2,1],['laundry',1,1]] },
+  C:{ name:'뚝섬 코너하우스 지하 1층 B01호', zone:'뚝섬역 먹자골목', center:[37.5462,127.0485], branch:'뚝섬역', def:'pub', floorNote:'지하 1층',
+      quota:[['pub',9,2],['korean',9,0],['chicken',4,3],['wine',2,0],['cafe',5,2],['conv',3,3],['snack',2,1],['nail',1,0],['hair',2,0],['realty',2,0],['dessert',1,0],['laundry',1,0]] },
+};
+const TARGETS = {
+  cafe:{n:'카페',e:'☕',same:['cafe'],similar:['dessert','bakery'],syn:['select','popup','studio','flower','nail','pilates','office'],tip:'스페셜티 원두 · 시그니처 디저트 · 창가석 경험처럼 저가 체인과 다른 이유를 만드세요'},
+  dessert:{n:'베이커리·디저트',e:'🥐',same:['bakery','dessert'],similar:['cafe'],syn:['select','popup','flower','studio'],tip:'대표 메뉴 1~2개에 집중하고 선물용 포장으로 객단가를 올리세요'},
+  salad:{n:'샐러드·도시락',e:'🥗',same:['salad'],similar:['snack','korean'],syn:['office','gym','pilates','clinic','study'],tip:'점심 사전주문 · 정기구독으로 11~14시 몰림을 분산하세요'},
+  pub:{n:'주점·이자카야',e:'🍶',same:['pub'],similar:['wine','chicken'],syn:['korean','conv'],tip:'1차 식당 손님을 받는 2차 안주 특화 · 늦은 영업으로 차별화하세요'},
+  conv:{n:'편의점',e:'🏪',same:['conv'],similar:[],syn:['office','pub','study','chicken'],tip:'같은 브랜드 근접 출점 제한(가맹 영업지역)을 먼저 확인하세요'},
+  nail:{n:'네일·뷰티',e:'💅',same:['nail'],similar:['hair'],syn:['cafe','select','pilates','dessert'],tip:'예약제 · 1인 프라이빗 공간으로 2층 이상 입지의 약점을 강점으로 바꾸세요'},
+  pilates:{n:'필라테스·운동',e:'🧘',same:['pilates'],similar:['gym'],syn:['salad','cafe','nail','clinic','office'],tip:'퇴근 시간대 소수 정원 클래스 · 체험권으로 직장인 수요를 잡으세요'},
+};
+const REL_TEXT = { same:'같은 업종', similar:'비슷한 업종', syn:'함께 크는 업종', other:'기타' };
+const REL_COL = { same:'#dc2626', similar:'#f59e0b', syn:'#10b981', other:'#94a3b8' };
+
+function prng(seed){ let a = seed; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const DIRS = ['북','북동','동','남동','남','남서','서','북서'];
+
+function genPOIs(key){
+  const sc = SCN[key], rnd = prng(key.charCodeAt(0) * 2654435761 >>> 0);
+  const out = [], used = {};
+  const [lat0, lng0] = sc.center, mLat = 111320, mLng = 111320 * Math.cos(lat0 * Math.PI / 180);
+  sc.quota.forEach(([cat, n, chains]) => {
+    for (let i = 0; i < n; i++){
+      let dx, dy, d, tries = 0;
+      do {
+        d = 11 + Math.pow(rnd(), .8) * 122;
+        const a = rnd() * Math.PI * 2;
+        dx = Math.cos(a) * d; dy = Math.sin(a) * d; tries++;
+      } while (tries < 40 && out.some(p => Math.hypot(p.dx - dx, p.dy - dy) < 10));
+      const chain = i < chains;
+      used[cat] = (used[cat] || 0) + 1;
+      const name = chain
+        ? `${BRANDS[cat][i % BRANDS[cat].length]} ${sc.branch}${i >= BRANDS[cat].length ? '2호' : ''}점`
+        : INDIE[cat][(i - chains) % INDIE[cat].length] + ((i - chains) >= INDIE[cat].length ? ' 2호' : '');
+      const r = rnd();
+      const opened = r < .16 ? 2026 : 2012 + Math.floor(rnd() * 14);
+      const closed = !chain && r > .92;
+      const ang = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+      out.push({ cat, name, chain, brand: chain ? BRANDS[cat][i % BRANDS[cat].length] : null, opened, closed, dx, dy, d:Math.round(d), dir:DIRS[Math.round(ang / 45) % 8],
+                 ll:[lat0 + dy / mLat, lng0 + dx / mLng] });
+    }
+  });
+  return out;
+}
+
+const params = new URLSearchParams(location.search);
+const state = { s: SCN[params.get('s')] ? params.get('s') : 'A', ind:null, R:100, show:{ same:true, chain:false, similar:true, syn:true, other:true, closed:false }, listAll:false };
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const rel = p => { const t = TARGETS[state.ind]; return t.same.includes(p.cat) ? 'same' : t.similar.includes(p.cat) ? 'similar' : t.syn.includes(p.cat) ? 'syn' : 'other'; };
+
+// ── map ───────────────────────────────────────────────
+const map = L.map('map', { zoomControl:true });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom:20, subdomains:'abcd', attribution:'&copy; OpenStreetMap contributors &copy; CARTO' }).addTo(map);
+const ringLayer = L.layerGroup().addTo(map);
+const poiLayer = L.layerGroup().addTo(map);
+let pois = [], markers = [];
+
+function drawBase(){
+  ringLayer.clearLayers(); poiLayer.clearLayers(); markers = [];
+  const sc = SCN[state.s];
+  pois = genPOIs(state.s);
+  map.setView(sc.center, map.getSize().x < 520 ? 17 : 18);
+  pois.forEach((p, i) => {
+    const m = L.marker(p.ll, { icon: L.divIcon({ className:'', html:'<div class="poi"></div>', iconSize:[28,28], iconAnchor:[14,14] }), riseOnHover:true });
+    m.bindTooltip('', { className:'ptip', direction:'top', offset:[0,-14] });
+    m.addTo(poiLayer);
+    markers.push(m);
+  });
+  const me = L.marker(sc.center, { icon: L.divIcon({ className:'', html:'<div class="me">★</div>', iconSize:[40,40], iconAnchor:[20,20] }), zIndexOffset:1000, interactive:false }).addTo(ringLayer);
+  me.bindTooltip(`이 자리 · ${sc.floorNote}`, { permanent:true, direction:'top', offset:[0,-22], className:'me-lab' });
+}
+
+function drawRings(){
+  ringLayer.eachLayer(l => { if (l instanceof L.Circle || l.options.rlab) ringLayer.removeLayer(l); });
+  const c = SCN[state.s].center;
+  L.circle(c, { radius:state.R, color:'#4f46e5', weight:2.5, fillColor:'#6366f1', fillOpacity:.08 }).addTo(ringLayer);
+  if (state.R !== 50) L.circle(c, { radius:50, color:'#4f46e5', weight:1.5, dashArray:'6 6', fill:false }).addTo(ringLayer);
+  const mLat = 111320;
+  [[50, '50m'], [state.R, `${state.R}m`]].forEach(([r, t], i) => {
+    if (i === 0 && state.R === 50) return;
+    L.marker([c[0] + r / mLat, c[1]], { icon: L.divIcon({ className:'', html:`<span class="rlab">${t}</span>`, iconSize:[40,16], iconAnchor:[20,8] }), interactive:false, rlab:true }).addTo(ringLayer);
+  });
+}
+
+function styleMarkers(){
+  pois.forEach((p, i) => {
+    const r = rel(p), inR = p.d <= state.R;
+    let visible = state.show[r];
+    if (state.show.chain && !p.chain) visible = false;
+    if (p.closed && !state.show.closed) visible = false;
+    const el = markers[i].getElement();
+    if (!visible){ if (poiLayer.hasLayer(markers[i])) poiLayer.removeLayer(markers[i]); return; }
+    if (!poiLayer.hasLayer(markers[i])) markers[i].addTo(poiLayer);
+    const div = markers[i].getElement().firstChild;
+    div.className = `poi ${r === 'other' ? '' : r} ${p.chain ? 'chain' : ''} ${inR ? '' : 'out'} ${p.closed ? 'closed' : ''}`;
+    div.innerHTML = `${p.closed ? '' : CATS[p.cat].e}${p.chain ? '<span class="cb">체인</span>' : ''}${p.opened === 2026 && !p.closed ? '<span class="nb">NEW</span>' : ''}`;
+    markers[i].setZIndexOffset(inR ? (r === 'same' ? 300 : 100) : 0);
+    markers[i].setTooltipContent(`<b>${esc(p.name)}</b>${CATS[p.cat].n} · <span style="color:${REL_COL[r]};font-weight:800">${REL_TEXT[r]}</span>${p.chain ? ' · <span style="color:#7c3aed;font-weight:800">체인</span>' : ''}<br><small>이 자리에서 ${p.dir}쪽 ${p.d}m · ${p.closed ? '최근 폐업' : p.opened === 2026 ? '최근 1년 내 개업' : p.opened + '년 개업'}</small>`);
+  });
+}
+
+// ── 분석 ──────────────────────────────────────────────
+function stats(R){
+  const act = pois.filter(p => !p.closed && p.d <= R);
+  const by = r => act.filter(p => rel(p) === r);
+  const same = by('same'), similar = by('similar'), syn = by('syn'), other = by('other');
+  const sameChain = same.filter(p => p.chain);
+  return { act, same, similar, syn, other, sameChain, chainAll: act.filter(p => p.chain) };
+}
+function compScore(st, R){
+  const raw = st.same.length * 10 + st.sameChain.length * 5 + st.similar.length * 4;
+  return Math.min(100, Math.round(raw / Math.pow(Math.max(.25, (R / 100) ** 2), .6) * .6));
+}
+const compLabel = v => v >= 75 ? ['매우 높음','#b91c1c'] : v >= 55 ? ['높음','#dc2626'] : v >= 35 ? ['보통','#b45309'] : ['낮음','#047857'];
+
+function renderSide(){
+  const sc = SCN[state.s], t = TARGETS[state.ind], R = state.R;
+  const st = stats(R), s50 = stats(50), s100 = stats(100);
+  const score = compScore(st, R), [lab, lc] = compLabel(score);
+  const nearest = pois.filter(p => !p.closed && rel(p) === 'same').sort((a,b) => a.d - b.d)[0];
+  const brandSet = [...new Set(st.sameChain.map(p => p.brand))];
+  const allBrands = [...new Set(st.chainAll.map(p => p.brand))];
+  const recentOpen = pois.filter(p => rel(p) === 'same' && p.d <= R && p.opened === 2026 && !p.closed).length;
+  const recentClose = pois.filter(p => rel(p) === 'same' && p.d <= R && p.closed).length;
+  const closedAny = pois.filter(p => p.d <= R && p.closed).length;
+  const list = pois.filter(p => p.d <= R && (rel(p) === 'same' || (rel(p) === 'similar' && p.chain) || (state.show.closed && p.closed && rel(p) === 'same'))).sort((a,b) => a.d - b.d);
+  const shown = state.listAll ? list : list.slice(0, 8);
+  const tot = st.act.length || 1;
+
+  // 해석
+  const pts = [];
+  if (s50.same.length >= 3) pts.push(`반경 50m 안에 같은 업종이 <b>${s50.same.length}곳</b> — 바로 옆 경쟁이 치열합니다.`);
+  else if (s50.same.length === 0) pts.push(`반경 50m 안에는 같은 업종이 <b>없습니다</b>. 가장 가까운 곳은 ${nearest ? `${nearest.d}m 떨어진 ${esc(nearest.name)}` : '반경 밖'}입니다.`);
+  else pts.push(`반경 50m 안 같은 업종 <b>${s50.same.length}곳</b>, ${R}m까지 넓히면 <b>${st.same.length}곳</b>입니다.`);
+  if (st.sameChain.length) pts.push(`같은 업종 중 체인점 <b>${st.sameChain.length}곳</b>(${brandSet.slice(0,3).map(esc).join(' · ')}) — 가격으로 맞서기보다 차별화로 승부해야 합니다.`);
+  else pts.push('같은 업종에 체인점이 없어 <b>가격 경쟁 압박은 낮은 편</b>입니다.');
+  if (st.syn.length) pts.push(`함께 크는 업종 <b>${st.syn.length}곳</b>(${[...new Set(st.syn.map(p => CATS[p.cat].n))].slice(0,3).join(' · ')}) 손님이 넘어올 수 있습니다.`);
+  pts.push(`최근 1년 같은 업종 개업 <b>${recentOpen}</b> · 폐업 <b>${recentClose}</b>${recentOpen > recentClose ? ' — 아직 들어오는 업종입니다.' : recentClose > recentOpen ? ' — 빠지는 흐름이니 주의하세요.' : '.'}`);
+  const verdict = score >= 75 ? ['no','경쟁 과밀 · 차별화 없으면 재검토'] : score >= 45 ? ['mid','조건부 적합 · 차별화 필요'] : ['go','적합 · 경쟁 여유 있음'];
+
+  $('#side').innerHTML = `
+    <div class="sec"><div class="spot"><div class="ic">${t.e}</div><div><b>${esc(sc.name)}</b><span>${esc(sc.zone)} · ${t.n} 창업 가정 · 반경 ${R}m</span></div></div></div>
+    <div class="sec">
+      <div class="sh"><h3>반경 ${R}m 안 점포</h3><small>영업 중 ${st.act.length}곳 기준</small></div>
+      <div class="tiles">
+        <div class="tile same"><b>${st.same.length}</b><span>같은 업종</span><small>50m 안 ${s50.same.length}</small></div>
+        <div class="tile chain"><b>${st.sameChain.length}</b><span>그중 체인</span><small>전체 체인 ${st.chainAll.length}</small></div>
+        <div class="tile similar"><b>${st.similar.length}</b><span>비슷한 업종</span><small>대체 수요</small></div>
+        <div class="tile syn"><b>${st.syn.length}</b><span>함께 크는</span><small>손님 공유</small></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sh"><h3>경쟁 강도</h3><small>같은 업종 · 체인 · 비슷한 업종 밀도</small></div>
+      <div class="comp">
+        <div class="meter"><div class="track"><span class="knob" style="left:${score}%"></span></div><div class="ends"><span>여유</span><span>과밀</span></div></div>
+        <div class="score"><b style="color:${lc}">${score}</b><span style="color:${lc}">${lab}</span></div>
+      </div>
+      ${nearest ? `<p style="margin:10px 0 0;font-size:12px;color:var(--text-2)">가장 가까운 같은 업종 · <b>${esc(nearest.name)}</b> (${nearest.dir}쪽 ${nearest.d}m${nearest.chain ? ', 체인' : ''})</p>` : ''}
+    </div>
+    <div class="sec">
+      <div class="sh"><h3>업종 구성</h3><small>반경 ${R}m · 영업 중</small></div>
+      <div class="stack">${['same','similar','syn','other'].map(r => `<i style="width:${({same:st.same,similar:st.similar,syn:st.syn,other:st.other})[r].length / tot * 100}%;background:${REL_COL[r]}"></i>`).join('')}</div>
+      <table class="cmp">
+        <thead><tr><th></th><th>50m</th><th>100m</th></tr></thead>
+        <tbody>
+          <tr><td>같은 업종</td><td><b style="color:var(--same)">${s50.same.length}</b></td><td><b style="color:var(--same)">${s100.same.length}</b></td></tr>
+          <tr><td>└ 체인점</td><td>${s50.sameChain.length}</td><td>${s100.sameChain.length}</td></tr>
+          <tr><td>비슷한 업종</td><td>${s50.similar.length}</td><td>${s100.similar.length}</td></tr>
+          <tr><td>함께 크는 업종</td><td>${s50.syn.length}</td><td>${s100.syn.length}</td></tr>
+          <tr><td>전체 점포</td><td>${s50.act.length}</td><td>${s100.act.length}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sec">
+      <div class="sh"><h3>같은 업종 · 체인점 목록</h3><small>가까운 순 · 누르면 지도 이동</small></div>
+      ${list.length ? `<ul class="plist">${shown.map(p => { const r = rel(p); return `<li data-i="${pois.indexOf(p)}">
+        <span class="e ${r}">${CATS[p.cat].e}</span>
+        <span class="t"><b>${esc(p.name)}${p.chain ? '<span class="pill chain">체인</span>' : ''}${p.opened === 2026 && !p.closed ? '<span class="pill new">NEW</span>' : ''}${p.closed ? '<span class="pill closed">폐업</span>' : ''}</b><small>${CATS[p.cat].n} · ${REL_TEXT[r]} · ${p.closed ? '최근 폐업' : p.opened + '년~'}</small></span>
+        <span class="d">${p.d}m<small>${p.dir}쪽</small></span></li>`; }).join('')}</ul>
+        ${list.length > 8 ? `<button class="more" id="moreBtn">${state.listAll ? '접기' : `${list.length - 8}곳 더 보기`}</button>` : ''}`
+        : '<p class="muted" style="font-size:12px;margin:0">반경 안에 같은 업종이 없습니다.</p>'}
+    </div>
+    <div class="sec">
+      <div class="sh"><h3>반경 안 체인 브랜드</h3><small>업종 무관 ${allBrands.length}개</small></div>
+      <div class="brands">${allBrands.length ? allBrands.map(b => `<span>${esc(b)}</span>`).join('') : '<span class="muted" style="background:none;border:0">없음</span>'}</div>
+    </div>
+    <div class="sec">
+      <div class="insight">
+        <span class="verdict ${verdict[0]}">${verdict[1]}</span>
+        <b style="display:block;font-size:12.5px">🤖 이 자리에서 ${t.n}을(를) 한다면</b>
+        <ul>${pts.map(x => `<li>${x}</li>`).join('')}<li>차별화 제안 · ${t.tip}</li></ul>
+        ${closedAny && !state.show.closed ? `<p style="margin:6px 0 0;font-size:11.5px;color:#6366f1">상단 ‘최근 폐업’을 켜면 반경 안 폐업 점포 ${closedAny}곳도 지도에 표시됩니다.</p>` : ''}
+      </div>
+    </div>
+    <div class="cta">
+      <a class="btn" href="case1-district-map.html">🗺 다른 상권과 비교</a>
+      <a class="btn btn-primary" href="case5-customer-ledger.html?s=${state.s}">🧾 손님 모으기 계획</a>
+    </div>`;
+  $('#side').querySelectorAll('.plist li').forEach(li => li.onclick = () => {
+    const m = markers[+li.dataset.i];
+    if (!poiLayer.hasLayer(m)) m.addTo(poiLayer);
+    map.panTo(m.getLatLng()); m.openTooltip();
+    const el = m.getElement().firstChild; el.classList.add('hl'); setTimeout(() => el.classList.remove('hl'), 1400);
+  });
+  const mb = $('#moreBtn'); if (mb) mb.onclick = () => { state.listAll = !state.listAll; renderSide(); };
+  $('#maptag').textContent = `반경 ${R}m · ${t.e} ${t.n} 기준 · 같은 업종 ${st.same.length}곳 (체인 ${st.sameChain.length})`;
+}
+
+function refresh(){ drawRings(); styleMarkers(); renderSide(); }
+
+// ── controls ─────────────────────────────────────────
+$('#indSel').innerHTML = Object.entries(TARGETS).map(([k,t]) => `<option value="${k}">${t.e} ${t.n}</option>`).join('');
+$('#indSel').onchange = e => { state.ind = e.target.value; state.listAll = false; refresh(); };
+function setR(r){
+  state.R = r; $('#rad').value = r; $('#radOut').textContent = r + 'm';
+  document.querySelectorAll('.qbtn').forEach(b => b.classList.toggle('on', +b.dataset.r === r));
+  refresh();
+}
+$('#rad').oninput = e => setR(+e.target.value);
+document.querySelectorAll('.qbtn').forEach(b => b.onclick = () => setR(+b.dataset.r));
+$('#fchips').addEventListener('click', e => {
+  const b = e.target.closest('.fchip'); if (!b) return;
+  const k = b.dataset.k; state.show[k] = !state.show[k];
+  b.classList.toggle('off', !state.show[k]);
+  refresh();
+});
+document.querySelector('.fchip[data-k=chain]').classList.add('off');
+function loadScenario(s){
+  state.s = s; state.ind = SCN[s].def; state.listAll = false;
+  $('#indSel').value = state.ind;
+  document.querySelectorAll('#scSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  drawBase(); refresh();
+  const u = new URL(location.href); u.searchParams.set('s', s); history.replaceState(null, '', u);
+}
+$('#scSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadScenario(b.dataset.s); });
+loadScenario(state.s);
+</script>
+</body>
+</html>

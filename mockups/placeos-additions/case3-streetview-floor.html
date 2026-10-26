@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS · 거리뷰 층별보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --vac:#f97316;--vac-soft:#fff7ed;--head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body.lock{overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.gnb{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;letter-spacing:-.01em;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.gnb nav a.on b{background:var(--brand);color:#fff}
+.demo-pill{white-space:nowrap;font-size:11px;font-weight:700;color:#fde68a;border:1px solid rgba(253,230,138,.4);padding:3px 9px;border-radius:999px;flex-shrink:0}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px 20px 12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.phead h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.phead p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.muted{color:var(--text-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--text);text-align:center}
+.btn:hover{border-color:var(--brand-2);background:var(--brand-soft)}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+
+/* ── 클릭 전 화면 ── */
+.before{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;padding:0 20px 24px}
+.fauxmap{position:relative;min-height:560px;overflow:hidden;padding:0}
+.fauxmap svg.bg{position:absolute;inset:0;width:100%;height:100%}
+.vcard{position:absolute;right:24px;top:24px;width:340px;max-width:calc(100% - 48px);background:#fff;border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.25);overflow:hidden}
+.vcard .vh{background:linear-gradient(90deg,#4f46e5,#7c3aed);color:#fff;padding:14px 16px}
+.vcard .vh small{font-size:10px;font-weight:700;opacity:.8;letter-spacing:.06em}
+.vcard .vh b{display:block;font-size:15px;margin-top:2px}
+.vcard .vh span{font-size:11px;opacity:.7}
+.vcard .vb{padding:14px 16px}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.vgrid div{background:var(--surface-2);border-radius:8px;padding:6px 9px}
+.vgrid small{display:block;font-size:10px;color:var(--text-3);font-weight:700}
+.vgrid b{font-size:13px}
+.svbtn{position:relative;width:100%;border:0;border-radius:12px;padding:12px;background:var(--head);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.svbtn:after{content:'';position:absolute;inset:-4px;border-radius:15px;border:2px solid var(--brand-2);animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+.newtag{position:absolute;top:-9px;right:10px;background:#f43f5e;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 7px}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.vrow button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px;font-size:12px;font-weight:700;color:var(--text-2)}
+.callout{position:absolute;left:24px;bottom:24px;max-width:300px;background:rgba(15,23,42,.88);color:#fff;border-radius:12px;padding:10px 12px;font-size:12px}
+.callout b{color:#a5b4fc}
+.explain{padding:20px}
+.explain h3{margin:0 0 4px;font-size:16px}
+.explain>p{margin:0 0 14px;color:var(--text-2);font-size:13px}
+.steps{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:10px}
+.steps li{display:flex;gap:12px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.steps li i{display:grid;place-items:center;flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--brand-soft);color:var(--brand);font-style:normal;font-weight:800;font-size:12px}
+.steps li b{display:block;font-size:13px}
+.steps li span{font-size:12px;color:var(--text-2)}
+
+/* ── 뷰어 오버레이 ── */
+.viewer{position:fixed;inset:0;z-index:3000;background:#0b1220;display:none;flex-direction:column}
+.viewer.show{display:flex;animation:fadeup .28s ease-out}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.vbar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0f172a;color:#fff;border-bottom:1px solid #1e293b;flex-wrap:wrap}
+.vbar .x{border:0;background:#1e293b;color:#fff;border-radius:10px;width:34px;height:34px;font-size:18px;flex-shrink:0}
+.vbar .tt{min-width:0;flex:1}
+.vbar .tt b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vbar .tt span{font-size:11.5px;color:#94a3b8}
+.vbar .seg{background:#1e293b;border-color:#334155}
+.vbar .seg button{color:#cbd5e1}
+.vbar .seg button.on{background:#fff;color:#0f172a}
+.years{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#94a3b8}
+.years .seg button{padding:5px 9px;font-size:11.5px}
+.vbody{flex:1;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,1fr);min-height:0}
+.vbody.sv-only{grid-template-columns:1fr 0}
+.vbody.sv-only .fp{display:none}
+.vbody.fp-only{grid-template-columns:0 1fr}
+.vbody.fp-only .sv{display:none}
+.sv{position:relative;overflow:hidden;background:#cfe0f1;cursor:grab;touch-action:none;user-select:none}
+.sv.drag{cursor:grabbing}
+.sv svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hs{cursor:pointer}
+.hs rect.band{fill:transparent;stroke:transparent;transition:fill .15s}
+.hs:hover rect.band{fill:rgba(99,102,241,.16);stroke:rgba(99,102,241,.7);stroke-width:2}
+.hs.on rect.band{fill:rgba(99,102,241,.22);stroke:#4f46e5;stroke-width:4;animation:blink 1.6s ease-in-out infinite}
+@keyframes blink{50%{fill:rgba(99,102,241,.08)}}
+.svov{position:absolute;z-index:2}
+.shot{left:12px;top:12px;background:rgba(15,23,42,.78);color:#fff;font-size:11.5px;border-radius:10px;padding:6px 10px;backdrop-filter:blur(4px)}
+.shot b{color:#fde68a}
+.apinote{left:12px;top:48px;background:rgba(255,255,255,.88);color:#334155;font-size:10.5px;border-radius:8px;padding:3px 8px}
+.svctl{right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.pill{display:flex;gap:4px;background:rgba(15,23,42,.78);border-radius:10px;padding:4px}
+.pill button{border:0;background:transparent;color:#e2e8f0;border-radius:7px;padding:5px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.pill button.on{background:#fff;color:#0f172a}
+.pill button:hover:not(.on){background:rgba(255,255,255,.12)}
+.mini{left:12px;bottom:12px;width:150px;height:112px;background:rgba(255,255,255,.95);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.25);overflow:hidden}
+.mini svg{width:100%;height:100%}
+.nav{right:12px;bottom:12px;display:flex;gap:6px}
+.nav button{border:0;width:38px;height:38px;border-radius:50%;background:rgba(15,23,42,.8);color:#fff;font-size:16px;font-weight:800}
+.nav button:hover{background:#0f172a}
+.drag-hint{left:50%;bottom:14px;transform:translateX(-50%);background:rgba(15,23,42,.7);color:#fff;font-size:11px;border-radius:999px;padding:4px 12px;pointer-events:none;white-space:nowrap}
+
+.fp{background:var(--bg);overflow-y:auto;border-left:1px solid #1e293b}
+.fp .in{padding:14px;display:grid;gap:12px}
+.fp h3{margin:0;font-size:13px;font-weight:800}
+.fp .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.fp .ch small{font-size:11px;color:var(--text-3)}
+.dir{background:#111827;border-radius:12px;padding:10px;color:#e5e7eb}
+.dir .dt{display:flex;justify-content:space-between;font-size:10.5px;color:#9ca3af;letter-spacing:.08em;padding:0 6px 6px;border-bottom:1px solid #374151;margin-bottom:6px}
+.dir button{display:grid;grid-template-columns:40px 1fr auto;gap:8px;align-items:center;width:100%;border:0;background:transparent;color:#e5e7eb;text-align:left;border-radius:8px;padding:6px;font-size:12.5px}
+.dir button:hover{background:#1f2937}
+.dir button.on{background:#4f46e5;color:#fff}
+.dir button b{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#fbbf24}
+.dir button.on b{color:#fff}
+.dir button em{font-style:normal;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 7px}
+.dir em.vac{background:#f97316;color:#fff}
+.dir em.op{background:#374151;color:#d1d5db}
+.dir em.res{background:#374151;color:#9ca3af}
+.dir button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plan{padding:12px}
+.plan svg{width:100%;height:auto;display:block}
+.plan .u{cursor:pointer}
+.plan .u:hover rect{stroke:#4f46e5;stroke-width:2.5}
+.ulist{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ulist button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.ulist button.vac{border-color:#fdba74;color:#c2410c;background:var(--vac-soft)}
+.ulist button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.info{padding:12px}
+.cond{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cond div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
+.cond small{display:block;font-size:10px;color:var(--text-3);font-weight:700}
+.cond b{font-size:13px}
+.cond .hl b{color:var(--bad)}
+.vis{display:flex;gap:12px;align-items:center}
+.gauge{position:relative;width:74px;height:74px;flex-shrink:0}
+.gauge span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:18px}
+.vis p{margin:0;font-size:12px;color:var(--text-2)}
+.vis p b{color:var(--text)}
+.tl{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.tl li{position:relative;font-size:12px;margin:0 0 8px;color:var(--text-2)}
+.tl li:before{content:'';position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--line-2)}
+.tl li.now:before{background:var(--brand);border-color:var(--brand)}
+.tl li.vac:before{background:var(--vac);border-color:var(--vac)}
+.tl li b{color:var(--text);margin-right:6px;font-family:ui-monospace,Menlo,monospace}
+.fp .cta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+@media (max-width:980px){
+  .before{grid-template-columns:1fr}
+  .vbody{grid-template-columns:1fr;grid-template-rows:52vh auto;overflow-y:auto}
+  .vbody.sv-only,.vbody.fp-only{grid-template-columns:1fr}
+  .vbody.sv-only{grid-template-rows:1fr}
+  .vbody.fp-only{grid-template-rows:auto}
+  .fp{overflow:visible;border-left:0}
+}
+@media (max-width:760px){
+  .gnb{padding:0 12px;gap:10px}
+  .demo-pill{display:none}
+  .phead{padding:14px 16px 10px}
+  .before{padding:0 16px 24px}
+  .fauxmap{min-height:520px}
+  .vcard{right:12px;left:12px;top:12px;width:auto;max-width:none}
+  .callout{display:none}
+  .vbar{padding:8px 10px;gap:8px}
+  .vbar .tt{flex-basis:calc(100% - 50px)}
+  .cond{grid-template-columns:1fr 1fr}
+  .mini{width:110px;height:84px}
+  .drag-hint{display:none}
+  .apinote{display:none}
+  .shot{top:auto;bottom:104px;font-size:10.5px}
+  .svctl{left:12px;align-items:stretch}
+  .pill{justify-content:center}
+  .pill button{padding:5px 7px;font-size:11px}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html" class="on"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+  </nav>
+  <span class="demo-pill">추가안 시안 · 데모 데이터</span>
+</header>
+
+<div class="phead">
+  <div>
+    <div class="eyebrow">CASE 3 · 거리뷰 · 층별보기 클릭 시</div>
+    <h1>버튼 하나로 거리뷰와 층별 평면도를 같이 봅니다</h1>
+    <p>공실 카드의 <b>거리뷰 · 층별보기</b>를 누르면 건너편에서 본 건물 사진 위에 층별 라벨이 붙고, 옆에는 층별 안내판과 평면도가 열립니다.</p>
+  </div>
+  <div class="seg" id="scSeg" aria-label="시나리오">
+    <button data-s="A">A · 2층 공실</button>
+    <button data-s="B">B · 1층 공실</button>
+    <button data-s="C">C · 지하 1층 공실</button>
+  </div>
+</div>
+
+<section class="before">
+  <div class="card fauxmap">
+    <svg class="bg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="800" height="600" fill="#eef2f6"/>
+      <g fill="#e2e8f0">
+        <rect x="20" y="20" width="160" height="120" rx="6"/><rect x="200" y="20" width="220" height="120" rx="6"/><rect x="440" y="20" width="160" height="120" rx="6"/><rect x="620" y="20" width="160" height="120" rx="6"/>
+        <rect x="20" y="190" width="160" height="150" rx="6"/><rect x="200" y="190" width="220" height="150" rx="6"/><rect x="440" y="190" width="160" height="150" rx="6"/><rect x="620" y="190" width="160" height="150" rx="6"/>
+        <rect x="20" y="390" width="160" height="190" rx="6"/><rect x="200" y="390" width="220" height="190" rx="6"/><rect x="440" y="390" width="160" height="190" rx="6"/><rect x="620" y="390" width="160" height="190" rx="6"/>
+      </g>
+      <g fill="#ffffff"><rect x="0" y="150" width="800" height="32"/><rect x="0" y="350" width="800" height="32"/><rect x="186" y="0" width="10" height="600"/><rect x="428" y="0" width="10" height="600"/><rect x="606" y="0" width="10" height="600"/></g>
+      <rect x="200" y="190" width="220" height="150" rx="6" fill="#6366f1" opacity=".18"/>
+      <text x="40" y="171" font-size="12" fill="#64748b" font-family="Noto Sans KR" id="mapRoad">연무장길</text>
+      <g fill="#f97316"><circle cx="520" cy="250" r="6"/><circle cx="90" cy="460" r="6"/><circle cx="690" cy="90" r="6"/></g>
+      <g transform="translate(310 262)"><path d="M0 -26 C-14 -26 -20 -15 -20 -8 C-20 6 0 22 0 22 C0 22 20 6 20 -8 C20 -15 14 -26 0 -26Z" fill="#dc2626"/><circle cy="-9" r="7" fill="#fff"/></g>
+    </svg>
+    <div class="vcard">
+      <div class="vh"><small>공실 매물 · AI 창업 분석</small><b id="vcTitle">성수 아뜰리에빌딩 2층 201호</b><span id="vcSub">성동구 · 성수동2가 · 데모 데이터</span></div>
+      <div class="vb">
+        <div class="vgrid" id="vcGrid"></div>
+        <button class="svbtn" id="openBtn"><span class="newtag">NEW</span>🏙 거리뷰 · 층별보기</button>
+        <div class="vrow"><button disabled>📋 점포이력</button><button disabled>🤖 AI 창업 추천</button></div>
+      </div>
+    </div>
+    <div class="callout"><b>추가되는 버튼</b> · 기존 공실 카드에 들어가며, 누르면 오른쪽에 설명한 화면이 전체 화면으로 열립니다.</div>
+  </div>
+  <div class="card explain">
+    <h3>누르면 열리는 화면</h3>
+    <p>왼쪽 거리뷰와 오른쪽 층별보기가 하나로 연결됩니다.</p>
+    <ul class="steps">
+      <li><i>1</i><div><b>거리뷰 + 층 라벨(AR)</b><span>건너편 보도에서 본 건물 위에 층마다 업종 · 공실 라벨을 붙입니다. 지하층은 땅 아래로 투시해서 보여줍니다.</span></div></li>
+      <li><i>2</i><div><b>층별 안내판 + 평면도</b><span>로비 안내판처럼 층 목록을 보여주고, 층을 고르면 호실 · 계단 · 엘리베이터 · 화장실 · 출입구 평면이 나옵니다.</span></div></li>
+      <li><i>3</i><div><b>서로 연동</b><span>거리뷰에서 층을 누르면 평면도가 바뀌고, 평면도에서 층을 고르면 거리뷰가 그 층으로 확대됩니다.</span></div></li>
+      <li><i>4</i><div><b>촬영 시점 비교 · 간판 노출도</b><span>2019 · 2022 · 2024 · 2026 촬영본으로 간판이 어떻게 바뀌었는지(점포 이력) 보고, 그 층 간판이 길에서 얼마나 보이는지 점수로 보여줍니다.</span></div></li>
+    </ul>
+    <button class="btn btn-primary" id="openBtn2" style="width:100%">거리뷰 · 층별보기 열기</button>
+  </div>
+</section>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-labelledby="vTitle">
+  <div class="vbar">
+    <button class="x" id="closeBtn" aria-label="닫기">×</button>
+    <div class="tt"><b id="vTitle"></b><span id="vAddr"></span></div>
+    <div class="seg" id="layoutSeg" aria-label="화면 배치">
+      <button data-l="split" class="on">분할 보기</button>
+      <button data-l="sv">거리뷰 크게</button>
+      <button data-l="fp">층별 크게</button>
+    </div>
+    <div class="years"><span>촬영 시점</span><div class="seg" id="yearSeg"></div></div>
+  </div>
+  <div class="vbody" id="vbody">
+    <div class="sv" id="sv">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="svov shot" id="shotInfo"></div>
+      <div class="svov apinote">실서비스: 네이버 지도 파노라마 API 위에 층 라벨을 겹쳐 표시</div>
+      <div class="svov svctl">
+        <div class="pill" id="vpSeg" aria-label="촬영 위치">
+          <button data-vp="700">◀ 왼쪽 골목</button><button data-vp="1200" class="on">정면</button><button data-vp="1700">오른쪽 교차로 ▶</button>
+        </div>
+        <div class="pill">
+          <button id="tgAR" class="on">층 라벨(AR)</button>
+          <button id="tgEye">보행자 시선 범위</button>
+        </div>
+      </div>
+      <div class="svov mini"><svg id="mini" viewBox="0 0 150 112"></svg></div>
+      <div class="svov nav"><button id="zIn" aria-label="확대">＋</button><button id="zOut" aria-label="축소">－</button></div>
+      <div class="svov drag-hint">드래그로 둘러보기 · 층을 누르면 오른쪽 평면도가 바뀝니다</div>
+    </div>
+    <div class="fp" id="fp"><div class="in" id="fpIn"></div></div>
+  </div>
+</div>
+
+<script>
+// [데모 데이터] 건물 · 간판 · 점포 이력은 시안 확인용 가상값입니다.
+// 실서비스: 네이버 지도 파노라마(거리뷰) + 건축물대장 층별개요 + 점포 이력 DB를 연결합니다.
+const YEARS = [2019, 2022, 2024, 2026];
+const B = {
+  A: { name:'성수 아뜰리에빌딩', addr:'성동구 성수동2가 · 연무장길 대로변', road:'연무장길', W:16, D:12, ev:true, start:2,
+    shot:'연무장길 건너편 보도 · 북쪽 방향', facade:{2019:'#a46a52', 2022:'#e7e5e4'}, kind:'brick',
+    floors:[
+      {lv:-1,h:3.4,units:[{no:'B01',name:'와인바 셀러',a:118,st:'op'}],hist:{2019:'코인노래연습장',2022:'와인바 셀러'}},
+      {lv:1,h:4.4,units:[{no:'101',name:'베이커리카페',a:68,st:'op',w:.6},{no:'102',name:'편집숍',a:45,st:'op',w:.4}],hist:{2019:'○○철물 · 인쇄',2022:'베이커리카페 · 구제의류',2024:'베이커리카페 · 편집숍'}},
+      {lv:2,h:3.6,units:[{no:'201',name:'공실',a:84,st:'vac',w:.68,rent:280,dep:3000,fee:25,months:4,prev:'네일·속눈썹샵'},{no:'202',name:'사진 스튜디오',a:36,st:'op',w:.32}],hist:{2019:'○○세무회계',2022:'네일·속눈썹샵',2024:'네일·속눈썹샵 · 사진 스튜디오'}},
+      {lv:3,h:3.6,units:[{no:'301',name:'필라테스 스튜디오',a:126,st:'op'}],hist:{2019:'○○교회',2022:'필라테스 스튜디오'}},
+      {lv:4,h:3.6,units:[{no:'401',name:'디자인 스튜디오',a:126,st:'op'}],hist:{2019:'디자인 스튜디오'}},
+      {lv:5,h:3.4,units:[{no:'501',name:'공실',a:118,st:'vac',rent:190,dep:2000,fee:22,months:7,prev:'IT 스타트업 사무실'}],hist:{2019:'주거',2022:'IT 스타트업',2024:'IT 스타트업'}},
+    ]},
+  B: { name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 지식산업센터', road:'성수이로', W:34, D:22, ev:true, start:1,
+    shot:'성수이로 건너편 보도 · 동쪽 방향', facade:{2019:'#9fb4c9'}, kind:'glass',
+    floors:[
+      {lv:-1,h:3.6,units:[{no:'B1',name:'주차장 · 하역장',a:2400,st:'res'}],hist:{}},
+      {lv:1,h:5.2,units:[{no:'101',name:'편의점',a:58,st:'op',w:.22},{no:'102',name:'공실',a:72,st:'vac',w:.25,rent:420,dep:5000,fee:48,months:2,prev:'샐러드 카페'},{no:'103',name:'김밥 · 분식',a:52,st:'op',w:.22},{no:'104',name:'약국',a:80,st:'op',w:.31}],hist:{2019:'편의점 · 샌드위치 · 김밥 · 약국',2022:'편의점 · 커피 · 김밥 · 약국',2024:'편의점 · 샐러드 카페 · 김밥 · 약국'}},
+      {lv:2,h:4.2,units:[{no:'201',name:'치과',a:140,st:'op',w:.4},{no:'202',name:'공실',a:98,st:'vac',w:.28,rent:260,dep:3000,fee:35,months:5,prev:'안경원'},{no:'203',name:'스터디카페',a:110,st:'op',w:.32}],hist:{2019:'치과 · 안경원 · 공실',2022:'치과 · 안경원 · 스터디카페'}},
+      ...[3,4,5,6,7,8,9,10,11,12].map(lv => ({lv,h:4.0,units: lv === 9
+        ? [{no:'901',name:'공실 (전층)',a:1180,st:'vac',rent:1650,dep:24000,fee:320,months:8,prev:'커머스 기업 본사'}]
+        : [{no:`${lv}01`,name:['패션 브랜드','IT 개발사','디자인 에이전시','콘텐츠 스튜디오','공유오피스','바이오 스타트업','건축사무소','커머스 기업','광고 대행사','교육 스타트업'][lv-3],a:560,st:'op',w:.5},
+           lv === 11 ? {no:'1102',name:'공실',a:420,st:'vac',w:.5,rent:580,dep:9000,fee:110,months:6,prev:'IT 개발사'} : {no:`${lv}02`,name:'사무실',a:560,st:'op',w:.5}],
+        hist:{}})),
+    ]},
+  C: { name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 먹자골목 코너', road:'먹자골목길', W:11, D:9, ev:false, start:-1,
+    shot:'먹자골목길 건너편 · 서쪽 방향', facade:{2019:'#c2a383'}, kind:'brick',
+    floors:[
+      {lv:-1,h:3.2,units:[{no:'B01',name:'공실',a:95,st:'vac',rent:160,dep:2000,fee:15,months:9,prev:'이자카야'}],hist:{2019:'이자카야 ○○',2024:'이자카야 ○○'}},
+      {lv:1,h:3.8,units:[{no:'101',name:'코너 카페',a:55,st:'op'}],hist:{2019:'○○부동산',2022:'코너 카페'}},
+      {lv:2,h:3.2,units:[{no:'201',name:'네일샵',a:48,st:'op'}],hist:{2019:'○○공인중개',2022:'네일샵'}},
+      {lv:3,h:3.0,units:[{no:'301',name:'주거 (원룸)',a:72,st:'res'}],hist:{}},
+      {lv:4,h:3.0,units:[{no:'401',name:'주거 (원룸)',a:72,st:'res'}],hist:{}},
+    ]},
+};
+Object.entries(B).forEach(([k, b]) => b.key = k);
+
+const flName = lv => lv < 0 ? `B${-lv}` : `${lv}F`;
+const won = v => v >= 10000 ? `${(v/10000).toFixed(v % 10000 ? 1 : 0)}억` : `${v.toLocaleString()}만`;
+const pyeong = a => (a / 3.3058).toFixed(1);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+const state = { s: B[params.get('s')] ? params.get('s') : 'A', lv:null, no:null, year:2026, ar:true, eye:false, layout:'split' };
+const cur = () => B[state.s];
+const floorOf = lv => cur().floors.find(f => f.lv === lv);
+const isVac = f => f.units.some(u => u.st === 'vac');
+
+// 해당 연도의 간판 문구 (그 해 이전 가장 최근 기록, 없으면 현재 입점)
+function signAt(f, year){
+  if (year >= 2026) return f.units.map(u => u.st === 'vac' ? '임대 문의' : u.name).join(' · ');
+  const ys = Object.keys(f.hist).map(Number).filter(y => y <= year).sort((a,b) => b - a);
+  return ys.length ? f.hist[ys[0]] : f.units.map(u => u.st === 'vac' ? '임대 문의' : u.name).join(' · ');
+}
+function facadeAt(b, year){
+  const ys = Object.keys(b.facade).map(Number).filter(y => y <= year).sort((a,c) => c - a);
+  return b.facade[ys[0] ?? Object.keys(b.facade)[0]];
+}
+function visScore(b, f){
+  if (b.key === 'A' && f.lv === 2) return 72;
+  if (b.key === 'B' && f.lv === 1) return 92;
+  if (b.key === 'C' && f.lv === -1) return 31;
+  if (f.lv < 0) return 28;
+  if (f.lv === 1) return 94;
+  if (f.lv === 2) return 66;
+  if (f.lv === 3) return 50;
+  return Math.max(16, 40 - (f.lv - 4) * 4);
+}
+function visText(f){
+  if (f.lv < 0) return '거리에서는 <b>계단 입구만</b> 보입니다. 입간판 · 계단 벽면 사인 · 조명으로 입구를 알려야 합니다.';
+  if (f.lv === 1) return '보행자 눈높이에 바로 들어옵니다. <b>전면 간판 + 유리창 연출</b>만으로 충분히 노출됩니다.';
+  if (f.lv === 2) return '건너편 보도에서는 잘 보이지만 바로 아래에서는 고개를 들어야 합니다. <b>돌출간판 · 창문 시트</b>를 추천합니다.';
+  return '거리에서 알아보기 어렵습니다. <b>목적형 업종</b>이 맞고, 지도 · SNS 같은 온라인 노출이 필수입니다.';
+}
+
+// ── 거리뷰 장면 (SVG) ────────────────────────────────────────
+const SW = 2400, SH = 900, GY = 700;
+function prng(seed){ let a = seed; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const SHOPS = ['부동산','편의점','카페','약국','분식','세탁','꽃집','안경','빵집','공방','헤어','치킨'];
+const AWN = ['#dc2626','#0f766e','#1d4ed8','#a16207','#7c3aed','#334155'];
+const NB_COL = ['#cbd5e1','#e7dcc8','#b4826a','#94a3b8','#f1f5f9','#d6c7b0','#a8a29e'];
+
+function geom(b){
+  const above = b.floors.filter(f => f.lv > 0).reduce((a,f) => a + f.h, 0);
+  const sc = Math.min(22, 560 / above);
+  const bw = b.W * sc, bx = 1200 - bw/2;
+  const fl = {};
+  let y = GY;
+  [...b.floors].filter(f => f.lv > 0).sort((a,c) => a.lv - c.lv).forEach(f => { fl[f.lv] = { y0: y - f.h * sc, y1: y }; y -= f.h * sc; });
+  let yb = GY;
+  [...b.floors].filter(f => f.lv < 0).sort((a,c) => c.lv - a.lv).forEach(f => { fl[f.lv] = { y0: yb, y1: yb + f.h * sc }; yb += f.h * sc; });
+  return { sc, bw, bx, top: y, fl };
+}
+
+function neighborSvg(x, w, h, rnd, sc){
+  const col = NB_COL[Math.floor(rnd() * NB_COL.length)];
+  const y = GY - h;
+  let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${col}"/><rect x="${x}" y="${y}" width="${w}" height="6" fill="rgba(0,0,0,.12)"/>`;
+  const fh = 3.3 * sc, gf = 4 * sc;
+  const cols = Math.max(2, Math.round(w / 46));
+  for (let fy = GY - gf - fh; fy > y + 8; fy -= fh){
+    for (let c = 0; c < cols; c++){
+      const cw = w / cols;
+      s += `<rect x="${x + c*cw + cw*.2}" y="${fy + fh*.22}" width="${cw*.6}" height="${fh*.52}" fill="#7f9bb8" opacity=".75"/>`;
+    }
+  }
+  const aw = AWN[Math.floor(rnd() * AWN.length)];
+  const shop = SHOPS[Math.floor(rnd() * SHOPS.length)];
+  s += `<rect x="${x+6}" y="${GY - gf + 6}" width="${w-12}" height="${gf - 6}" fill="#1f2937" opacity=".85"/>`
+     + `<rect x="${x+12}" y="${GY - gf + 22}" width="${w-24}" height="${gf - 26}" fill="#93b4d1" opacity=".55"/>`
+     + `<path d="M${x+4} ${GY-gf+4} h${w-8} l-10 18 h-${w-28}z" fill="${aw}"/>`
+     + `<rect x="${x+w*.2}" y="${GY-gf-22}" width="${w*.6}" height="20" rx="3" fill="#fff"/>`
+     + `<text x="${x+w/2}" y="${GY-gf-7}" font-size="13" text-anchor="middle" fill="#111827" font-weight="700">${shop}</text>`;
+  return s;
+}
+
+function tree(x){
+  return `<g><rect x="${x-4}" y="${GY-8}" width="8" height="70" fill="#78584a"/><circle cx="${x}" cy="${GY-30}" r="34" fill="#4d7c0f" opacity=".92"/><circle cx="${x-22}" cy="${GY-14}" r="22" fill="#65a30d" opacity=".9"/><circle cx="${x+20}" cy="${GY-18}" r="24" fill="#3f6212" opacity=".9"/></g>`;
+}
+function person(x, c, s = 1){
+  return `<g transform="translate(${x} ${GY+44}) scale(${s})"><circle cy="-58" r="7" fill="#1f2937"/><rect x="-8" y="-50" width="16" height="30" rx="7" fill="${c}"/><rect x="-7" y="-22" width="6" height="24" rx="3" fill="#334155"/><rect x="1" y="-22" width="6" height="24" rx="3" fill="#334155"/></g>`;
+}
+
+function drawScene(){
+  const b = cur(), g = geom(b), rnd = prng(b.key.charCodeAt(0) * 131);
+  const year = state.year;
+  let s = `<defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc3e8"/><stop offset="1" stop-color="#e3eef8"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fb3d6"/><stop offset=".5" stop-color="#c7dcef"/><stop offset="1" stop-color="#7ea3c6"/></linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b7280"/><stop offset="1" stop-color="#4b5563"/></linearGradient>
+    <pattern id="xray" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="rgba(249,115,22,.18)"/><line x1="0" y1="0" x2="0" y2="10" stroke="rgba(249,115,22,.55)" stroke-width="3"/></pattern>
+    <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(16,185,129,0)"/><stop offset=".35" stop-color="rgba(16,185,129,.18)"/><stop offset="1" stop-color="rgba(16,185,129,.32)"/></linearGradient>
+  </defs>
+  <rect width="${SW}" height="${SH}" fill="url(#sky)"/>
+  <g fill="#b9cbe0" opacity=".8">${Array.from({length:22}, (_,i) => `<rect x="${i*112 - 20}" y="${300 + (i*53 % 140)}" width="${70 + (i*37 % 60)}" height="${400}"/>`).join('')}</g>`;
+
+  // 주변 건물 (왼쪽 / 오른쪽)
+  let x = g.bx - 14;
+  while (x > -200){ const w = 170 + rnd() * 170; const h = 160 + rnd() * 380; s += neighborSvg(x - w, w, h, rnd, g.sc); x -= w + 10 + rnd() * 14; }
+  x = g.bx + g.bw + 14;
+  while (x < SW + 200){ const w = 170 + rnd() * 170; const h = 160 + rnd() * 380; s += neighborSvg(x, w, h, rnd, g.sc); x += w + 10 + rnd() * 14; }
+
+  // 대상 건물
+  const fc = facadeAt(b, year);
+  s += `<rect x="${g.bx - 6}" y="${g.top - 14}" width="${g.bw + 12}" height="14" fill="#64748b"/>`;
+  s += `<rect x="${g.bx}" y="${g.top}" width="${g.bw}" height="${GY - g.top}" fill="${b.kind === 'glass' ? '#cbd5e1' : fc}"/>`;
+  [...b.floors].filter(f => f.lv > 0).forEach(f => {
+    const { y0, y1 } = g.fl[f.lv], fh = y1 - y0;
+    const sign = signAt(f, year);
+    const vacNow = year >= 2026 && isVac(f);
+    if (f.lv === 1){
+      // 1층 상가 전면
+      const us = f.units, tot = us.reduce((a,u) => a + (u.w || 1/us.length), 0);
+      const door = b.floors.some(q => q.lv < 0) && b.key !== 'B' ? 74 : 0;
+      let ux = g.bx + 4;
+      const names = year >= 2026 ? us.map(u => u.st === 'vac' ? '임대 문의' : u.name) : sign.split(' · ');
+      us.forEach((u, i) => {
+        const uw = (g.bw - 8 - door) * (u.w || 1/us.length) / tot;
+        const vac = year >= 2026 && u.st === 'vac';
+        s += `<rect x="${ux+3}" y="${y0 + fh*.32}" width="${uw-6}" height="${fh*.68}" fill="${vac ? '#e5e7eb' : 'url(#glass)'}" stroke="#334155" stroke-width="3"/>`
+          + `<line x1="${ux+uw/2}" y1="${y0+fh*.32}" x2="${ux+uw/2}" y2="${y1}" stroke="#334155" stroke-width="3"/>`
+          + `<rect x="${ux+3}" y="${y0 + fh*.06}" width="${uw-6}" height="${fh*.2}" rx="3" fill="${vac ? '#fff' : '#111827'}" stroke="${vac ? '#dc2626' : 'none'}" stroke-width="3"/>`
+          + `<text x="${ux+uw/2}" y="${y0 + fh*.2}" font-size="${Math.min(18, fh*.13)}" text-anchor="middle" fill="${vac ? '#dc2626' : '#fde68a'}" font-weight="800">${esc(names[i] || names[names.length-1] || '')}</text>`;
+        if (vac) s += `<text x="${ux+uw/2}" y="${y0 + fh*.68}" font-size="${Math.min(15, fh*.11)}" text-anchor="middle" fill="#64748b" font-weight="700">FOR LEASE</text>`;
+        ux += uw;
+      });
+    } else if (b.kind === 'glass'){
+      s += `<rect x="${g.bx+4}" y="${y0+3}" width="${g.bw-8}" height="${fh-6}" fill="url(#glass)"/>`;
+      for (let mx = g.bx + 4; mx < g.bx + g.bw - 4; mx += 26) s += `<line x1="${mx}" y1="${y0}" x2="${mx}" y2="${y1}" stroke="#64748b" stroke-width="1.5"/>`;
+      if (vacNow) s += `<rect x="${g.bx + g.bw*.62}" y="${y0 + fh*.18}" width="${g.bw*.3}" height="${fh*.64}" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${g.bx + g.bw*.77}" y="${y0 + fh*.62}" font-size="${Math.min(14, fh*.4)}" text-anchor="middle" fill="#dc2626" font-weight="800">임대</text>`;
+    } else {
+      const n = Math.max(2, Math.round(g.bw / 70));
+      for (let i = 0; i < n; i++){
+        const cw = (g.bw - 16) / n;
+        s += `<rect x="${g.bx + 8 + i*cw + cw*.08}" y="${y0 + fh*.18}" width="${cw*.84}" height="${fh*.6}" fill="url(#glass)" stroke="#475569" stroke-width="2"/>`;
+      }
+      if (vacNow){
+        s += `<rect x="${g.bx + g.bw*.14}" y="${y0 + fh*.26}" width="${g.bw*.72}" height="${fh*.44}" fill="#fff" stroke="#dc2626" stroke-width="3"/>`
+           + `<text x="${g.bx + g.bw/2}" y="${y0 + fh*.56}" font-size="${Math.min(20, fh*.24)}" text-anchor="middle" fill="#dc2626" font-weight="800">임 대 문 의 · 010-****-****</text>`;
+      } else if (!/주거/.test(sign)){
+        s += `<rect x="${g.bx + g.bw*.2}" y="${y0 + fh*.3}" width="${g.bw*.6}" height="${fh*.36}" rx="4" fill="rgba(255,255,255,.88)"/>`
+           + `<text x="${g.bx + g.bw/2}" y="${y0 + fh*.55}" font-size="${Math.min(17, fh*.22)}" text-anchor="middle" fill="#0f172a" font-weight="800">${esc(sign)}</text>`;
+      }
+      // 돌출간판
+      if (!vacNow && !/주거/.test(sign) && f.lv <= 3){
+        s += `<rect x="${g.bx + g.bw + 2}" y="${y0 + fh*.12}" width="22" height="${fh*.76}" rx="3" fill="#0f172a"/>`
+           + `<text x="${g.bx + g.bw + 13}" y="${y0 + fh*.5}" font-size="11" fill="#fde68a" text-anchor="middle" font-weight="800" writing-mode="tb">${esc(sign.slice(0,4))}</text>`;
+      }
+    }
+    s += `<line x1="${g.bx}" y1="${y0}" x2="${g.bx+g.bw}" y2="${y0}" stroke="rgba(15,23,42,.35)" stroke-width="2"/>`;
+  });
+
+  // 지하 출입구 (계단)
+  const bf = b.floors.find(f => f.lv === -1);
+  if (bf && b.key !== 'B'){
+    const ex = g.bx + g.bw - 68;
+    const bsign = signAt(bf, year);
+    const vacB = year >= 2026 && isVac(bf);
+    s += `<rect x="${ex}" y="${GY-70}" width="60" height="70" fill="#1f2937"/><path d="M${ex+6} ${GY} l10 -12 h40 v12z" fill="#374151"/>`
+       + `<rect x="${ex-4}" y="${GY-96}" width="68" height="24" rx="4" fill="${vacB ? '#fff' : '#7c2d12'}" stroke="${vacB ? '#dc2626' : 'none'}" stroke-width="2"/>`
+       + `<text x="${ex+30}" y="${GY-79}" font-size="12" fill="${vacB ? '#dc2626' : '#fed7aa'}" text-anchor="middle" font-weight="800">B1 ${esc(vacB ? '임대' : bsign.slice(0,6))}</text>`;
+  }
+
+  // 보도 · 도로
+  s += `<rect x="0" y="${GY}" width="${SW}" height="62" fill="#d6d3d1"/>`
+     + Array.from({length:60}, (_,i) => `<line x1="${i*40}" y1="${GY}" x2="${i*40 - 20}" y2="${GY+62}" stroke="#c4bfbb" stroke-width="2"/>`).join('')
+     + `<rect x="0" y="${GY+62}" width="${SW}" height="8" fill="#a8a29e"/>`
+     + `<rect x="0" y="${GY+70}" width="${SW}" height="${SH-GY-70}" fill="url(#road)"/>`
+     + Array.from({length:30}, (_,i) => `<rect x="${i*90}" y="${GY+120}" width="50" height="6" fill="#f8fafc" opacity=".8"/>`).join('')
+     + `<text x="${g.bx - 380}" y="${GY+104}" font-size="22" fill="#e5e7eb" font-weight="800" opacity=".7">${esc(b.road)}</text>`;
+  [g.bx - 260, g.bx - 620, g.bx + g.bw + 240, g.bx + g.bw + 640, 140, 2280].forEach(t => { s += tree(t); });
+  s += `<g><rect x="${g.bx - 120}" y="${GY-170}" width="5" height="232" fill="#334155"/><rect x="${g.bx - 132}" y="${GY-176}" width="30" height="8" rx="3" fill="#334155"/></g>`;
+  s += person(g.bx - 170, '#ef4444') + person(g.bx + 90, '#0ea5e9', .95) + person(g.bx + g.bw + 120, '#f59e0b', 1.05) + person(g.bx - 420, '#8b5cf6') + person(g.bx + g.bw + 520, '#10b981', .9);
+
+  // 보행자 시선 범위
+  if (state.eye){
+    const eyeTop = GY - 6.5 * g.sc;
+    s += `<rect x="0" y="${eyeTop}" width="${SW}" height="${GY - eyeTop}" fill="url(#eye)"/>`
+       + `<line x1="0" y1="${eyeTop}" x2="${SW}" y2="${eyeTop}" stroke="#059669" stroke-width="2" stroke-dasharray="10 8"/>`
+       + `<text x="${g.bx + 8}" y="${eyeTop - 10}" font-size="17" fill="#065f46" font-weight="800" stroke="#fff" stroke-width="4" paint-order="stroke">보행자 시선 범위 (지면~6.5m · 1층 + 2층 일부)</text>`;
+  }
+
+  // AR 층 라벨 + 클릭 영역
+  [...b.floors].sort((a,c) => c.lv - a.lv).forEach(f => {
+    const { y0, y1 } = g.fl[f.lv], fh = y1 - y0;
+    const on = f.lv === state.lv;
+    const vac = isVac(f);
+    const res = f.units.every(u => u.st === 'res');
+    let band = `<rect class="band" x="${g.bx - 4}" y="${y0 + 1}" width="${g.bw + 8}" height="${fh - 2}" rx="4"/>`;
+    if (f.lv < 0) band = `<rect x="${g.bx}" y="${y0}" width="${g.bw}" height="${fh}" fill="url(#xray)" stroke="${vac ? '#f97316' : '#94a3b8'}" stroke-width="2" stroke-dasharray="8 6" opacity="${state.ar || on ? 1 : 0}"/>` + band;
+    let lab = '';
+    if (state.ar || on){
+      const past = state.year < 2026;
+      const txt = past ? `${flName(f.lv)} · ${signAt(f, state.year)} (${state.year})`
+        : `${flName(f.lv)} · ${vac ? `공실 ${f.units.filter(u => u.st === 'vac').map(u => u.a).reduce((a,c) => a + c, 0).toLocaleString()}㎡` : res ? f.units[0].name : f.units.map(u => u.name).join(' · ')}`;
+      const fs = Math.max(13, Math.min(17, fh * .42));
+      const lw = Math.min(460, txt.length * fs * .82 + 26);
+      const lx = g.bx + g.bw + 34, ly = (y0 + y1) / 2;
+      const hot = vac && !past;
+      const fill = on ? '#4f46e5' : hot ? '#f97316' : 'rgba(255,255,255,.95)';
+      const tc = on || hot ? '#fff' : '#0f172a';
+      lab = `<line x1="${g.bx + g.bw - 6}" y1="${ly}" x2="${lx}" y2="${ly}" stroke="${on ? '#4f46e5' : hot ? '#f97316' : '#334155'}" stroke-width="2"/>`
+          + `<circle cx="${g.bx + g.bw - 6}" cy="${ly}" r="5" fill="${on ? '#4f46e5' : hot ? '#f97316' : '#334155'}"/>`
+          + `<rect x="${lx}" y="${ly - fs*.95}" width="${lw}" height="${fs*1.9}" rx="${fs*.95}" fill="${fill}" stroke="rgba(15,23,42,.15)"/>`
+          + `<text x="${lx + 13}" y="${ly + fs*.36}" font-size="${fs}" fill="${tc}" font-weight="800">${esc(txt)}</text>`;
+    }
+    s += `<g class="hs ${on ? 'on' : ''}" data-lv="${f.lv}">${band}${lab}</g>`;
+  });
+  if (b.floors.some(f => f.lv < 0) && (state.ar || (state.lv ?? 0) < 0)) s += `<text x="${g.bx - 12}" y="${GY + 26}" font-size="14" text-anchor="end" fill="#7c2d12" font-weight="800">▼ 지하 (AR 투시)</text>`;
+
+  // 연도 워터마크
+  s += `<text x="${SW - 40}" y="${SH - 24}" font-size="40" text-anchor="end" fill="rgba(255,255,255,.35)" font-weight="800">${year}</text>`;
+  $('#svg').innerHTML = s;
+  $('#shotInfo').innerHTML = `📷 <b>${year === 2026 ? '2026.08 (최신)' : year + ' 촬영'}</b> · ${esc(b.shot)}`;
+}
+
+// 보는 범위 (viewBox) — 드래그 · 확대 · 층 포커스 애니메이션
+const view = { cx:1200, cy:450, w:9999 };
+let target = null;
+function svSize(){ const r = $('#sv').getBoundingClientRect(); return [Math.max(1, r.width), Math.max(1, r.height)]; }
+function maxW(){ const [cw, ch] = svSize(); return Math.min(SW, SH * cw / ch); }
+function applyView(){
+  const [cw, ch] = svSize();
+  view.w = Math.max(420, Math.min(maxW(), view.w));
+  const h = view.w * ch / cw;
+  const x = Math.max(0, Math.min(SW - view.w, view.cx - view.w / 2));
+  const y = Math.max(0, Math.min(SH - h, view.cy - h / 2));
+  view.cx = x + view.w / 2; view.cy = y + h / 2;
+  $('#svg').setAttribute('viewBox', `${x} ${y} ${view.w} ${h}`);
+  drawMini();
+}
+function animateTo(t){ target = t; requestAnimationFrame(step); }
+function step(){
+  if (!target) return;
+  let done = true;
+  for (const k of ['cx','cy','w']){
+    if (target[k] === undefined) continue;
+    const d = target[k] - view[k];
+    if (Math.abs(d) > .5){ view[k] += d * .18; done = false; } else view[k] = target[k];
+  }
+  applyView();
+  if (done) target = null; else requestAnimationFrame(step);
+}
+function focusFloor(lv){
+  const g = geom(cur()), r = g.fl[lv];
+  if (!r) return;
+  animateTo({ cx: g.bx + g.bw + 70, cy: (r.y0 + r.y1) / 2 + 40, w: Math.min(maxW(), Math.max(g.bw * 2.8, maxW() * .62)) });
+}
+
+function drawMini(){
+  const camX = 75 + (view.cx - 1200) / SW * 110;
+  const spread = Math.min(60, view.w / SW * 120);
+  $('#mini').innerHTML = `<rect width="150" height="112" fill="#f1f5f9"/>
+    <rect x="0" y="60" width="150" height="16" fill="#cbd5e1"/>
+    <g fill="#e2e8f0"><rect x="6" y="8" width="40" height="46" rx="3"/><rect x="104" y="8" width="40" height="46" rx="3"/><rect x="6" y="82" width="138" height="26" rx="3"/></g>
+    <rect x="58" y="10" width="34" height="44" rx="3" fill="#6366f1" opacity=".85"/>
+    <path d="M${camX} 92 L${75 - spread/2 + (camX-75)*.3} 30 L${75 + spread/2 + (camX-75)*.3} 30 Z" fill="rgba(79,70,229,.22)" stroke="#4f46e5" stroke-width="1"/>
+    <circle cx="${camX}" cy="92" r="5" fill="#dc2626" stroke="#fff" stroke-width="2"/>
+    <text x="75" y="70.5" font-size="8" text-anchor="middle" fill="#475569" font-family="Noto Sans KR">${esc(cur().road)}</text>`;
+}
+
+// ── 층별보기 패널 ─────────────────────────────────────────────
+function planSvg(f){
+  const b = cur();
+  const VW = 420, VH = 300, pad = 34;
+  const ratio = b.W / b.D;
+  let w = VW - pad*2, h = w / ratio;
+  if (h > VH - pad*2){ h = VH - pad*2; w = h * ratio; }
+  const x0 = (VW - w) / 2, y0 = 18;
+  const core = h * .26;
+  let s = `<defs><pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#fff7ed"/><line x1="0" y1="0" x2="0" y2="9" stroke="#fdba74" stroke-width="3"/></pattern></defs>`;
+  s += `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#f8fafc" stroke="#0f172a" stroke-width="4"/>`;
+  // 코어 (뒤쪽)
+  const cw = w * .44;
+  const parts = b.ev ? [['계단', .38], ['EV', .27], ['WC', .35]] : [['계단', .55], ['WC', .45]];
+  let cx = x0;
+  parts.forEach(([n, r]) => {
+    const pw = cw * r;
+    s += `<rect x="${cx}" y="${y0}" width="${pw}" height="${core}" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>`;
+    if (n === '계단') for (let i = 1; i < 6; i++) s += `<line x1="${cx + pw*i/6}" y1="${y0+4}" x2="${cx + pw*i/6}" y2="${y0+core-4}" stroke="#94a3b8"/>`;
+    if (n === 'EV') s += `<line x1="${cx+4}" y1="${y0+4}" x2="${cx+pw-4}" y2="${y0+core-4}" stroke="#94a3b8"/><line x1="${cx+pw-4}" y1="${y0+4}" x2="${cx+4}" y2="${y0+core-4}" stroke="#94a3b8"/>`;
+    s += `<text x="${cx + pw/2}" y="${y0 + core/2 + 4}" font-size="11" text-anchor="middle" fill="#334155" font-weight="700">${n}</text>`;
+    cx += pw;
+  });
+  s += `<rect x="${cx}" y="${y0}" width="${x0 + w - cx}" height="${core}" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/><text x="${(cx + x0 + w)/2}" y="${y0 + core/2 + 4}" font-size="11" text-anchor="middle" fill="#94a3b8">${f.lv === 1 ? '후면 서비스 공간' : '공용 복도'}</text>`;
+  // 호실
+  const us = f.units, tot = us.reduce((a,u) => a + (u.w || 1/us.length), 0);
+  let ux = x0;
+  us.forEach(u => {
+    const uw = w * (u.w || 1/us.length) / tot;
+    const on = u.no === state.no;
+    const fill = u.st === 'vac' ? 'url(#hatch)' : u.st === 'res' ? '#f1f5f9' : '#eff6ff';
+    s += `<g class="u" data-no="${u.no}"><rect x="${ux}" y="${y0 + core}" width="${uw}" height="${h - core}" fill="${fill}" stroke="${on ? '#4f46e5' : '#0f172a'}" stroke-width="${on ? 4 : 2}"/>`
+       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 - 6}" font-size="${uw < 70 ? 11 : 13}" text-anchor="middle" fill="${u.st === 'vac' ? '#c2410c' : '#0f172a'}" font-weight="800">${u.no}호</text>`
+       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 + 10}" font-size="${uw < 70 ? 9.5 : 11}" text-anchor="middle" fill="#475569">${esc(u.st === 'vac' ? '공실' : u.name.length > 8 && uw < 90 ? u.name.slice(0,6) + '…' : u.name)}</text>`
+       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 + 24}" font-size="10" text-anchor="middle" fill="#94a3b8">${u.a.toLocaleString()}㎡</text>`
+       // 복도 쪽 문
+       + `<path d="M${ux + uw/2 - 9} ${y0 + core} a14 14 0 0 1 14 14" fill="none" stroke="#64748b" stroke-width="1.2"/><line x1="${ux + uw/2 - 9}" y1="${y0+core}" x2="${ux + uw/2 + 7}" y2="${y0+core}" stroke="#f8fafc" stroke-width="4"/></g>`;
+    ux += uw;
+  });
+  // 전면 (도로 쪽)
+  if (f.lv > 0) s += `<line x1="${x0 + 8}" y1="${y0 + h}" x2="${x0 + w - 8}" y2="${y0 + h}" stroke="#38bdf8" stroke-width="5"/>`;
+  const entry = f.lv === 1 ? `▲ ${b.road}에서 바로 진입` : f.lv < 0 ? `▲ ${b.road} 쪽 외부 계단으로 진입` : `계단${b.ev ? ' · 엘리베이터' : ''}로 진입`;
+  s += `<text x="${x0 + w/2}" y="${y0 + h + 20}" font-size="11.5" text-anchor="middle" fill="#0369a1" font-weight="700">${esc(b.road)} (전면 · ${f.lv > 0 ? '유리창' : '창 없음'}) — ${entry}</text>`;
+  // 치수
+  s += `<text x="${x0 - 8}" y="${y0 + h/2}" font-size="10" text-anchor="end" fill="#94a3b8">${b.D}m</text><text x="${x0 + w + 8}" y="${y0 + 12}" font-size="10" fill="#94a3b8">${b.W}m</text>`;
+  s += `<g transform="translate(${VW - 18} ${VH - 30})"><path d="M0 -12 L5 4 L0 1 L-5 4 Z" fill="#0f172a"/><text y="16" font-size="9" text-anchor="middle" fill="#0f172a">N</text></g>`;
+  return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${flName(f.lv)} 평면도">${s}</svg>`;
+}
+
+function gaugeSvg(v){
+  const r = 30, c = 2 * Math.PI * r, col = v >= 75 ? '#059669' : v >= 50 ? '#6366f1' : '#f97316';
+  return `<svg width="74" height="74" viewBox="0 0 74 74"><circle cx="37" cy="37" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="7"/><circle cx="37" cy="37" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-dasharray="${c*v/100} ${c}" stroke-linecap="round" transform="rotate(-90 37 37)"/></svg><span style="color:${col}">${v}</span>`;
+}
+
+function renderPanel(){
+  const b = cur(), f = floorOf(state.lv);
+  const u = f.units.find(x => x.no === state.no) || f.units[0];
+  const fs = [...b.floors].sort((a,c) => c.lv - a.lv);
+  const hist = YEARS.map(y => ({ y, t: signAt(f, y) }));
+  $('#fpIn').innerHTML = `
+    <div class="dir">
+      <div class="dt"><span>층별 안내 · ${esc(b.name)}</span><span>FLOOR GUIDE</span></div>
+      ${fs.map(x => {
+        const vac = isVac(x), res = x.units.every(q => q.st === 'res');
+        return `<button class="${x.lv === state.lv ? 'on' : ''}" data-lv="${x.lv}"><b>${flName(x.lv)}</b><span>${esc(x.units.map(q => q.st === 'vac' ? `${q.no} 공실` : q.name).join(' · '))}</span><em class="${vac ? 'vac' : res ? 'res' : 'op'}">${vac ? '공실' : res ? '비임대' : '영업'}</em></button>`;
+      }).join('')}
+    </div>
+    <div class="card plan">
+      <div class="ch"><h3>${flName(f.lv)} 평면도</h3><small>층고 ${f.h}m · 호실을 누르면 정보가 바뀝니다</small></div>
+      ${planSvg(f)}
+      <div class="ulist">${f.units.map(q => `<button class="${q.st === 'vac' ? 'vac' : ''} ${q.no === u.no ? 'on' : ''}" data-no="${q.no}">${q.no}${q.st === 'vac' ? ' 공실' : ''}</button>`).join('')}</div>
+    </div>
+    <div class="card info">
+      <div class="ch"><h3>${flName(f.lv)} ${u.no}호 · ${u.st === 'vac' ? '공실' : esc(u.name)}</h3><small>${u.a.toLocaleString()}㎡ (${pyeong(u.a)}평)</small></div>
+      ${u.st === 'vac' ? `<div class="cond">
+        <div><small>보증금</small><b>${won(u.dep)}</b></div>
+        <div class="hl"><small>월세</small><b>${won(u.rent)}</b></div>
+        <div><small>관리비</small><b>${won(u.fee)}</b></div>
+        <div><small>공실 기간</small><b>${u.months}개월</b></div>
+      </div><p style="margin:8px 0 0;font-size:12px;color:var(--text-2)">직전 업종 · <b>${esc(u.prev)}</b></p>`
+      : `<p class="muted" style="margin:0;font-size:12px">${u.st === 'res' ? '임대 대상이 아닌 공간입니다.' : '영업 중인 호실입니다. 같은 층 공실과 비교해 보세요.'}</p>`}
+    </div>
+    <div class="card info">
+      <div class="ch"><h3>간판 노출도</h3><small>거리뷰 시야 분석 · 100점 만점</small></div>
+      <div class="vis"><div class="gauge">${gaugeSvg(visScore(b, f))}</div><p>${visText(f)}</p></div>
+    </div>
+    <div class="card info">
+      <div class="ch"><h3>${flName(f.lv)} 간판 변화 (점포 이력)</h3><small>촬영 시점을 누르면 거리뷰가 바뀝니다</small></div>
+      <ul class="tl">${hist.map(h => `<li class="${h.y === state.year ? 'now' : ''} ${/임대/.test(h.t) ? 'vac' : ''}"><b>${h.y}</b>${esc(h.t)}</li>`).join('')}</ul>
+    </div>
+    <div class="cta">
+      <a class="btn" href="case2-3d-floor-twin.html?s=${state.s}&f=${f.lv}">🏢 3D 트윈으로 보기</a>
+      <a class="btn btn-primary" href="case4-nearby-competitors.html?s=${state.s}">📍 이 자리 주변 업종</a>
+    </div>`;
+  $('#fpIn').querySelectorAll('.dir button').forEach(x => x.onclick = () => selectFloor(+x.dataset.lv));
+  $('#fpIn').querySelectorAll('.ulist button, .plan .u').forEach(x => x.addEventListener('click', () => { state.no = x.dataset.no; renderPanel(); }));
+}
+
+function selectFloor(lv, no){
+  const f = floorOf(lv); if (!f) return;
+  state.lv = lv;
+  state.no = no || (f.units.find(u => u.st === 'vac') || f.units[0]).no;
+  drawScene(); renderPanel(); focusFloor(lv);
+}
+
+// ── 이벤트 ───────────────────────────────────────────────────
+const sv = $('#sv');
+let drag = null;
+sv.addEventListener('pointerdown', e => { if (e.target.closest('.svov')) return; drag = { x:e.clientX, y:e.clientY, cx:view.cx, cy:view.cy, moved:false }; sv.setPointerCapture(e.pointerId); sv.classList.add('drag'); });
+sv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const [cw] = svSize(), k = view.w / cw;
+  if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true;
+  view.cx = drag.cx - (e.clientX - drag.x) * k; view.cy = drag.cy - (e.clientY - drag.y) * k;
+  target = null; applyView();
+});
+sv.addEventListener('pointerup', e => {
+  sv.classList.remove('drag');
+  if (drag && !drag.moved){
+    sv.releasePointerCapture(e.pointerId);
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const hs = el && el.closest('.hs');
+    if (hs) selectFloor(+hs.dataset.lv);
+  }
+  drag = null;
+});
+sv.addEventListener('wheel', e => { e.preventDefault(); view.w *= e.deltaY > 0 ? 1.1 : .9; target = null; applyView(); }, { passive:false });
+$('#zIn').onclick = () => animateTo({ w: view.w * .75 });
+$('#zOut').onclick = () => animateTo({ w: view.w * 1.33 });
+$('#vpSeg').addEventListener('click', e => {
+  const bt = e.target.closest('button'); if (!bt) return;
+  document.querySelectorAll('#vpSeg button').forEach(x => x.classList.toggle('on', x === bt));
+  animateTo({ cx: +bt.dataset.vp, cy: 520, w: maxW() * .85 });
+});
+$('#tgAR').onclick = e => { state.ar = !state.ar; e.currentTarget.classList.toggle('on', state.ar); drawScene(); };
+$('#tgEye').onclick = e => { state.eye = !state.eye; e.currentTarget.classList.toggle('on', state.eye); drawScene(); };
+$('#yearSeg').innerHTML = YEARS.map(y => `<button data-y="${y}" class="${y === state.year ? 'on' : ''}">${y === 2026 ? '최신' : y}</button>`).join('');
+$('#yearSeg').addEventListener('click', e => {
+  const bt = e.target.closest('button'); if (!bt) return;
+  state.year = +bt.dataset.y;
+  document.querySelectorAll('#yearSeg button').forEach(x => x.classList.toggle('on', x === bt));
+  drawScene(); renderPanel();
+});
+$('#layoutSeg').addEventListener('click', e => {
+  const bt = e.target.closest('button'); if (!bt) return;
+  document.querySelectorAll('#layoutSeg button').forEach(x => x.classList.toggle('on', x === bt));
+  $('#vbody').className = 'vbody' + (bt.dataset.l === 'sv' ? ' sv-only' : bt.dataset.l === 'fp' ? ' fp-only' : '');
+  requestAnimationFrame(applyView);
+});
+new ResizeObserver(() => applyView()).observe(sv);
+
+function openViewer(){
+  $('#viewer').classList.add('show'); document.body.classList.add('lock');
+  const b = cur();
+  $('#vTitle').textContent = `거리뷰 · 층별보기 — ${b.name}`;
+  $('#vAddr').textContent = b.addr;
+  view.cx = 1200; view.cy = 450; view.w = 9999;
+  requestAnimationFrame(() => { applyView(); selectFloor(state.lv ?? b.start); });
+  $('#closeBtn').focus();
+}
+function closeViewer(){ $('#viewer').classList.remove('show'); document.body.classList.remove('lock'); $('#openBtn').focus(); }
+$('#openBtn').onclick = openViewer;
+$('#openBtn2').onclick = openViewer;
+$('#closeBtn').onclick = closeViewer;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#viewer').classList.contains('show')) closeViewer(); });
+
+function loadScenario(s){
+  state.s = s; state.lv = null;
+  document.querySelectorAll('#scSeg button').forEach(x => x.classList.toggle('on', x.dataset.s === s));
+  const b = cur(), f = floorOf(b.start), u = f.units.find(x => x.st === 'vac');
+  $('#vcTitle').textContent = `${b.name} ${flName(f.lv).replace('F','층').replace(/^B(\d)/,'지하 $1층')} ${u.no}호`;
+  $('#vcSub').textContent = `${b.addr.split(' · ')[0]} · 데모 데이터`;
+  $('#mapRoad').textContent = b.road;
+  $('#vcGrid').innerHTML = `<div><small>층</small><b>${flName(f.lv)}</b></div><div><small>면적</small><b>${u.a}㎡ (${pyeong(u.a)}평)</b></div><div><small>월세</small><b style="color:var(--bad)">${won(u.rent)}원</b></div><div><small>공실 기간</small><b>${u.months}개월</b></div><div style="grid-column:1/-1"><small>전 업종</small><b>${esc(u.prev)}</b></div>`;
+  const url = new URL(location.href); url.searchParams.set('s', s); history.replaceState(null, '', url);
+}
+$('#scSeg').addEventListener('click', e => { const bt = e.target.closest('button'); if (bt) loadScenario(bt.dataset.s); });
+
+loadScenario(state.s);
+// 3D 트윈 등에서 넘어온 경우(?s=...&f=...) 바로 열기
+const qf = params.get('f');
+if (params.has('s') && qf !== null){ state.lv = floorOf(+qf) ? +qf : null; openViewer(); }
+</script>
+</body>
+</html>

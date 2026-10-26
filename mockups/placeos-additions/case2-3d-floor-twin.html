@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS · 층별 3D 트윈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --vac:#f97316;--vac-soft:#fff7ed;--head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.gnb{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;letter-spacing:-.01em;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.gnb nav a.on b{background:var(--brand);color:#fff}
+.demo-pill{white-space:nowrap;font-size:11px;font-weight:700;color:#fde68a;border:1px solid rgba(253,230,138,.4);padding:3px 9px;border-radius:999px;flex-shrink:0}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px 20px 12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.phead h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.phead p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.muted{color:var(--text-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--text);text-align:center}
+.btn:hover{border-color:var(--brand-2);background:var(--brand-soft)}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr) 360px;gap:12px;padding:0 20px 20px;height:calc(100vh - 56px - 92px);min-height:640px}
+.side{overflow-y:auto}
+.side h3{margin:0;font-size:12.5px;font-weight:800}
+.sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sec-h small{font-size:11px;color:var(--text-3)}
+.bgroup{font-size:11px;font-weight:700;color:var(--text-3);margin:10px 2px 6px}
+.bgroup:first-child{margin-top:0}
+.vc{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px;margin-bottom:6px}
+.vc:hover{border-color:#c7d2fe;background:var(--surface-2)}
+.vc.on{border-color:var(--brand-2);background:var(--brand-soft);box-shadow:0 0 0 2px rgba(99,102,241,.15)}
+.vc .fl{display:grid;place-items:center;min-width:38px;height:38px;border-radius:10px;background:var(--vac-soft);color:#c2410c;font-weight:800;font-size:12px;border:1px solid #fed7aa}
+.vc .t{flex:1;min-width:0}
+.vc .t b{display:block;font-size:12.5px}
+.vc .t span{font-size:11px;color:var(--text-3)}
+.vc .p{font-size:12px;font-weight:800;text-align:right;white-space:nowrap}
+.vc .p small{display:block;font-size:10.5px;color:var(--text-3);font-weight:500}
+.binfo{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12px}
+.binfo dt{color:var(--text-3)}
+.binfo dd{margin:0;font-weight:600;text-align:right}
+.occ{display:flex;height:10px;border-radius:999px;overflow:hidden;margin:10px 0 6px;background:#eef2f7}
+.occ i{display:block}
+.occ-l{display:flex;gap:10px;font-size:11px;color:var(--text-2);flex-wrap:wrap}
+.occ-l span{display:flex;align-items:center;gap:4px}
+.occ-l em{display:inline-block;width:8px;height:8px;border-radius:2px}
+.ai{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:12px;padding:10px 12px;font-size:12px;color:var(--brand-ink)}
+.ai b{display:block;font-size:11px;margin-bottom:2px}
+
+/* viewer */
+.viewer{position:relative;overflow:hidden;padding:0;min-height:520px}
+#view{position:absolute;inset:0;border-radius:var(--r);overflow:hidden;background:#eef2f7}
+#view canvas{display:block;touch-action:none}
+.labels{position:absolute;inset:0;pointer-events:none}
+.fl-label{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:4px;font:700 10.5px/1 'Noto Sans KR',sans-serif;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.95);border:1px solid #cbd5e1;color:#334155;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.12);margin-left:6px}
+.fl-label i{width:7px;height:7px;border-radius:50%;background:#60a5fa}
+.fl-label.vac{border-color:#fdba74;color:#c2410c}
+.fl-label.vac i,.fl-label.part i{background:#f97316}
+.fl-label.part{color:#9a3412}
+.fl-label.res i,.fl-label.park i{background:#94a3b8}
+.fl-label.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.fl-label.on i{background:#fff}
+.u-label{pointer-events:auto;cursor:pointer;font:700 10.5px/1.25 'Noto Sans KR',sans-serif;padding:4px 7px;border-radius:8px;background:#fff;border:1px solid #cbd5e1;color:#1e293b;white-space:nowrap;text-align:center;box-shadow:0 2px 6px rgba(15,23,42,.18)}
+.u-label small{display:block;font-weight:500;color:#64748b;font-size:9.5px}
+.u-label.vac{background:#fff7ed;border-color:#fb923c;color:#c2410c}
+.u-label.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.u-label.on small{color:#e0e7ff}
+.road-label{font:700 11px 'Noto Sans KR',sans-serif;color:#475569;background:rgba(255,255,255,.85);border-radius:6px;padding:2px 6px;white-space:nowrap}
+.ov{position:absolute;z-index:5}
+.ov-tl{top:12px;left:12px;max-width:calc(100% - 140px)}
+.bname{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:var(--sh)}
+.bname b{display:block;font-size:14px}
+.bname span{font-size:11.5px;color:var(--text-3)}
+.ov-tr{top:12px;right:12px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.ov-tr .seg{box-shadow:var(--sh)}
+.toggles{display:flex;gap:6px}
+.tg{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--text-2);box-shadow:var(--sh)}
+.tg.on{background:#0f172a;border-color:#0f172a;color:#fff}
+.elev{position:absolute;right:12px;top:50%;transform:translateY(-38%);z-index:5;display:flex;flex-direction:column;gap:3px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:var(--sh);max-height:52%;overflow-y:auto}
+.elev button{display:flex;align-items:center;gap:5px;border:0;background:transparent;border-radius:7px;padding:4px 7px;font-size:11px;font-weight:800;color:var(--text-2)}
+.elev button i{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.elev button:hover{background:var(--surface-2)}
+.elev button.on{background:var(--brand);color:#fff}
+.legend{position:absolute;left:12px;bottom:12px;z-index:5;display:flex;flex-wrap:wrap;gap:4px 12px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:11px;color:var(--text-2);box-shadow:var(--sh);max-width:calc(100% - 130px)}
+.legend span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.legend em{display:inline-block;width:10px;height:10px;border-radius:3px}
+.hint{position:absolute;right:12px;bottom:12px;z-index:5;display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-3)}
+.compass{width:34px;height:34px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--sh)}
+.compass svg{transition:transform .05s linear}
+.tip{position:absolute;z-index:6;pointer-events:none;background:rgba(15,23,42,.9);color:#fff;font-size:11.5px;padding:6px 9px;border-radius:8px;white-space:nowrap;display:none;transform:translate(12px,12px)}
+.tip b{color:#fdba74}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--text-3);font-size:13px;z-index:1}
+
+/* right panel */
+.fhead{padding:16px;border-bottom:1px solid var(--line)}
+.fhead .st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px}
+.st.vac{background:var(--vac-soft);color:#c2410c;border:1px solid #fed7aa}
+.st.op{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.st.res,.st.park{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.fhead h2{margin:6px 0 2px;font-size:20px;letter-spacing:-.02em}
+.fhead p{margin:0;font-size:12px;color:var(--text-3)}
+.units{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.units button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.units button.vac{border-color:#fdba74;color:#c2410c;background:var(--vac-soft)}
+.units button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.cond{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cond div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.cond small{display:block;font-size:10.5px;color:var(--text-3);font-weight:600}
+.cond b{font-size:14px}
+.cond .hl b{color:var(--bad)}
+.fac{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:12px}
+.fac dt{color:var(--text-3);white-space:nowrap}
+.fac dd{margin:0;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:11.5px;font-weight:700;background:var(--ok-soft);color:var(--ok);border:1px solid #a7f3d0;border-radius:999px;padding:3px 9px}
+.checks{margin:0;padding:0;list-style:none;font-size:12px;color:var(--text-2)}
+.checks li{display:flex;gap:6px;margin:4px 0}
+.checks li:before{content:'✓';color:var(--brand);font-weight:800}
+.tenant{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px}
+.tenant dt{color:var(--text-3)}
+.tenant dd{margin:0;font-weight:700}
+.cta{display:grid;gap:8px;padding:14px 16px 16px}
+
+@media (max-width:1180px){
+  .layout{grid-template-columns:minmax(0,1fr) 340px;height:auto}
+  .viewer{grid-column:1 / 2;height:620px}
+  .right{grid-column:2 / 3;grid-row:1 / 2;max-height:620px}
+  .left{grid-column:1 / -1}
+}
+@media (max-width:760px){
+  .gnb{padding:0 12px;gap:10px}
+  .demo-pill{display:none}
+  .phead{padding:14px 16px 10px}
+  .layout{grid-template-columns:1fr;padding:0 16px 24px}
+  .viewer{grid-column:auto;height:64vh;min-height:420px;order:1}
+  .right{grid-column:auto;grid-row:auto;max-height:none;order:2}
+  .left{grid-column:auto;order:3}
+  .ov-tl{max-width:calc(100% - 24px)}
+  .ov-tr{top:auto;bottom:56px;right:12px;left:12px;align-items:stretch}
+  .ov-tr .seg{justify-content:center}
+  .toggles{justify-content:center}
+  .elev{top:76px;transform:none;max-height:calc(100% - 200px)}
+  .legend{bottom:12px;max-width:calc(100% - 24px)}
+  .hint{display:none}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html" class="on"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+  </nav>
+  <span class="demo-pill">추가안 시안 · 데모 데이터</span>
+</header>
+
+<div class="phead">
+  <div>
+    <div class="eyebrow">CASE 2 · 공실 선택 → 건물 층별 3D 디지털 트윈</div>
+    <h1>공실을 고르면 그 건물을 층별로 쪼개 3D로 보여줍니다</h1>
+    <p>층마다 운영 중 · 공실 · 주거를 색으로 구분하고, 층을 누르면 호실 배치와 임대 조건 · 설비 정보가 열립니다.</p>
+  </div>
+  <div class="seg" id="scSeg" aria-label="시나리오">
+    <button data-s="A">A · 2층 공실 (근린상가)</button>
+    <button data-s="B">B · 1층 상가 (지식산업센터)</button>
+    <button data-s="C">C · 지하 1층 (꼬마빌딩)</button>
+  </div>
+</div>
+
+<main class="layout">
+  <aside class="card side left">
+    <div class="sec">
+      <div class="sec-h"><h3>공실 매물</h3><small>누르면 3D에서 해당 층으로 이동</small></div>
+      <div id="vacList"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-h"><h3>건물 정보</h3><small id="bZone"></small></div>
+      <dl class="binfo" id="bInfo"></dl>
+      <div class="occ" id="occBar"></div>
+      <div class="occ-l" id="occLegend"></div>
+    </div>
+    <div class="sec">
+      <div class="ai" id="aiNote"></div>
+    </div>
+  </aside>
+
+  <section class="card viewer">
+    <div id="view"><div class="loading" id="loading">3D 트윈 불러오는 중…</div></div>
+    <div class="ov ov-tl"><div class="bname" id="bName"></div></div>
+    <div class="ov ov-tr">
+      <div class="seg" id="modeSeg" aria-label="보기 방식">
+        <button data-m="normal" class="on">외관</button>
+        <button data-m="explode">층 분리</button>
+        <button data-m="vaconly">공실만 강조</button>
+      </div>
+      <div class="toggles">
+        <button class="tg on" id="tgNb">주변 건물</button>
+        <button class="tg on" id="tgLb">층 라벨</button>
+        <button class="tg" id="tgReset">시점 초기화</button>
+      </div>
+    </div>
+    <div class="elev" id="elev" aria-label="층 선택"></div>
+    <div class="legend">
+      <span><em style="background:#7fb2f0"></em>운영 중</span>
+      <span><em style="background:#fdba74"></em>일부 공실</span>
+      <span><em style="background:#f97316"></em>공실</span>
+      <span><em style="background:#d6dde6"></em>주거 · 주차</span>
+      <span><em style="background:#6366f1"></em>선택</span>
+    </div>
+    <div class="hint"><span>드래그 회전 · 휠 확대 · 우클릭 이동</span><div class="compass" title="북쪽"><svg id="needle" width="18" height="18" viewBox="0 0 18 18"><path d="M9 1 L12 9 L9 8 L6 9 Z" fill="#dc2626"/><path d="M9 17 L6 9 L9 10 L12 9 Z" fill="#94a3b8"/></svg></div></div>
+    <div class="tip" id="tip"></div>
+  </section>
+
+  <aside class="card side right" id="right"></aside>
+</main>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// [데모 데이터] 건물·호실·임대 조건은 시안 확인용 가상값입니다.
+// 실제 서비스: 건축물대장(층별개요·전유부) + 공실 매물 DB + 소상공인 상가정보로 층/호실을 채웁니다.
+const u = (no, name, a, st, extra = {}) => ({ no, name, a, st, ...extra });
+const OFFICE = ['패션 브랜드 본사','IT 개발사','디자인 에이전시','콘텐츠 스튜디오','공유오피스','바이오 스타트업','건축사무소','커머스 기업','광고 대행사','교육 스타트업','세무회계사무소','게임 개발사'];
+const officeFac = (ceil) => ({ elec:'40kW (층별 분전반)', water:'공용 화장실 (층별 남녀 분리)', gas:'없음', duct:'없음', ceil, window:'전면 커튼월', sign:'로비 안내판만 가능' });
+
+const BUILDINGS = {
+  A: {
+    name:'성수 아뜰리에빌딩', addr:'성동구 성수동2가 · 연무장길 대로변', zone:'연무장길 카페·팝업거리', road:'연무장길',
+    W:16, D:12, info:{'규모':'지하 1층 · 지상 5층','연면적':'781㎡','준공':'1994년 (2021 리모델링)','용도':'제2종 근린생활시설','엘리베이터':'1대 (8인승)','주차':'자주식 3대'},
+    start:{lv:2, no:'201'},
+    ai:'2층 201호는 연무장길 쪽 통창이 있어 <b style="display:inline">창가석 디저트 카페·뷰티 예약업</b>에 맞습니다. 1층 베이커리카페와 손님층이 겹쳐 연계 효과가 기대됩니다.',
+    floors:[
+      {lv:-1,h:3.4,units:[u('B01','와인바 셀러',118,'op',{ind:'주점',since:'2022.03'})]},
+      {lv:1,h:4.4,units:[u('101','베이커리카페',68,'op',{ind:'베이커리',since:'2021.11',w:.6}),u('102','편집숍',45,'op',{ind:'소매',since:'2023.05',w:.4})]},
+      {lv:2,h:3.6,units:[
+        u('201','공실',84,'vac',{w:.68,prev:'네일·속눈썹샵 (2021.04~2026.06)',months:4,dep:3000,rent:280,fee:25,
+          fac:{elec:'20kW (증설 가능)',water:'급배수 있음 · 내부 화장실',gas:'없음 (인덕션 권장)',duct:'없음',ceil:'3.3m',window:'남측 통창 · 연무장길 조망',sign:'2층 돌출간판 1개 가능'},
+          fits:['디저트 카페 (창가석)','네일·속눈썹','1:1 PT · 필라테스','쇼룸형 편집숍'],
+          checks:['계단 입구에 입간판·벽면 사인 필수','엘리베이터로 장비 반입 가능','통창 창가석이 SNS 노출 포인트']}),
+        u('202','사진 스튜디오',36,'op',{ind:'서비스',since:'2024.02',w:.32})]},
+      {lv:3,h:3.6,units:[u('301','필라테스 스튜디오',126,'op',{ind:'운동',since:'2022.08'})]},
+      {lv:4,h:3.6,units:[u('401','디자인 스튜디오',126,'op',{ind:'사무실',since:'2020.01'})]},
+      {lv:5,h:3.4,units:[u('501','공실',118,'vac',{prev:'IT 스타트업 사무실 (2020.09~2026.03)',months:7,dep:2000,rent:190,fee:22,
+          fac:{elec:'30kW',water:'공용 화장실',gas:'없음',duct:'없음',ceil:'2.9m',window:'3면 창 · 루프탑 출입',sign:'외벽 사인 불가'},
+          fits:['공방 · 작업실','소규모 사무실','예약제 쇼룸'],
+          checks:['루프탑 활용은 용도·안전 확인 필요','고층이라 목적형 방문 업종만 적합']})]},
+    ]
+  },
+  B: {
+    name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 지식산업센터', zone:'성수역 지식산업센터 오피스', road:'성수이로',
+    W:34, D:22, info:{'규모':'지하 2층 · 지상 12층','연면적':'18,420㎡','준공':'2018년','용도':'지식산업센터 · 근린생활시설','엘리베이터':'승객 6대 · 화물 1대','주차':'자주식 186대'},
+    start:{lv:1, no:'102'},
+    ai:'1층 102호는 평일 점심 동선(로비 ↔ 성수이로)에 바로 붙어 있습니다. <b style="display:inline">샐러드·도시락 테이크아웃</b>이 맞고, 주말 매출이 약하니 임대료 협상 때 참고하세요.',
+    floors:(() => {
+      const f = [
+        {lv:-2,h:3.6,units:[u('B2','주차장',2400,'park')]},
+        {lv:-1,h:3.6,units:[u('B1','주차장 · 하역장',2400,'park')]},
+        {lv:1,h:5.2,units:[
+          u('101','편의점',58,'op',{ind:'편의점',since:'2018.11',w:.22}),
+          u('102','공실',72,'vac',{w:.25,prev:'샐러드 카페 (2023.01~2026.08)',months:2,dep:5000,rent:420,fee:48,
+            fac:{elec:'30kW',water:'급배수 · 그리스트랩 있음',gas:'LNG 인입',duct:'주방 배기 덕트 (옥상까지)',ceil:'4.6m',window:'전면 유리 · 성수이로 방향',sign:'1층 전면 파사드 사인'},
+            fits:['샐러드 · 포케','도시락 · 한식 테이크아웃','베이커리 카페','건강음료 · 스무디'],
+            checks:['평일 11~14시에 매출 몰림','주말 매출 비중 22%로 낮음','로비와 외부 양쪽 출입 가능']}),
+          u('103','김밥 · 분식',52,'op',{ind:'분식',since:'2019.03',w:.22}),
+          u('104','약국',80,'op',{ind:'약국',since:'2018.11',w:.31})]},
+        {lv:2,h:4.2,units:[
+          u('201','치과',140,'op',{ind:'의원',since:'2019.07',w:.4}),
+          u('202','공실',98,'vac',{w:.28,prev:'안경원 (2019.02~2026.05)',months:5,dep:3000,rent:260,fee:35,
+            fac:{elec:'25kW',water:'급배수 있음',gas:'없음',duct:'없음',ceil:'3.8m',window:'내부 복도형 (외부 창 없음)',sign:'층별 안내판 · 복도 사인'},
+            fits:['의원 · 한의원','필라테스 · PT','스터디카페'],
+            checks:['2층 의원층 동선 → 의료·건강 업종 시너지','외부 노출 거의 없음 → 목적형 업종 권장']}),
+          u('203','스터디카페',110,'op',{ind:'교육',since:'2021.09',w:.32})]},
+      ];
+      let k = 0;
+      for (let lv = 3; lv <= 12; lv++){
+        if (lv === 9){
+          f.push({lv,h:4.0,units:[u('901','공실 (전층)',1180,'vac',{prev:'커머스 기업 본사 (2018.12~2026.02)',months:8,dep:24000,rent:1650,fee:320,fac:officeFac('2.8m (천장고)'),fits:['기업 사옥 · 본사','공유오피스 운영사'],checks:['전층 임대 · 분할 임대 협의 가능']})]});
+          continue;
+        }
+        const n = lv % 3 === 0 ? 3 : 2;
+        const units = [];
+        for (let i = 1; i <= n; i++){
+          const no = `${lv}0${i}`;
+          const vac = (lv === 5 && i === 3) || (lv === 11 && i === 2);
+          units.push(vac
+            ? u(no,'공실',lv === 5 ? 280 : 420,'vac',{prev:'IT 개발사 (2019~2026)',months:lv === 5 ? 3 : 6,dep:lv === 5 ? 6000 : 9000,rent:lv === 5 ? 390 : 580,fee:lv === 5 ? 75 : 110,fac:officeFac('2.8m (천장고)'),fits:['IT · 콘텐츠 사무실','디자인 스튜디오'],checks:['지식산업센터 입주 가능 업종 확인 필요']})
+            : u(no, OFFICE[k++ % OFFICE.length], n === 3 ? 380 : 560, 'op', {ind:'사무실',since:`${2018 + (k % 7)}.0${1 + (k % 9)}`}));
+        }
+        f.push({lv,h:4.0,units});
+      }
+      return f;
+    })()
+  },
+  C: {
+    name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 먹자골목 코너', zone:'뚝섬역 먹자골목', road:'먹자골목길',
+    W:11, D:9, info:{'규모':'지하 1층 · 지상 4층','연면적':'342㎡','준공':'1989년','용도':'근린생활시설 + 다가구주택','엘리베이터':'없음 (계단)','주차':'없음'},
+    start:{lv:-1, no:'B01'},
+    ai:'지하 1층 B01호는 이전 이자카야의 <b style="display:inline">배기 덕트·그리스트랩이 남아 있어</b> 주점·요리주점으로 들어가면 초기 공사비를 줄일 수 있습니다. 계단 입구 노출이 관건입니다.',
+    floors:[
+      {lv:-1,h:3.2,units:[u('B01','공실',95,'vac',{prev:'이자카야 (2019.06~2026.01)',months:9,dep:2000,rent:160,fee:15,
+        fac:{elec:'25kW',water:'급배수 · 그리스트랩 있음',gas:'LNG 인입',duct:'배기 덕트 남아 있음 (재사용 가능)',ceil:'3.0m',window:'창 없음 · 계단 채광',sign:'계단 입구 돌출간판 · 입간판'},
+        fits:['이자카야 · 요리주점','와인바 · LP 바','방탈출 · 취미 공간'],
+        checks:['우천 시 침수 이력 확인 (데모: 이력 없음)','환기·제연 설비 점검 필요','계단 입구 조명·사인으로 노출 보완']})]},
+      {lv:1,h:3.8,units:[u('101','코너 카페',55,'op',{ind:'카페',since:'2023.04'})]},
+      {lv:2,h:3.2,units:[u('201','네일샵',48,'op',{ind:'뷰티',since:'2022.10'})]},
+      {lv:3,h:3.0,units:[u('301','주거 (원룸 3세대)',72,'res')]},
+      {lv:4,h:3.0,units:[u('401','주거 (원룸 3세대)',72,'res')]},
+    ]
+  }
+};
+
+const COL = { op:'#7fb2f0', part:'#fdba74', vac:'#f97316', res:'#d6dde6', park:'#c4ccd8', sel:'#6366f1' };
+const flName = lv => lv < 0 ? `B${-lv}` : `${lv}F`;
+const floorStatus = f => {
+  const v = f.units.filter(x => x.st === 'vac').length;
+  if (f.units.every(x => x.st === 'res')) return 'res';
+  if (f.units.every(x => x.st === 'park')) return 'park';
+  return v === 0 ? 'op' : v === f.units.length ? 'vac' : 'part';
+};
+const ST_TEXT = { op:'운영 중', vac:'공실', part:'일부 공실', res:'주거', park:'주차' };
+const won = v => v >= 10000 ? `${(v/10000).toFixed(v % 10000 ? 1 : 0)}억` : `${v.toLocaleString()}만`;
+const pyeong = a => (a / 3.3058).toFixed(1);
+
+// ── three.js 기본 세팅 ─────────────────────────────────────────
+const view = document.getElementById('view');
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+view.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.className = 'labels';
+view.appendChild(labelRenderer.domElement);
+document.getElementById('loading').remove();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#eef2f7');
+scene.fog = new THREE.Fog('#eef2f7', 220, 520);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 2000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = .08;
+controls.maxPolarAngle = Math.PI * .49; controls.minDistance = 12; controls.maxDistance = 420;
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#cbd5e1', 1.0));
+const sun = new THREE.DirectionalLight('#ffffff', 1.25);
+sun.position.set(80, 140, 60); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-160, right:160, top:160, bottom:-160, near:1, far:500 });
+scene.add(sun);
+
+// 창 격자 텍스처 (흰 바탕 + 멀리언) → 층 색과 곱해져 유리 파사드처럼 보임
+function windowTexture(){
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0,0,128,128);
+  g.fillStyle = '#c3cede'; g.fillRect(0,0,6,128); g.fillRect(64,0,4,128);
+  g.fillStyle = '#dbe3ee'; g.fillRect(0,104,128,24);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const WIN_TEX = windowTexture();
+
+// ── 상태 ─────────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const state = { s: BUILDINGS[params.get('s')] ? params.get('s') : 'A', lv:null, no:null, mode:'normal', nb:true, lb:true };
+let world = null;          // 현재 건물 루트
+let floors = [];           // {data, group, vol, mat, edges, slab, label, baseY, off, units:[]}
+let labels = [];           // CSS2DObject 목록 (교체 시 수동 제거)
+let unitObjs = [];         // 선택 층 호실 메쉬
+let neighbors = null;
+let ground = null;
+let tween = null;
+
+function disposeTree(o){
+  o.traverse(n => {
+    if (n.geometry) n.geometry.dispose();
+    if (n.material) [].concat(n.material).forEach(m => m.dispose());
+  });
+}
+function addLabel(parent, el, pos, center = [0.5, 0.5]){
+  const l = new CSS2DObject(el);
+  l.position.copy(pos); l.center.set(center[0], center[1]);
+  parent.add(l); labels.push(l);
+  return l;
+}
+function clearLabels(list){
+  list.forEach(l => l.parent && l.parent.remove(l));
+}
+
+function prng(seed){ let a = seed; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+function buildWorld(key){
+  const b = BUILDINGS[key];
+  clearLabels(labels); clearLabels(unitObjs.map(o => o.label));
+  labels = []; unitObjs = [];
+  if (world){ scene.remove(world); disposeTree(world); }
+  world = new THREE.Group(); scene.add(world);
+  const { W, D } = b;
+  const basement = b.floors.filter(f => f.lv < 0).reduce((a,f) => a + f.h, 0);
+
+  // 지면 (지하층이 있으면 건물 자리 구멍)
+  const shape = new THREE.Shape();
+  shape.moveTo(-400,-400); shape.lineTo(400,-400); shape.lineTo(400,400); shape.lineTo(-400,400); shape.lineTo(-400,-400);
+  if (basement > 0){
+    const hole = new THREE.Path();
+    hole.moveTo(-W/2-1,-D/2-1); hole.lineTo(-W/2-1,D/2+1); hole.lineTo(W/2+1,D/2+1); hole.lineTo(W/2+1,-D/2-1); hole.lineTo(-W/2-1,-D/2-1);
+    shape.holes.push(hole);
+  }
+  const gmat = new THREE.MeshStandardMaterial({ color:'#e7ebf0', roughness:1, transparent:true, opacity:1 });
+  ground = new THREE.Mesh(new THREE.ShapeGeometry(shape), gmat);
+  ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; world.add(ground);
+  if (basement > 0){
+    const pitMat = new THREE.MeshStandardMaterial({ color:'#a8b3c2', roughness:1, side:THREE.BackSide });
+    const pit = new THREE.Mesh(new THREE.BoxGeometry(W+2, basement+.6, D+2), pitMat);
+    pit.position.y = -(basement+.6)/2 - .01;
+    // 위쪽 면(+Y)은 보이지 않게: BackSide 상자의 윗면은 아래를 향하므로 위에서 보면 안 보임
+    world.add(pit);
+  }
+
+  // 도로: 건물 앞(남측)으로 큰길, 동측으로 골목
+  const roadMat = new THREE.MeshStandardMaterial({ color:'#c9d1dc', roughness:1 });
+  const lineMat = new THREE.MeshBasicMaterial({ color:'#ffffff' });
+  const frontZ = D/2 + 8, sideX = W/2 + 9;
+  const r1 = new THREE.Mesh(new THREE.PlaneGeometry(800, 12), roadMat); r1.rotation.x = -Math.PI/2; r1.position.set(0,.02,frontZ); r1.receiveShadow = true; world.add(r1);
+  const r2 = new THREE.Mesh(new THREE.PlaneGeometry(7, 800), roadMat); r2.rotation.x = -Math.PI/2; r2.position.set(sideX,.025,0); r2.receiveShadow = true; world.add(r2);
+  for (let x = -390; x < 390; x += 9){
+    const dash = new THREE.Mesh(new THREE.PlaneGeometry(4, .3), lineMat); dash.rotation.x = -Math.PI/2; dash.position.set(x,.03,frontZ); world.add(dash);
+  }
+  const cross = new THREE.Group();
+  for (let i = 0; i < 7; i++){ const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 5), lineMat); s.rotation.x = -Math.PI/2; s.position.set(-6 + i*2, .035, frontZ); cross.add(s); }
+  world.add(cross);
+  const rl = document.createElement('div'); rl.className = 'road-label'; rl.textContent = b.road;
+  addLabel(world, rl, new THREE.Vector3(-W*1.6, .2, frontZ));
+
+  // 주변 건물
+  neighbors = new THREE.Group(); world.add(neighbors);
+  const rnd = prng(key.charCodeAt(0) * 7919);
+  const nbMat = ['#e2e7ee','#dbe1e9','#e8ecf1','#d5dce6'].map(c => new THREE.MeshStandardMaterial({ color:c, roughness:.9 }));
+  const edgeMat = new THREE.LineBasicMaterial({ color:'#b9c3d0' });
+  const CELL = 22, R = 7;
+  const tall = key === 'B' ? 1.7 : 1;
+  for (let gx = -R; gx <= R; gx++){
+    for (let gz = -R; gz <= R; gz++){
+      const cx = gx * CELL, cz = gz * CELL;
+      if (Math.abs(cx) < W/2 + 12 && Math.abs(cz) < D/2 + 12) continue;      // 대상 건물 주변 비움
+      if (Math.abs(cz - frontZ) < 16 || Math.abs(cx - sideX) < 13) continue; // 도로
+      if (rnd() < .18) continue;
+      const w = 9 + rnd() * 9, d = 8 + rnd() * 9;
+      let h = (6 + rnd() * 18 + (rnd() < .15 ? 20 : 0)) * tall;
+      // 기본 카메라 방향(남동쪽) 길 건너편은 저층으로 — 대상 건물을 가리지 않게
+      if (cx > -W && cz > frontZ && Math.hypot(cx, cz) < 170) h = Math.min(h, 7);
+      const geo = new THREE.BoxGeometry(w, h, d);
+      const m = new THREE.Mesh(geo, nbMat[Math.floor(rnd() * nbMat.length)]);
+      m.position.set(cx + (rnd() - .5) * 4, h/2, cz + (rnd() - .5) * 4);
+      m.castShadow = true; m.receiveShadow = true;
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat);
+      m.add(e);
+      neighbors.add(m);
+    }
+  }
+  neighbors.visible = state.nb;
+
+  // 대상 건물 층별
+  floors = [];
+  const sorted = [...b.floors].sort((a,c) => a.lv - c.lv);
+  let y = -basement;
+  sorted.forEach(f => {
+    const st = floorStatus(f);
+    const g = new THREE.Group();
+    const geo = new THREE.BoxGeometry(W - .3, f.h - .35, D - .3);
+    const tex = WIN_TEX.clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(2, Math.round(W / 3.2)), 1);
+    const mat = new THREE.MeshStandardMaterial({ color:COL[st], map:tex, transparent:true, opacity:.82, roughness:.35, metalness:.05, depthWrite:false, emissive:new THREE.Color('#000000') });
+    const vol = new THREE.Mesh(geo, mat); vol.position.y = f.h/2 + .175; vol.renderOrder = 2;
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color:'#64748b', transparent:true, opacity:.55 }));
+    edges.position.copy(vol.position);
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(W, .35, D), new THREE.MeshStandardMaterial({ color:'#cfd6df', roughness:.8 }));
+    slab.position.y = .175; slab.castShadow = true; slab.receiveShadow = true;
+    g.add(vol, edges, slab);
+    // 1층 캐노피 / 간판
+    if (f.lv === 1){
+      const can = new THREE.Mesh(new THREE.BoxGeometry(W * .5, .2, 1.6), new THREE.MeshStandardMaterial({ color:'#64748b' }));
+      can.position.set(-W*.2, f.h * .8, D/2 + .8); can.castShadow = true; g.add(can);
+    }
+    g.position.y = y;
+    const el = document.createElement('div');
+    el.className = `fl-label ${st}`;
+    el.innerHTML = `<i></i>${flName(f.lv)} <span>${f.units.length > 1 ? `${ST_TEXT[st]} · ${f.units.length}호` : (f.units[0].st === 'op' ? f.units[0].name : ST_TEXT[st])}</span>`;
+    el.addEventListener('click', ev => { ev.stopPropagation(); selectFloor(f.lv); });
+    const label = addLabel(g, el, new THREE.Vector3(W/2 + .2, f.h/2, D/2), [0, .5]);
+    world.add(g);
+    vol.userData = { lv:f.lv };
+    floors.push({ data:f, st, group:g, vol, mat, edges, slab, label, baseY:y, off:0 });
+    y += f.h;
+  });
+  // 옥상
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(W + .4, .5, D + .4), new THREE.MeshStandardMaterial({ color:'#94a3b8' }));
+  roof.position.y = y + .25; roof.castShadow = true; world.add(roof);
+  floors.roof = roof; floors.roofBase = y + .25;
+  if (W > 14){
+    const ph = new THREE.Mesh(new THREE.BoxGeometry(W*.25, 3, D*.3), new THREE.MeshStandardMaterial({ color:'#a3aebd' }));
+    ph.position.set(-W*.25, y + 2, 0); ph.castShadow = true; world.add(ph); floors.ph = ph; floors.phBase = y + 2;
+  }
+  const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(W,D)*.72, Math.max(W,D)*.78, 48), new THREE.MeshBasicMaterial({ color:'#6366f1', transparent:true, opacity:.5 }));
+  ring.rotation.x = -Math.PI/2; ring.position.y = .06; world.add(ring);
+
+  // 카메라
+  const H = y;
+  const dist = Math.max(48, H * 1.9 + W * 1.2);
+  controls.target.set(0, H * .38, 0);
+  camera.position.set(dist * .62, H * .38 + dist * .5, dist * .78);
+  controls.update();
+  world.userData = { H, dist };
+  renderElev();
+}
+
+// ── 선택/표시 상태 반영 ───────────────────────────────────────
+function applyVisuals(){
+  floors.forEach(F => {
+    const sel = F.data.lv === state.lv;
+    const ghost = state.mode === 'vaconly' && !(F.st === 'vac' || F.st === 'part');
+    F.mat.color.set(sel ? COL.sel : COL[F.st]);
+    F.mat.opacity = sel ? .1 : ghost ? .07 : .82;
+    F.edges.material.opacity = sel ? .9 : ghost ? .18 : .55;
+    F.edges.material.color.set(sel ? '#4338ca' : '#64748b');
+    F.slab.material.opacity = ghost ? .25 : 1; F.slab.material.transparent = ghost;
+    F.label.element.classList.toggle('on', sel);
+    F.label.visible = state.lb || sel;
+    // 층 분리 시 간격
+    F.off = state.mode === 'explode' ? (F.data.lv > 0 ? (F.data.lv - 1) * 2.6 : F.data.lv * 2.6) : 0;
+  });
+  // 지하층을 보고 있으면 지면을 반투명하게
+  const under = state.lv !== null && state.lv < 0;
+  ground.material.opacity = under || state.mode === 'vaconly' ? .45 : 1;
+  ground.material.depthWrite = !(under || state.mode === 'vaconly');
+  buildUnits();
+  renderElev();
+}
+
+function buildUnits(){
+  clearLabels(unitObjs.map(o => o.label));
+  unitObjs.forEach(o => { o.mesh.parent.remove(o.mesh); disposeTree(o.mesh); });
+  unitObjs = [];
+  const F = floors.find(x => x.data.lv === state.lv); if (!F) return;
+  const { W, D } = BUILDINGS[state.s];
+  const us = F.data.units;
+  const total = us.reduce((a,x) => a + (x.w || 1/us.length), 0);
+  let x0 = -W/2 + .5;
+  const usable = W - 1;
+  us.forEach((un, i) => {
+    const w = usable * (un.w || 1/us.length) / total;
+    const h = F.data.h - .8;
+    const geo = new THREE.BoxGeometry(Math.max(.6, w - .5), h, D - 1.4);
+    const on = un.no === state.no;
+    const col = on ? '#6366f1' : un.st === 'vac' ? '#fb923c' : un.st === 'op' ? '#93c5fd' : '#cbd5e1';
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color:col, transparent:true, opacity:on ? .9 : .78, roughness:.5 }));
+    mesh.position.set(x0 + w/2, .35 + h/2, 0);
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: on ? '#312e81' : '#475569' })));
+    mesh.userData = { lv:F.data.lv, no:un.no };
+    F.group.add(mesh);
+    const el = document.createElement('div');
+    el.className = `u-label ${un.st === 'vac' ? 'vac' : ''} ${on ? 'on' : ''}`;
+    el.innerHTML = `${un.no}호 · ${un.st === 'vac' ? '공실' : un.name}<small>${un.a.toLocaleString()}㎡${un.st === 'vac' ? ` · 월 ${un.rent}만` : ''}</small>`;
+    el.addEventListener('click', ev => { ev.stopPropagation(); selectUnit(F.data.lv, un.no); });
+    const label = new CSS2DObject(el); label.position.set(x0 + w/2, .35 + h + .4 + (us.length > 2 && i % 2 ? 2.4 : 0), 0); label.center.set(.5, 1);
+    F.group.add(label);
+    unitObjs.push({ mesh, label, no:un.no });
+    x0 += w;
+  });
+}
+
+function focusFloor(lv){
+  const F = floors.find(x => x.data.lv === lv); if (!F) return;
+  const cy = F.baseY + F.off + F.data.h/2;
+  const { W, D } = BUILDINGS[state.s];
+  const dist = Math.max(52, W * 3.4, D * 3.4);
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  if (dir.y < .25){ dir.y = .35; dir.normalize(); }
+  tween = { t0:performance.now(), dur:850, fT:controls.target.clone(), tT:new THREE.Vector3(0, cy, 0), fP:camera.position.clone(), tP:new THREE.Vector3(0, cy, 0).add(dir.multiplyScalar(dist)) };
+}
+
+function selectFloor(lv, no){
+  const F = floors.find(x => x.data.lv === lv); if (!F) return;
+  state.lv = lv;
+  state.no = no || (F.data.units.find(x => x.st === 'vac') || F.data.units[0]).no;
+  applyVisuals(); renderRight(); renderVacList();
+  setTimeout(() => focusFloor(lv), state.mode === 'explode' ? 50 : 0);
+}
+function selectUnit(lv, no){
+  if (state.lv !== lv) return selectFloor(lv, no);
+  state.no = no; buildUnits(); renderRight(); renderVacList();
+}
+
+// ── 포인터 (클릭/호버) ────────────────────────────────────────
+const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2();
+const tip = document.getElementById('tip');
+let downAt = null, hoverLv = null;
+function pick(ev){
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const targets = [...unitObjs.map(o => o.mesh), ...floors.filter(F => F.data.lv !== state.lv).map(F => F.vol)];
+  const hit = ray.intersectObjects(targets, false)[0];
+  return hit ? hit.object.userData : null;
+}
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const h = pick(e);
+  if (!h) return;
+  if (h.no) selectUnit(h.lv, h.no); else selectFloor(h.lv);
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  const h = pick(e);
+  const r = view.getBoundingClientRect();
+  if (h){
+    const F = floors.find(x => x.data.lv === h.lv);
+    const un = h.no ? F.data.units.find(x => x.no === h.no) : null;
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px';
+    tip.innerHTML = un
+      ? `${flName(h.lv)} ${un.no}호 · ${un.st === 'vac' ? `<b>공실</b> ${un.a}㎡ · 월 ${un.rent}만원` : un.name}`
+      : `${flName(h.lv)} · ${F.data.units.map(x => x.st === 'vac' ? `<b>${x.no} 공실</b>` : x.name).join(' / ')}`;
+    renderer.domElement.style.cursor = 'pointer';
+  } else { tip.style.display = 'none'; renderer.domElement.style.cursor = ''; }
+  hoverLv = h ? h.lv : null;
+});
+renderer.domElement.addEventListener('pointerleave', () => { tip.style.display = 'none'; hoverLv = null; });
+
+// ── 렌더 루프 ────────────────────────────────────────────────
+const needle = document.getElementById('needle');
+function resize(){
+  const { clientWidth:w, clientHeight:h } = view;
+  if (!w || !h) return;
+  renderer.setSize(w, h); labelRenderer.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view);
+resize();
+const ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+function loop(now){
+  requestAnimationFrame(loop);
+  const t = now / 1000;
+  let maxOff = 0;
+  floors.forEach(F => {
+    const cur = F.group.position.y - F.baseY;
+    const nx = cur + (F.off - cur) * .14;
+    F.group.position.y = F.baseY + nx;
+    maxOff = Math.max(maxOff, nx);
+    const pulse = (F.st === 'vac' || F.st === 'part') && F.data.lv !== state.lv && state.mode !== 'vaconly' ? .18 + .14 * Math.sin(t * 3) : 0;
+    const hov = hoverLv === F.data.lv && F.data.lv !== state.lv ? .22 : 0;
+    F.mat.emissive.set(pulse ? '#f97316' : '#ffffff');
+    F.mat.emissiveIntensity = Math.max(pulse, hov);
+  });
+  if (floors.roof){ floors.roof.position.y = floors.roofBase + maxOff; if (floors.ph) floors.ph.position.y = floors.phBase + maxOff; }
+  if (tween){
+    const k = Math.min(1, (now - tween.t0) / tween.dur), e = ease(k);
+    controls.target.lerpVectors(tween.fT, tween.tT, e);
+    camera.position.lerpVectors(tween.fP, tween.tP, e);
+    if (k >= 1) tween = null;
+  }
+  controls.update();
+  needle.style.transform = `rotate(${THREE.MathUtils.radToDeg(controls.getAzimuthalAngle())}deg)`;
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+requestAnimationFrame(loop);
+
+// ── 패널 ─────────────────────────────────────────────────────
+const $ = s => document.querySelector(s);
+function renderElev(){
+  const b = BUILDINGS[state.s];
+  const fs = [...b.floors].sort((a,c) => c.lv - a.lv);
+  $('#elev').innerHTML = fs.map(f => {
+    const st = floorStatus(f);
+    return `<button class="${f.lv === state.lv ? 'on' : ''}" data-lv="${f.lv}" title="${flName(f.lv)} ${ST_TEXT[st]}"><i style="background:${COL[st]}"></i>${flName(f.lv)}</button>`;
+  }).join('');
+}
+$('#elev').addEventListener('click', e => { const bt = e.target.closest('button'); if (bt) selectFloor(+bt.dataset.lv); });
+
+function renderVacList(){
+  $('#vacList').innerHTML = Object.entries(BUILDINGS).map(([k, b]) => {
+    const vs = b.floors.flatMap(f => f.units.filter(x => x.st === 'vac').map(x => ({ f, x })));
+    return `<div class="bgroup">${k} · ${b.name} <span class="muted">(${b.zone})</span></div>` + vs.map(({ f, x }) => {
+      const on = k === state.s && f.lv === state.lv && x.no === state.no;
+      return `<button class="vc ${on ? 'on' : ''}" data-s="${k}" data-lv="${f.lv}" data-no="${x.no}">
+        <span class="fl">${flName(f.lv)}</span>
+        <span class="t"><b>${x.no}호 · ${x.a.toLocaleString()}㎡</b><span>${pyeong(x.a)}평 · 공실 ${x.months}개월</span></span>
+        <span class="p">${won(x.rent)}원<small>보증 ${won(x.dep)}</small></span></button>`;
+    }).join('');
+  }).join('');
+}
+$('#vacList').addEventListener('click', e => {
+  const c = e.target.closest('.vc'); if (!c) return;
+  if (c.dataset.s !== state.s) loadScenario(c.dataset.s, +c.dataset.lv, c.dataset.no);
+  else selectFloor(+c.dataset.lv, c.dataset.no);
+});
+
+function renderBuilding(){
+  const b = BUILDINGS[state.s];
+  $('#bName').innerHTML = `<b>${b.name}</b><span>${b.addr}</span>`;
+  $('#bZone').textContent = b.zone;
+  $('#bInfo').innerHTML = Object.entries(b.info).map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  const all = b.floors.flatMap(f => f.units);
+  const cnt = st => all.filter(x => x.st === st).length;
+  const parts = [['op','운영'],['vac','공실'],['res','주거'],['park','주차']].filter(([s]) => cnt(s));
+  $('#occBar').innerHTML = parts.map(([s]) => `<i style="width:${cnt(s)/all.length*100}%;background:${COL[s]}"></i>`).join('');
+  $('#occLegend').innerHTML = parts.map(([s,n]) => `<span><em style="background:${COL[s]}"></em>${n} ${cnt(s)}호</span>`).join('') + `<span class="muted">공실률 ${(cnt('vac') / all.filter(x => x.st !== 'park' && x.st !== 'res').length * 100).toFixed(0)}%</span>`;
+  $('#aiNote').innerHTML = `<b>🤖 AI 한 줄 분석</b>${b.ai}`;
+}
+
+function renderRight(){
+  const b = BUILDINGS[state.s];
+  const f = b.floors.find(x => x.lv === state.lv);
+  if (!f){ $('#right').innerHTML = '<div class="sec muted">층을 선택하세요</div>'; return; }
+  const un = f.units.find(x => x.no === state.no) || f.units[0];
+  const st = un.st;
+  let body = '';
+  if (st === 'vac'){
+    body = `
+      <div class="sec"><div class="sec-h"><h3>임대 조건</h3><small>공실 ${un.months}개월째</small></div>
+        <div class="cond">
+          <div><small>전용면적</small><b>${un.a.toLocaleString()}㎡</b> <span class="muted" style="font-size:11px">${pyeong(un.a)}평</span></div>
+          <div><small>보증금</small><b>${won(un.dep)}원</b></div>
+          <div class="hl"><small>월세</small><b>${won(un.rent)}원</b></div>
+          <div><small>관리비</small><b>${won(un.fee)}원</b></div>
+        </div>
+        <p style="margin:10px 0 0;font-size:12px;color:var(--text-2)">직전 업종 · <b>${un.prev}</b></p>
+      </div>
+      <div class="sec"><div class="sec-h"><h3>설비 · 공간</h3><small>창업 전 확인</small></div>
+        <dl class="fac">
+          <dt>⚡ 전기</dt><dd>${un.fac.elec}</dd>
+          <dt>🚰 급배수</dt><dd>${un.fac.water}</dd>
+          <dt>🔥 가스</dt><dd>${un.fac.gas}</dd>
+          <dt>🌀 배기</dt><dd>${un.fac.duct}</dd>
+          <dt>📐 층고</dt><dd>${un.fac.ceil}</dd>
+          <dt>🪟 창</dt><dd>${un.fac.window}</dd>
+          <dt>🪧 간판</dt><dd>${un.fac.sign}</dd>
+        </dl>
+      </div>
+      <div class="sec"><div class="sec-h"><h3>이 층에 맞는 업종</h3><small>층 위치 · 설비 반영</small></div>
+        <div class="chips">${un.fits.map(x => `<span>${x}</span>`).join('')}</div>
+      </div>
+      <div class="sec"><div class="sec-h"><h3>층별 체크포인트</h3></div>
+        <ul class="checks">${un.checks.map(x => `<li>${x}</li>`).join('')}</ul>
+      </div>`;
+  } else {
+    body = `<div class="sec"><div class="sec-h"><h3>${st === 'op' ? '입점 정보' : '공간 정보'}</h3></div>
+      <dl class="tenant">
+        <dt>상호/용도</dt><dd>${un.name}</dd>
+        ${un.ind ? `<dt>업종</dt><dd>${un.ind}</dd>` : ''}
+        <dt>면적</dt><dd>${un.a.toLocaleString()}㎡ (${pyeong(un.a)}평)</dd>
+        ${un.since ? `<dt>입점</dt><dd>${un.since}~</dd>` : ''}
+      </dl>
+      <p class="muted" style="font-size:11.5px;margin:10px 0 0">${st === 'op' ? '영업 중인 호실입니다. 같은 층 공실이나 위 · 아래층 업종 구성을 참고하세요.' : st === 'res' ? '주거 용도로 상가 임대 대상이 아닙니다. 소음 · 냄새 민원 가능성을 고려하세요.' : '주차 · 하역 공간입니다.'}</p>
+    </div>`;
+  }
+  $('#right').innerHTML = `
+    <div class="fhead">
+      <span class="st ${st}">${ST_TEXT[st]}</span>
+      <h2>${flName(f.lv)} · ${un.no}호</h2>
+      <p>${b.name} · 층고 ${f.h}m · 이 층 ${f.units.length}개 호실</p>
+      <div class="units">${f.units.map(x => `<button class="${x.st === 'vac' ? 'vac' : ''} ${x.no === un.no ? 'on' : ''}" data-no="${x.no}">${x.no}${x.st === 'vac' ? ' 공실' : ''}</button>`).join('')}</div>
+    </div>
+    ${body}
+    <div class="cta">
+      <a class="btn btn-primary" href="case3-streetview-floor.html?s=${state.s}&f=${f.lv}">🏙 거리뷰 · 층별보기</a>
+      <a class="btn" href="case4-nearby-competitors.html?s=${state.s}">📍 이 자리 주변 업종 분석 (50~100m)</a>
+      <a class="btn" href="case5-customer-ledger.html?s=${state.s}">🧾 손님 모으기 · 매출 계획</a>
+    </div>`;
+  $('#right').querySelectorAll('.units button').forEach(bt => bt.onclick = () => selectUnit(f.lv, bt.dataset.no));
+}
+
+// ── 컨트롤 ───────────────────────────────────────────────────
+function loadScenario(s, lv, no){
+  state.s = s;
+  document.querySelectorAll('#scSeg button').forEach(x => x.classList.toggle('on', x.dataset.s === s));
+  buildWorld(s);
+  renderBuilding();
+  const st = BUILDINGS[s].start;
+  state.lv = null;
+  selectFloor(lv ?? st.lv, no ?? st.no);
+  const u2 = new URL(location.href); u2.searchParams.set('s', s); history.replaceState(null, '', u2);
+}
+$('#scSeg').addEventListener('click', e => { const bt = e.target.closest('button'); if (bt) loadScenario(bt.dataset.s); });
+$('#modeSeg').addEventListener('click', e => {
+  const bt = e.target.closest('button'); if (!bt) return;
+  state.mode = bt.dataset.m;
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === bt));
+  applyVisuals();
+  if (state.mode === 'explode'){
+    const { H, dist } = world.userData;
+    const dir = camera.position.clone().sub(controls.target).normalize();
+    tween = { t0:performance.now(), dur:900, fT:controls.target.clone(), tT:new THREE.Vector3(0, H * .55, 0), fP:camera.position.clone(), tP:new THREE.Vector3(0, H * .55, 0).add(dir.multiplyScalar(dist * 1.15)) };
+  }
+});
+$('#tgNb').onclick = e => { state.nb = !state.nb; e.currentTarget.classList.toggle('on', state.nb); neighbors.visible = state.nb; };
+$('#tgLb').onclick = e => { state.lb = !state.lb; e.currentTarget.classList.toggle('on', state.lb); applyVisuals(); };
+$('#tgReset').onclick = () => {
+  const { H, dist } = world.userData;
+  tween = { t0:performance.now(), dur:800, fT:controls.target.clone(), tT:new THREE.Vector3(0, H * .38, 0), fP:camera.position.clone(), tP:new THREE.Vector3(dist * .62, H * .38 + dist * .5, dist * .78) };
+};
+
+const qf = params.get('f');
+loadScenario(state.s, qf !== null && qf !== '' ? +qf : undefined);
+</script>
+</body>
+</html>

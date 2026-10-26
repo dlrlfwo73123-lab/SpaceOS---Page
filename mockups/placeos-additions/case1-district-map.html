@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS · 상권 구역 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --vac:#f97316;--head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.gnb{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;letter-spacing:-.01em;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.gnb nav a.on b{background:var(--brand);color:#fff}
+.demo-pill{white-space:nowrap;font-size:11px;font-weight:700;color:#fde68a;border:1px solid rgba(253,230,138,.4);padding:3px 9px;border-radius:999px;flex-shrink:0}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px 20px 12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.phead h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.phead p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.sel{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.muted{color:var(--text-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--text)}
+.btn:hover{border-color:var(--brand-2);background:var(--brand-soft)}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr) 390px;gap:12px;padding:0 20px 20px;height:calc(100vh - 56px - 92px);min-height:620px}
+.list{display:flex;flex-direction:column;overflow:hidden}
+.list-h{padding:14px 14px 10px;border-bottom:1px solid var(--line)}
+.list-h h3{margin:0;font-size:13px}
+.list-h p{margin:2px 0 0;font-size:11.5px;color:var(--text-3)}
+.zlist{overflow-y:auto;padding:8px;flex:1}
+.zi{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:9px 10px;margin-bottom:2px}
+.zi:hover{background:var(--surface-2)}
+.zi.on{background:var(--brand-soft);border-color:#c7d2fe}
+.zi .dot{width:12px;height:12px;border-radius:4px;flex-shrink:0;border:1px solid rgba(0,0,0,.08)}
+.zi .t{flex:1;min-width:0}
+.zi .t b{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zi .t span{font-size:11px;color:var(--text-3)}
+.zi .m{font-size:12px;font-weight:800;text-align:right;white-space:nowrap}
+.zi .m small{display:block;font-size:10px;font-weight:500;color:var(--text-3)}
+.mapwrap{position:relative;overflow:hidden;padding:0}
+#map{position:absolute;inset:0;border-radius:var(--r);background:#e8edf3}
+.legend{position:absolute;left:12px;bottom:12px;z-index:500;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11.5px;box-shadow:var(--sh);max-width:250px}
+.legend h4{margin:0 0 6px;font-size:11.5px}
+.legend .row{display:flex;align-items:center;gap:6px;margin:2px 0;color:var(--text-2);white-space:nowrap}
+.legend .cols{display:grid;grid-template-columns:auto auto;column-gap:12px}
+.legend .sw{width:14px;height:10px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.08)}
+.legend .grad{display:flex;height:10px;border-radius:3px;overflow:hidden;margin:4px 0 2px}
+.legend .grad span{flex:1}
+.legend .ends{display:flex;justify-content:space-between;color:var(--text-3);font-size:10.5px}
+.maphint{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(15,23,42,.78);color:#fff;font-size:12px;padding:6px 14px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.zlabel{background:rgba(255,255,255,.94);border:1px solid rgba(15,23,42,.12);border-radius:8px;box-shadow:0 2px 8px rgba(15,23,42,.12);padding:3px 8px;font-family:'Noto Sans KR',sans-serif;text-align:center;line-height:1.3}
+.zlabel:before{display:none}
+.zlabel b{display:block;font-size:11.5px;color:var(--text)}
+.zlabel span{font-size:10.5px;color:var(--text-2)}
+.stn{background:#fff;border:2px solid #16a34a;color:#166534;border-radius:999px;font-size:10.5px;font-weight:800;padding:1px 7px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.vacdot{width:10px;height:10px;border-radius:50%;background:var(--vac);border:2px solid #fff;box-shadow:0 0 0 1px rgba(249,115,22,.6)}
+
+/* detail */
+.detail{overflow-y:auto;padding:0}
+.dz-head{padding:18px 18px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,color-mix(in srgb,var(--zc) 12%,#fff),#fff)}
+.type-chip{display:inline-block;font-size:11px;font-weight:800;color:#fff;background:var(--zc);border-radius:999px;padding:2px 9px}
+.dz-head h2{margin:8px 0 2px;font-size:18px;letter-spacing:-.02em}
+.dz-head .sub{font-size:12px;color:var(--text-3)}
+.dz-head .sum{margin:10px 0 0;font-size:13px;color:var(--text-2)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tags span{font-size:11px;font-weight:600;color:var(--brand-ink);background:var(--brand-soft);border-radius:999px;padding:2px 8px}
+.sec{padding:14px 18px;border-bottom:1px solid var(--line)}
+.sec h3{margin:0 0 10px;font-size:12.5px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.sec h3 small{font-weight:500;color:var(--text-3);font-size:11px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.kpi .l{font-size:11px;color:var(--text-3);font-weight:600}
+.kpi .v{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.kpi .d{font-size:10.5px;font-weight:700}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.rec{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.rec .rk{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;flex-shrink:0;background:#f1f5f9;color:var(--text-2)}
+.rec:nth-of-type(1) .rk{background:#fbbf24;color:#fff}
+.rec:nth-of-type(2) .rk{background:#94a3b8;color:#fff}
+.rec:nth-of-type(3) .rk{background:#d6a46b;color:#fff}
+.rec .b{flex:1;min-width:0}
+.rec .nm{display:flex;justify-content:space-between;font-weight:800;font-size:13px}
+.rec .nm em{font-style:normal;color:var(--ok)}
+.bar{height:6px;background:#eef2f7;border-radius:999px;overflow:hidden;margin:5px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#059669);border-radius:999px}
+.rec p{margin:0;font-size:11.5px;color:var(--text-2)}
+.avoid{display:flex;gap:8px;padding:9px 10px;background:var(--bad-soft);border:1px solid #fecaca;border-radius:10px;font-size:12px;margin-bottom:6px}
+.avoid b{color:var(--bad);white-space:nowrap}
+.tchart{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;align-items:end;height:110px;padding-top:8px}
+.tchart .c{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.tchart .c i{width:100%;max-width:34px;background:#c7d2fe;border-radius:6px 6px 2px 2px}
+.tchart .c.pk i{background:var(--brand)}
+.tchart .c span{font-size:10px;color:var(--text-3);white-space:nowrap}
+.tchart .c em{font-style:normal;font-size:10px;font-weight:700;color:var(--text-2)}
+.hb{display:grid;grid-template-columns:44px 1fr 34px;gap:8px;align-items:center;font-size:11.5px;margin:5px 0}
+.hb .bar{margin:0;height:8px}
+.hb .bar i{background:var(--brand-2)}
+.hb b{text-align:right}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.ring{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11.5px}
+.ring b{font-size:15px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 18px 18px}
+
+/* compare */
+.tray{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:1100;display:none;align-items:center;gap:8px;background:var(--head);color:#fff;border-radius:14px;padding:8px 8px 8px 14px;box-shadow:0 10px 30px rgba(15,23,42,.35);max-width:calc(100vw - 32px)}
+.tray.show{display:flex}
+.tray .ch{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px;white-space:nowrap}
+.tray .ch button{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;line-height:1}
+.tray .go{border:0;background:#fff;color:var(--head);font-weight:800;border-radius:10px;padding:8px 12px;font-size:12.5px;white-space:nowrap}
+.modal{position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.modal .box{background:#fff;border-radius:16px;max-width:860px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal .mh{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.modal .mh h3{margin:0;font-size:15px}
+.modal .x{border:0;background:#f1f5f9;border-radius:50%;width:30px;height:30px;font-size:16px}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th,table.cmp td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:center}
+table.cmp th:first-child,table.cmp td:first-child{text-align:left;color:var(--text-2);font-weight:600;white-space:nowrap}
+table.cmp thead th{background:var(--surface-2);font-size:13px}
+table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
+
+@media (max-width:1180px){
+  .layout{grid-template-columns:240px minmax(0,1fr);height:auto}
+  .mapwrap{height:560px}
+  .list{max-height:560px}
+  .detail{grid-column:1 / -1}
+}
+@media (max-width:760px){
+  .gnb{padding:0 12px;gap:10px}
+  .demo-pill{display:none}
+  .phead{padding:14px 16px 10px}
+  .layout{grid-template-columns:1fr;padding:0 16px 90px}
+  .mapwrap{height:58vh;min-height:380px;order:1}
+  .detail{order:2}
+  .list{order:3;max-height:none}
+  .zlist{max-height:none}
+  .maphint{font-size:11px}
+  .zlabel{padding:2px 6px}
+  .zlabel b{font-size:10.5px}
+  .zlabel span{display:none}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html" class="on"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+  </nav>
+  <span class="demo-pill">추가안 시안 · 데모 데이터</span>
+</header>
+
+<div class="phead">
+  <div>
+    <div class="eyebrow">CASE 1 · 다른 상권 찾기</div>
+    <h1>동네 상권을 구역별로 나눠서 추천 업종과 특징 보기</h1>
+    <p>동네를 상권 단위로 쪼개 지도에 표시하고, 구역을 누르면 그 상권의 성격 · 추천 업종 · 피해야 할 업종이 나옵니다.</p>
+  </div>
+  <div class="tools">
+    <select class="sel" id="hoodSel" aria-label="동네 선택">
+      <option value="seongsu">성동구 성수동</option>
+      <option value="mangwon">마포구 망원동</option>
+    </select>
+    <div class="seg" id="modeSeg" role="tablist" aria-label="지도 색칠 기준">
+      <button data-mode="type" class="on">상권 유형</button>
+      <button data-mode="fit">업종 적합도</button>
+      <button data-mode="vac">공실률</button>
+    </div>
+    <select class="sel" id="indSel" aria-label="업종 선택" style="display:none"></select>
+  </div>
+</div>
+
+<main class="layout">
+  <aside class="card list">
+    <div class="list-h">
+      <h3 id="listTitle">상권 구역</h3>
+      <p id="listSub">구역을 누르면 지도와 오른쪽 상세가 바뀝니다</p>
+    </div>
+    <div class="zlist" id="zlist"></div>
+  </aside>
+
+  <section class="card mapwrap">
+    <div id="map" aria-label="상권 구역 지도"></div>
+    <div class="maphint" id="maphint">색칠된 구역을 누르면 상권 특징과 추천 업종이 나와요</div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <aside class="card detail" id="detail"></aside>
+</main>
+
+<div class="tray" id="tray"></div>
+<div class="modal" id="cmpModal" role="dialog" aria-modal="true" aria-labelledby="cmpTitle">
+  <div class="box">
+    <div class="mh"><h3 id="cmpTitle">상권 비교</h3><button class="x" data-close aria-label="닫기">×</button></div>
+    <div id="cmpBody" style="padding:6px 6px 14px"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+// [데모 데이터] 수치는 시안 확인용 가상값입니다. 실제 서비스에서는 서울시 상권분석서비스(골목상권/발달상권 영역)·생활인구·소상공인 상가정보로 교체합니다.
+const INDS = [
+  {k:'cafe',n:'카페',e:'☕'},
+  {k:'bakery',n:'베이커리·디저트',e:'🥐'},
+  {k:'korean',n:'한식·밥집',e:'🍚'},
+  {k:'pub',n:'주점·와인바',e:'🍷'},
+  {k:'conv',n:'편의점·생활',e:'🏪'},
+  {k:'beauty',n:'미용·네일',e:'💅'},
+  {k:'fitness',n:'필라테스·운동',e:'🧘'},
+  {k:'select',n:'편집숍·소품',e:'🛍️'},
+  {k:'academy',n:'학원·교육',e:'📚'},
+];
+const IND = Object.fromEntries(INDS.map(i => [i.k, i]));
+
+const TYPES = {
+  '발달상권':  {c:'#6366f1', d:'유동인구·점포가 몰린 핵심 상권'},
+  '골목상권':  {c:'#f59e0b', d:'주거지 옆 생활밀착형 소규모 상권'},
+  '오피스상권':{c:'#0ea5e9', d:'직장인 평일 점심·퇴근 수요 중심'},
+  '특화상권':  {c:'#ec4899', d:'특정 테마·산업이 모인 상권'},
+  '주거상권':  {c:'#10b981', d:'아파트·주택가 배후 생활 상권'},
+  '전통시장':  {c:'#b45309', d:'전통시장과 주변 상점가'},
+};
+const SLOTS = ['06–11','11–14','14–17','17–21','21–24','24–06'];
+const AGES = ['20대','30대','40대','50대','60대+'];
+
+// m: pop 일평균 유동인구, stores 점포 수, vac 공실률(%), rent 3.3㎡당 월임대료(만원), sales 매출지수(서울=100), growth 1년 매출 증감(%)
+const HOODS = {
+  seongsu: {
+    name:'성동구 성수동', center:[37.5455,127.0515], zoom:15,
+    stations:[{n:'성수역',ll:[37.5446,127.0560]},{n:'뚝섬역',ll:[37.5474,127.0474]},{n:'서울숲역',ll:[37.5436,127.0446]}],
+    zones:[
+      {id:'yeonmu', name:'연무장길 카페·팝업거리', short:'연무장길', type:'발달상권', dong:'성수동2가',
+       poly:[[37.5442,127.0498],[37.5440,127.0545],[37.5436,127.0600],[37.5418,127.0606],[37.5414,127.0560],[37.5420,127.0500]],
+       sum:'공장·창고를 고친 카페와 브랜드 팝업스토어가 몰린 성수 대표 상권. 주말 외부 방문객 비중이 높고 회전이 빠릅니다.',
+       tags:['주말 방문객 58%','20~30대 여성','팝업스토어 밀집','SNS 언급량 상위'],
+       m:{pop:58200,stores:412,vac:6.8,rent:21.5,sales:142,growth:12.4},
+       time:[5,15,25,30,18,7], age:[38,31,15,9,7], female:63, weekend:58, vacs:4,
+       fit:{cafe:71,bakery:88,korean:60,pub:64,conv:42,beauty:69,fitness:48,select:93,academy:18},
+       why:{select:'팝업 방문객이 근처 편집숍까지 둘러보는 동선이 강함',bakery:'디저트 테이크아웃 객단가가 높고 줄 서는 매장 비율이 높음',cafe:'수요는 크지만 경쟁이 매우 치열함',beauty:'20~30대 여성 체류 시간이 길어 예약형 뷰티 수요 있음',pub:'저녁 시간대 와인·내추럴와인 바 수요 증가'},
+       avoid:[{k:'conv',w:'대로변 체인 편의점 3곳이 이미 반경 150m 안에 있음'},{k:'academy',w:'임대료 대비 수강생 수요 낮음, 주말 혼잡'}],
+       twin:'A'},
+      {id:'office', name:'성수역 지식산업센터 오피스', short:'성수역 오피스', type:'오피스상권', dong:'성수동2가',
+       poly:[[37.5490,127.0565],[37.5492,127.0640],[37.5440,127.0648],[37.5438,127.0606],[37.5447,127.0575],[37.5462,127.0563]],
+       sum:'IT·패션 기업이 입주한 지식산업센터가 모인 곳. 평일 11~14시 점심 수요가 몰리고 주말에는 한산합니다.',
+       tags:['평일 점심 피크','30대 직장인','1층 상가 회전 빠름','배달·포장 비중 큼'],
+       m:{pop:71400,stores:338,vac:9.4,rent:16.8,sales:121,growth:6.1},
+       time:[14,34,16,24,8,4], age:[27,41,20,9,3], female:48, weekend:22, vacs:6,
+       fit:{cafe:66,bakery:58,korean:90,pub:62,conv:84,beauty:44,fitness:76,select:35,academy:30},
+       why:{korean:'평일 점심 회전 수요가 크고 객단가가 안정적임',conv:'지식산업센터 1층 상가 상주 인구 수요',fitness:'퇴근 시간대(18~21시) 운동 수요 증가',cafe:'오피스 테이크아웃 수요는 많지만 저가 체인과 경쟁',pub:'퇴근 후 회식 수요가 있지만 금요일에 쏠림'},
+       avoid:[{k:'select',w:'주말 유동이 적어 쇼핑형 업종은 매출이 고르지 않음'},{k:'academy',w:'학령 인구 거의 없음'}],
+       twin:'B'},
+      {id:'ttuk', name:'뚝섬역 먹자골목', short:'뚝섬 먹자골목', type:'골목상권', dong:'성수동1가',
+       poly:[[37.5472,127.0458],[37.5476,127.0505],[37.5460,127.0512],[37.5446,127.0500],[37.5448,127.0462]],
+       sum:'역 남쪽 골목에 고깃집·이자카야·노포가 모인 저녁 상권. 지하·2층 매물이 많고 임대료가 비교적 낮습니다.',
+       tags:['저녁 17~24시','노포 · 이자카야','지하 매물 多','임대료 중간'],
+       m:{pop:39800,stores:226,vac:11.2,rent:13.4,sales:108,growth:3.8},
+       time:[4,14,10,38,26,8], age:[30,34,19,11,6], female:46, weekend:44, vacs:5,
+       fit:{cafe:52,bakery:46,korean:79,pub:89,conv:61,beauty:40,fitness:38,select:30,academy:22},
+       why:{pub:'저녁 체류 시간이 길고 2차 수요가 꾸준함',korean:'퇴근 후 식사·회식 수요가 큼',conv:'심야 유동이 있어 편의점 야간 매출 양호',cafe:'저녁 위주 상권이라 낮 카페 매출이 낮음'},
+       avoid:[{k:'select',w:'낮 시간 유동이 적어 쇼핑형 업종 부적합'},{k:'bakery',w:'아침·낮 수요 약함'}],
+       twin:'C'},
+      {id:'atelier', name:'서울숲 아뜰리에길', short:'아뜰리에길', type:'특화상권', dong:'성수동1가',
+       poly:[[37.5482,127.0398],[37.5480,127.0440],[37.5466,127.0455],[37.5446,127.0452],[37.5444,127.0420],[37.5458,127.0396]],
+       sum:'서울숲과 이어진 주택가 골목에 공방·갤러리·브런치 카페가 들어선 곳. 산책 수요와 연계되고 체류 시간이 깁니다.',
+       tags:['서울숲 산책객','브런치 · 공방','반려동물 동반','체류 시간 길음'],
+       m:{pop:33600,stores:184,vac:7.9,rent:18.2,sales:126,growth:9.2},
+       time:[9,22,30,24,11,4], age:[29,36,19,10,6], female:61, weekend:61, vacs:3,
+       fit:{cafe:84,bakery:81,korean:57,pub:50,conv:40,beauty:63,fitness:61,select:78,academy:26},
+       why:{cafe:'공원 산책 후 체류형 카페 수요가 크고 반려동물 동반 가능 매장 선호',bakery:'브런치·베이커리 결합 매장의 주말 매출이 높음',select:'공방·리빙 소품 구매 수요',beauty:'주거 배후 단골 수요'},
+       avoid:[{k:'pub',w:'주택가 소음 민원 위험'},{k:'conv',w:'유동이 공원 쪽으로 빠져 점포 앞 통행 적음'}],
+       twin:'A'},
+      {id:'shoes', name:'성수 수제화거리', short:'수제화거리', type:'특화상권', dong:'성수동2가',
+       poly:[[37.5492,127.0538],[37.5490,127.0562],[37.5462,127.0563],[37.5447,127.0575],[37.5444,127.0545],[37.5462,127.0534]],
+       sum:'수제화 공장·판매점이 모인 전통 특화거리. 역세권이지만 업종 전환이 진행 중이라 1층 공실이 생기고 있습니다.',
+       tags:['역세권 도보 1분','업종 전환 중','1층 공실 증가','관광객 유입'],
+       m:{pop:46100,stores:271,vac:13.6,rent:15.1,sales:97,growth:-2.4},
+       time:[8,24,22,28,13,5], age:[24,30,21,15,10], female:52, weekend:41, vacs:7,
+       fit:{cafe:74,bakery:70,korean:72,pub:56,conv:66,beauty:52,fitness:55,select:81,academy:25},
+       why:{select:'수제화·가죽 소품과 어울리는 라이프스타일 편집숍 수요',cafe:'역 앞 대기·환승 수요',korean:'오피스 상권과 붙어 있어 점심 수요가 넘어옴',bakery:'역세권 테이크아웃 수요'},
+       avoid:[{k:'academy',w:'주변 학령 인구 적음'},{k:'pub',w:'저녁 유동은 뚝섬 먹자골목으로 빠짐'}],
+       twin:'B'},
+      {id:'res1', name:'성수1가 주거·생활 상권', short:'성수1가 주거', type:'주거상권', dong:'성수동1가',
+       poly:[[37.5520,127.0420],[37.5522,127.0500],[37.5492,127.0536],[37.5478,127.0505],[37.5482,127.0440]],
+       sum:'아파트·빌라 단지 배후의 생활 상권. 학원·병원·세탁 등 생활 서비스 수요가 꾸준하고 임대료가 낮습니다.',
+       tags:['가족 단위','평일 오후 학원 수요','단골 위주','임대료 낮음'],
+       m:{pop:28700,stores:163,vac:8.6,rent:10.9,sales:88,growth:2.1},
+       time:[16,18,24,26,12,4], age:[14,27,28,17,14], female:55, weekend:38, vacs:2,
+       fit:{cafe:58,bakery:68,korean:70,pub:34,conv:78,beauty:74,fitness:72,select:32,academy:86},
+       why:{academy:'초·중등 학령 인구가 많고 학원가 수요가 꾸준함',conv:'주거 배후 생활 수요',beauty:'단골형 미용실·네일 재방문률이 높음',fitness:'주부·직장인 생활 운동 수요'},
+       avoid:[{k:'pub',w:'주거지 인접으로 심야 영업 민원 가능성'},{k:'select',w:'외부 방문객 유입 적음'}],
+       twin:'C'},
+      {id:'ttukdo', name:'뚝도시장 상점가', short:'뚝도시장', type:'전통시장', dong:'성수동2가',
+       poly:[[37.5410,127.0462],[37.5412,127.0505],[37.5396,127.0510],[37.5390,127.0470]],
+       sum:'오래된 전통시장으로 반찬·정육·분식 위주. 최근 청년 상인 점포와 시장 투어 수요가 늘고 있습니다.',
+       tags:['50대 이상 비중 큼','오전 장보기','청년상인 지원','온누리상품권'],
+       m:{pop:21400,stores:142,vac:12.8,rent:8.7,sales:79,growth:4.6},
+       time:[26,22,20,22,7,3], age:[12,18,21,24,25], female:58, weekend:47, vacs:3,
+       fit:{cafe:55,bakery:64,korean:76,pub:48,conv:52,beauty:38,fitness:28,select:42,academy:20},
+       why:{korean:'반찬·분식 등 시장 연계 먹거리 수요',bakery:'시장 투어 방문객의 간식 수요',cafe:'청년 상인 레트로 카페 사례 증가'},
+       avoid:[{k:'fitness',w:'시장 내 공간 구조상 부적합'},{k:'academy',w:'시장 상권 특성과 맞지 않음'}],
+       twin:'C'},
+    ]
+  },
+  mangwon: {
+    name:'마포구 망원동', center:[37.5550,126.9058], zoom:16,
+    stations:[{n:'망원역',ll:[37.5560,126.9101]},{n:'합정역',ll:[37.5496,126.9139]}],
+    zones:[
+      {id:'mwmarket', name:'망원시장', short:'망원시장', type:'전통시장', dong:'망원2동',
+       poly:[[37.5575,126.9042],[37.5577,126.9072],[37.5563,126.9076],[37.5560,126.9046]],
+       sum:'저렴한 먹거리로 젊은 방문객이 많은 전통시장. 시장 안 간식 테이크아웃 매출이 높고 주말 혼잡도가 큽니다.',
+       tags:['주말 먹거리 투어','20대 비중 큼','테이크아웃','온누리상품권'],
+       m:{pop:44800,stores:205,vac:5.9,rent:12.6,sales:112,growth:5.3},
+       time:[14,26,24,24,9,3], age:[34,26,15,13,12], female:57, weekend:55, vacs:2,
+       fit:{cafe:60,bakery:82,korean:80,pub:52,conv:48,beauty:36,fitness:26,select:44,academy:18},
+       why:{bakery:'시장 간식 투어 테이크아웃 수요가 큼',korean:'반찬·분식·즉석식품 연계',cafe:'시장 입구 테이크아웃 커피 수요'},
+       avoid:[{k:'fitness',w:'시장 내 공간 구조상 부적합'},{k:'academy',w:'시장 상권 특성과 맞지 않음'}],
+       twin:'C'},
+      {id:'mangridan', name:'망리단길(포은로) 카페·소품 골목', short:'망리단길', type:'골목상권', dong:'망원1동',
+       poly:[[37.5590,126.9000],[37.5588,126.9040],[37.5574,126.9041],[37.5559,126.9044],[37.5548,126.9030],[37.5552,126.8998]],
+       sum:'주택을 고친 작은 카페·소품숍·빈티지숍이 이어진 골목. 소형 평수 매물이 많아 1인 창업에 유리합니다.',
+       tags:['소형 평수','1인 창업','빈티지 · 소품','20대 여성'],
+       m:{pop:31200,stores:248,vac:8.2,rent:11.8,sales:104,growth:3.4},
+       time:[5,18,30,28,14,5], age:[42,30,13,8,7], female:66, weekend:57, vacs:4,
+       fit:{cafe:76,bakery:79,korean:56,pub:61,conv:40,beauty:72,fitness:50,select:88,academy:20},
+       why:{select:'소형 평수 소품·빈티지숍 밀집으로 골목 쇼핑 동선이 이어짐',bakery:'디저트 원정 방문 수요',cafe:'골목 감성 카페 선호',beauty:'20대 여성 예약형 네일·속눈썹 수요'},
+       avoid:[{k:'conv',w:'골목 폭이 좁아 차량 접근·물류 불리'},{k:'academy',w:'임대료 대비 수요 낮음'}],
+       twin:'A'},
+      {id:'mwstation', name:'망원역 역세권', short:'망원역', type:'발달상권', dong:'망원1동',
+       poly:[[37.5580,126.9080],[37.5578,126.9125],[37.5550,126.9128],[37.5552,126.9080]],
+       sum:'역 출구 대로변으로 체인 카페·편의점·병원이 모인 생활 중심 상권. 평일·주말 유동이 고릅니다.',
+       tags:['출퇴근 동선','체인점 다수','병원 · 약국','유동 고름'],
+       m:{pop:62300,stores:296,vac:7.1,rent:16.4,sales:118,growth:4.2},
+       time:[18,22,18,26,12,4], age:[26,31,19,13,11], female:53, weekend:46, vacs:3,
+       fit:{cafe:68,bakery:66,korean:74,pub:58,conv:82,beauty:70,fitness:74,select:46,academy:64},
+       why:{conv:'출퇴근 동선 즉시 수요',fitness:'역세권 직장인·주민 운동 수요',korean:'평일 저녁 식사 수요',beauty:'역 근처 접근성 좋은 미용 수요'},
+       avoid:[{k:'select',w:'대로변 임대료 대비 체류 쇼핑 수요 낮음'}],
+       twin:'B'},
+      {id:'hangang', name:'망원한강공원 진입로', short:'한강 진입로', type:'특화상권', dong:'망원2동',
+       poly:[[37.5545,126.8985],[37.5546,126.9035],[37.5525,126.9050],[37.5510,126.9020],[37.5515,126.8990]],
+       sum:'한강공원으로 가는 길목. 피크닉·자전거 이용객이 주말과 여름에 몰리고 계절 차이가 큽니다.',
+       tags:['계절 편차 큼','피크닉 · 자전거','포장 수요','주말 저녁'],
+       m:{pop:27600,stores:118,vac:10.4,rent:10.2,sales:93,growth:6.8},
+       time:[6,14,26,32,17,5], age:[36,32,15,9,8], female:51, weekend:66, vacs:3,
+       fit:{cafe:72,bakery:62,korean:66,pub:70,conv:80,beauty:30,fitness:44,select:38,academy:16},
+       why:{conv:'한강 피크닉 물품·주류 포장 수요',cafe:'자전거·산책객 테이크아웃',pub:'한강 일몰 시간대 수요',korean:'포장 김밥·치킨 연계'},
+       avoid:[{k:'academy',w:'유동이 레저 목적'},{k:'beauty',w:'목적형 방문 적음'}],
+       twin:'A'},
+      {id:'hapjeong', name:'합정–망원 연결 상권', short:'합정 연결', type:'발달상권', dong:'합정동',
+       poly:[[37.5548,126.9060],[37.5546,126.9130],[37.5505,126.9138],[37.5500,126.9085],[37.5520,126.9060]],
+       sum:'합정역에서 망원으로 넘어오는 길목. 대형 카페와 와인바가 늘고 있으며 저녁 매출 비중이 큽니다.',
+       tags:['저녁 매출 ↑','와인바 증가','대형 카페','데이트 수요'],
+       m:{pop:48900,stores:262,vac:9.0,rent:17.6,sales:123,growth:7.7},
+       time:[4,14,22,32,22,6], age:[35,36,15,8,6], female:58, weekend:54, vacs:4,
+       fit:{cafe:70,bakery:67,korean:64,pub:86,conv:55,beauty:58,fitness:52,select:63,academy:24},
+       why:{pub:'데이트·모임 저녁 수요와 와인바 군집 효과',cafe:'주말 대형 카페 체류 수요',select:'합정 쇼핑 동선과 연결'},
+       avoid:[{k:'academy',w:'임대료 대비 수요 낮음'}],
+       twin:'B'},
+      {id:'mwres', name:'망원1동 주택가', short:'망원 주택가', type:'주거상권', dong:'망원1동',
+       poly:[[37.5610,126.9020],[37.5612,126.9090],[37.5582,126.9078],[37.5592,126.9015]],
+       sum:'빌라·단독주택 위주의 조용한 주거지. 생활 서비스와 동네 단골 매장 위주로 움직입니다.',
+       tags:['1~2인 가구','단골 위주','반려동물','임대료 낮음'],
+       m:{pop:19800,stores:96,vac:6.4,rent:9.1,sales:84,growth:1.9},
+       time:[18,16,22,28,12,4], age:[30,30,16,12,12], female:54, weekend:42, vacs:1,
+       fit:{cafe:60,bakery:72,korean:68,pub:36,conv:74,beauty:76,fitness:70,select:40,academy:58},
+       why:{beauty:'1~2인 가구 단골형 미용 수요',conv:'생활 밀착 수요',bakery:'동네 빵집 단골 수요',fitness:'소규모 PT·필라테스 수요'},
+       avoid:[{k:'pub',w:'주거지 소음 민원 가능성'}],
+       twin:'C'},
+    ]
+  }
+};
+
+const FIT_STEPS = [[90,'#047857'],[80,'#10b981'],[70,'#34d399'],[60,'#6ee7b7'],[50,'#a7f3d0'],[0,'#d1fae5']];
+const VAC_STEPS = [[14,'#dc2626'],[11,'#f87171'],[8,'#fca5a5'],[5,'#fecaca'],[0,'#fee2e2']];
+const stepColor = (steps, v) => steps.find(([t]) => v >= t)[1];
+
+const params = new URLSearchParams(location.search);
+const state = {
+  hood: HOODS[params.get('hood')] ? params.get('hood') : 'seongsu',
+  mode: 'type', ind: 'cafe', sel: params.get('zone'), compare: []
+};
+
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString('ko-KR');
+const hood = () => HOODS[state.hood];
+const zoneById = id => hood().zones.find(z => z.id === id);
+const topRecs = z => Object.entries(z.fit).sort((a,b) => b[1]-a[1]).slice(0,3);
+
+function zoneColor(z){
+  if (state.mode === 'fit') return stepColor(FIT_STEPS, z.fit[state.ind]);
+  if (state.mode === 'vac') return stepColor(VAC_STEPS, z.m.vac);
+  return TYPES[z.type].c;
+}
+
+// ── map ───────────────────────────────────────────────
+const map = L.map('map', {zoomControl:true, scrollWheelZoom:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19, subdomains:'abcd',
+  attribution:'&copy; OpenStreetMap contributors &copy; CARTO'
+}).addTo(map);
+const zoneLayer = L.layerGroup().addTo(map);
+const poiLayer = L.layerGroup().addTo(map);
+let polys = {};
+
+function labelHtml(z){
+  let sub;
+  if (state.mode === 'fit') sub = `${IND[state.ind].e} 적합도 <b style="display:inline;color:#047857">${z.fit[state.ind]}</b>`;
+  else if (state.mode === 'vac') sub = `공실률 ${z.m.vac}%`;
+  else { const [k] = topRecs(z)[0]; sub = `추천 ${IND[k].e} ${IND[k].n}`; }
+  return `<b>${z.short}</b><span>${sub}</span>`;
+}
+
+function drawHood(){
+  zoneLayer.clearLayers(); poiLayer.clearLayers(); polys = {};
+  const h = hood();
+  h.zones.forEach(z => {
+    const p = L.polygon(z.poly, {color: zoneColor(z), weight:2, fillOpacity:.38, opacity:.95});
+    p.bindTooltip(labelHtml(z), {permanent:true, direction:'center', className:'zlabel', interactive:false});
+    p.on('click', () => select(z.id, false));
+    p.on('mouseover', () => { if (state.sel !== z.id) p.setStyle({fillOpacity:.55}); });
+    p.on('mouseout', () => { if (state.sel !== z.id) p.setStyle({fillOpacity:.38}); });
+    p.addTo(zoneLayer);
+    polys[z.id] = p;
+    // 공실 매물 점: 구역 안쪽에 배치 (꼭짓점 평균 주변)
+    const c = z.poly.reduce((a, ll) => [a[0]+ll[0], a[1]+ll[1]], [0,0]).map(v => v / z.poly.length);
+    for (let i = 0; i < z.vacs; i++){
+      const ang = (i / z.vacs) * Math.PI * 2 + z.id.length;
+      const ll = [c[0] + Math.sin(ang) * 0.00045, c[1] + Math.cos(ang) * 0.00075];
+      L.marker(ll, {icon: L.divIcon({className:'', html:'<div class="vacdot" title="공실 매물"></div>', iconSize:[10,10]}), interactive:false}).addTo(poiLayer);
+    }
+  });
+  h.stations.forEach(s => {
+    L.marker(s.ll, {icon: L.divIcon({className:'', html:`<div class="stn">🚇 ${s.n}</div>`, iconSize:[70,20], iconAnchor:[35,10]}), interactive:false, zIndexOffset:500}).addTo(poiLayer);
+  });
+  map.fitBounds(L.featureGroup(Object.values(polys)).getBounds(), {padding:[30,30]});
+  if (!zoneById(state.sel)) state.sel = h.zones[0].id;
+  restyle();
+  renderDetail();
+}
+
+function restyle(){
+  hood().zones.forEach(z => {
+    const p = polys[z.id], on = state.sel === z.id;
+    p.setStyle({color: on ? '#0f172a' : zoneColor(z), fillColor: zoneColor(z), weight: on ? 3.5 : 2, fillOpacity: on ? .6 : .38, dashArray: on ? null : null});
+    p.setTooltipContent(labelHtml(z));
+    if (on) p.bringToFront();
+  });
+  renderList(); renderLegend();
+}
+
+function renderLegend(){
+  const el = $('#legend');
+  if (state.mode === 'type'){
+    const used = [...new Set(hood().zones.map(z => z.type))];
+    el.innerHTML = '<h4>상권 유형</h4><div class="cols">' + used.map(t => `<div class="row" title="${TYPES[t].d}"><span class="sw" style="background:${TYPES[t].c}"></span><span>${t}</span></div>`).join('')
+      + '<div class="row"><span class="vacdot" style="margin:0 2px"></span><span>공실 매물</span></div></div>';
+  } else if (state.mode === 'fit'){
+    const i = IND[state.ind];
+    el.innerHTML = `<h4>${i.e} ${i.n} 적합도</h4><div class="grad">${[...FIT_STEPS].reverse().map(s => `<span style="background:${s[1]}"></span>`).join('')}</div><div class="ends"><span>50 미만</span><span>90 이상</span></div>`;
+  } else {
+    el.innerHTML = `<h4>공실률 (낮을수록 안정)</h4><div class="grad">${[...VAC_STEPS].reverse().map(s => `<span style="background:${s[1]}"></span>`).join('')}</div><div class="ends"><span>5% 미만</span><span>14% 이상</span></div>`;
+  }
+}
+
+function renderList(){
+  const zs = [...hood().zones];
+  if (state.mode === 'fit') zs.sort((a,b) => b.fit[state.ind] - a.fit[state.ind]);
+  else if (state.mode === 'vac') zs.sort((a,b) => a.m.vac - b.m.vac);
+  $('#listTitle').textContent = state.mode === 'fit' ? `${IND[state.ind].n} 하기 좋은 상권 순` : state.mode === 'vac' ? '공실률 낮은 순' : `${hood().name} 상권 구역 ${zs.length}곳`;
+  $('#zlist').innerHTML = zs.map(z => {
+    const m = state.mode === 'fit' ? `${z.fit[state.ind]}<small>적합도</small>` : state.mode === 'vac' ? `${z.m.vac}%<small>공실률</small>` : `${fmt(z.m.pop)}<small>일 유동인구</small>`;
+    return `<button class="zi ${state.sel === z.id ? 'on' : ''}" data-id="${z.id}">
+      <span class="dot" style="background:${zoneColor(z)}"></span>
+      <span class="t"><b>${z.name}</b><span>${z.type} · ${z.dong}</span></span>
+      <span class="m">${m}</span></button>`;
+  }).join('');
+}
+
+function avgOf(key){ const zs = hood().zones; return zs.reduce((a,z) => a + z.m[key], 0) / zs.length; }
+
+function renderDetail(){
+  const z = zoneById(state.sel); if (!z) return;
+  const t = TYPES[z.type];
+  const recs = topRecs(z);
+  const popAvg = avgOf('pop'), vacAvg = avgOf('vac'), rentAvg = avgOf('rent');
+  const pk = z.time.indexOf(Math.max(...z.time));
+  const maxT = Math.max(...z.time);
+  const inCmp = state.compare.includes(z.id);
+  const fitLine = state.mode === 'fit'
+    ? `<div class="ring" style="margin-top:10px"><span style="font-size:20px">${IND[state.ind].e}</span><span>선택 업종 <b>${IND[state.ind].n}</b> 적합도 <b style="color:var(--ok)">${z.fit[state.ind]}점</b> · 동네 ${[...hood().zones].sort((a,b)=>b.fit[state.ind]-a.fit[state.ind]).findIndex(x=>x.id===z.id)+1}위</span></div>` : '';
+  $('#detail').innerHTML = `
+    <div class="dz-head" style="--zc:${t.c}">
+      <span class="type-chip">${z.type}</span>
+      <h2>${z.name}</h2>
+      <div class="sub">${hood().name.split(' ')[0]} ${z.dong} · 공실 매물 ${z.vacs}건</div>
+      <p class="sum">${z.sum}</p>
+      <div class="tags">${z.tags.map(x => `<span>#${x}</span>`).join('')}</div>
+      ${fitLine}
+    </div>
+    <div class="sec">
+      <h3>상권 지표 <small>동네 평균 대비</small></h3>
+      <div class="kpis">
+        ${kpi('일평균 유동인구', fmt(z.m.pop)+'명', z.m.pop - popAvg, v => `${v>0?'▲':'▼'} ${fmt(Math.abs(Math.round(v)))}명`, true)}
+        ${kpi('점포 수', fmt(z.m.stores)+'개', null)}
+        ${kpi('공실률', z.m.vac+'%', z.m.vac - vacAvg, v => `${v>0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%p`, false)}
+        ${kpi('평균 임대료 (3.3㎡)', z.m.rent+'만원', z.m.rent - rentAvg, v => `${v>0?'▲':'▼'} ${Math.abs(v).toFixed(1)}만원`, false)}
+        ${kpi('매출지수 (서울=100)', z.m.sales, z.m.sales - 100, v => `${v>0?'▲':'▼'} ${Math.abs(v)}`, true)}
+        ${kpi('1년 매출 증감', (z.m.growth>0?'+':'')+z.m.growth+'%', z.m.growth, v => v>0?'성장 중':'감소 중', true)}
+      </div>
+    </div>
+    <div class="sec">
+      <h3>이 상권 추천 업종 TOP 3 <small>적합도 100점 기준</small></h3>
+      ${recs.map(([k,s]) => `<div class="rec"><span class="rk">${recs.findIndex(r=>r[0]===k)+1}</span><div class="b">
+        <div class="nm"><span>${IND[k].e} ${IND[k].n}</span><em>${s}점</em></div>
+        <div class="bar"><i style="width:${s}%"></i></div>
+        <p>${z.why[k] || '상권 지표상 수요 대비 공급이 적정한 업종'}</p></div></div>`).join('')}
+    </div>
+    <div class="sec">
+      <h3>피해야 할 업종</h3>
+      ${z.avoid.map(a => `<div class="avoid"><b>${IND[a.k].e} ${IND[a.k].n}</b><span>${a.w}</span></div>`).join('')}
+    </div>
+    <div class="sec">
+      <h3>시간대별 유동인구 <small>피크 ${SLOTS[pk]}시</small></h3>
+      <div class="tchart">${z.time.map((v,i) => `<div class="c ${i===pk?'pk':''}"><em>${v}%</em><i style="height:${Math.max(6, v/maxT*78)}px"></i><span>${SLOTS[i]}</span></div>`).join('')}</div>
+    </div>
+    <div class="sec">
+      <h3>방문객 특징</h3>
+      ${z.age.map((v,i) => `<div class="hb"><span>${AGES[i]}</span><div class="bar"><i style="width:${v/Math.max(...z.age)*100}%"></i></div><b>${v}%</b></div>`).join('')}
+      <div class="split">
+        <div class="ring"><span>👩</span><span>여성 비율<br><b>${z.female}%</b></span></div>
+        <div class="ring"><span>📅</span><span>주말 비중<br><b>${z.weekend}%</b></span></div>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" href="case2-3d-floor-twin.html?s=${z.twin}">🏢 이 상권 공실 3D로 보기</a>
+      <button class="btn" id="cmpBtn">${inCmp ? '✓ 비교함에 담김' : '＋ 비교함에 담기'}</button>
+    </div>`;
+  $('#cmpBtn').onclick = () => toggleCompare(z.id);
+}
+
+function kpi(label, value, diff, fmtDiff, higherIsGood){
+  let d = '';
+  if (diff !== null && diff !== undefined && fmtDiff){
+    const good = higherIsGood ? diff >= 0 : diff <= 0;
+    d = `<div class="d ${good ? 'up' : 'dn'}">${fmtDiff(diff)}</div>`;
+  }
+  return `<div class="kpi"><div class="l">${label}</div><div class="v">${value}</div>${d}</div>`;
+}
+
+function select(id, pan = true){
+  state.sel = id;
+  restyle(); renderDetail();
+  if (pan) map.fitBounds(polys[id].getBounds(), {padding:[80,80], maxZoom:17});
+  $('#detail').scrollTop = 0;
+  if (window.matchMedia('(max-width:760px)').matches && !pan) $('#detail').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── compare ───────────────────────────────────────────
+function toggleCompare(id){
+  const i = state.compare.indexOf(id);
+  if (i >= 0) state.compare.splice(i,1);
+  else { if (state.compare.length >= 3) state.compare.shift(); state.compare.push(id); }
+  renderTray(); renderDetail();
+}
+function renderTray(){
+  const tr = $('#tray');
+  tr.classList.toggle('show', state.compare.length > 0);
+  tr.innerHTML = `<span style="font-size:12px;font-weight:700;white-space:nowrap">비교함 ${state.compare.length}/3</span>`
+    + state.compare.map(id => `<span class="ch">${zoneById(id).short}<button data-rm="${id}" aria-label="빼기">×</button></span>`).join('')
+    + `<button class="go" ${state.compare.length < 2 ? 'disabled style="opacity:.5;cursor:not-allowed"' : ''}>상권 비교하기</button>`;
+}
+$('#tray').addEventListener('click', e => {
+  const rm = e.target.closest('[data-rm]');
+  if (rm) return toggleCompare(rm.dataset.rm);
+  if (e.target.closest('.go') && state.compare.length >= 2) openCompare();
+});
+function openCompare(){
+  const zs = state.compare.map(zoneById);
+  const rows = [
+    ['상권 유형', z => z.type, null],
+    ['일평균 유동인구', z => z.m.pop, 'max', v => fmt(v)+'명'],
+    ['점포 수', z => z.m.stores, null, v => fmt(v)+'개'],
+    ['공실률', z => z.m.vac, 'min', v => v+'%'],
+    ['임대료 (3.3㎡)', z => z.m.rent, 'min', v => v+'만원'],
+    ['매출지수', z => z.m.sales, 'max'],
+    ['1년 매출 증감', z => z.m.growth, 'max', v => (v>0?'+':'')+v+'%'],
+    ['여성 비율', z => z.female, null, v => v+'%'],
+    ['주말 비중', z => z.weekend, null, v => v+'%'],
+    [`${IND[state.ind].n} 적합도`, z => z.fit[state.ind], 'max', v => v+'점'],
+    ['추천 1순위', z => { const [k,s] = topRecs(z)[0]; return `${IND[k].e} ${IND[k].n} (${s})`; }, null],
+  ];
+  $('#cmpTitle').textContent = `상권 비교 · ${zs.length}곳`;
+  $('#cmpBody').innerHTML = `<table class="cmp"><thead><tr><th></th>${zs.map(z => `<th><span class="type-chip" style="--zc:${TYPES[z.type].c};background:${TYPES[z.type].c}">${z.type}</span><br>${z.name}</th>`).join('')}</tr></thead><tbody>`
+    + rows.map(([label, get, best, f]) => {
+      const vals = zs.map(get);
+      const target = best === 'max' ? Math.max(...vals) : best === 'min' ? Math.min(...vals) : null;
+      return `<tr><td>${label}</td>${vals.map(v => `<td class="${target !== null && v === target ? 'best' : ''}">${f ? f(v) : v}</td>`).join('')}</tr>`;
+    }).join('') + '</tbody></table><p class="muted" style="font-size:11px;padding:8px 12px 0">초록색 칸이 비교 항목에서 가장 유리한 값입니다. 업종 적합도는 상단에서 고른 업종 기준입니다.</p>';
+  $('#cmpModal').classList.add('show');
+}
+$('#cmpModal').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.closest('[data-close]')) e.currentTarget.classList.remove('show'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#cmpModal').classList.remove('show'); });
+
+// ── controls ──────────────────────────────────────────
+$('#indSel').innerHTML = INDS.map(i => `<option value="${i.k}">${i.e} ${i.n}</option>`).join('');
+$('#hoodSel').value = state.hood;
+$('#hoodSel').onchange = e => { state.hood = e.target.value; state.sel = null; state.compare = []; renderTray(); drawHood(); };
+$('#modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.mode = b.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b));
+  $('#indSel').style.display = state.mode === 'fit' ? '' : 'none';
+  $('#maphint').textContent = state.mode === 'fit' ? '진한 초록일수록 선택한 업종을 하기 좋은 상권입니다' : state.mode === 'vac' ? '진한 빨강일수록 공실이 많은 상권입니다' : '색칠된 구역을 누르면 상권 특징과 추천 업종이 나와요';
+  restyle(); renderDetail();
+});
+$('#indSel').onchange = e => { state.ind = e.target.value; restyle(); renderDetail(); };
+$('#zlist').addEventListener('click', e => { const b = e.target.closest('.zi'); if (b) select(b.dataset.id); });
+
+drawHood();
+renderTray();
+</script>
+</body>
+</html>

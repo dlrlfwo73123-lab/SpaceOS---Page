@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS · 손님 모으기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --off:#0ea5e9;--on:#8b5cf6;--sup:#10b981;
+  --head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.gnb{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;letter-spacing:-.01em;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a.on{background:#fff;color:var(--head);font-weight:700}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.gnb nav a.on b{background:var(--brand);color:#fff}
+.demo-pill{white-space:nowrap;font-size:11px;font-weight:700;color:#fde68a;border:1px solid rgba(253,230,138,.4);padding:3px 9px;border-radius:999px;flex-shrink:0}
+.phead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding:16px 20px 12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.phead h1{margin:2px 0 0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.phead p{margin:4px 0 0;color:var(--text-2);font-size:13px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.muted{color:var(--text-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;text-decoration:none;color:var(--text);text-align:center;white-space:nowrap}
+.btn:hover{border-color:var(--brand-2);background:var(--brand-soft)}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-ink);border-color:var(--brand-ink)}
+.btn-sm{padding:5px 9px;font-size:11.5px;border-radius:8px}
+
+.wrap{padding:0 20px 28px;display:grid;gap:12px}
+.store{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 16px}
+.store .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:20px;flex-shrink:0}
+.store .t{flex:1;min-width:200px}
+.store .t b{display:block;font-size:15px}
+.store .t span{font-size:12px;color:var(--text-3)}
+.badge{font-size:11px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.badge.run{background:var(--ok-soft);color:var(--ok);border:1px solid #a7f3d0}
+.badge.new{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd}
+.badge.pre{background:var(--warn-soft);color:#b45309;border:1px solid #fde68a}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{padding:12px 14px}
+.kpi .l{font-size:11.5px;color:var(--text-3);font-weight:700}
+.kpi .v{font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.kpi .v small{font-size:12px;font-weight:700;color:var(--text-2)}
+.kpi .d{font-size:11.5px;font-weight:700;color:var(--text-2)}
+.kpi .prog{height:6px;border-radius:999px;background:#eef2f7;margin-top:6px;overflow:hidden;position:relative}
+.kpi .prog i{display:block;height:100%;border-radius:999px;background:var(--brand)}
+.kpi .prog em{position:absolute;top:0;bottom:0;width:2px;background:#0f172a}
+.good{color:var(--ok)!important}.bad{color:var(--bad)!important}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs button{border:0;background:transparent;padding:10px 14px;font-size:13.5px;font-weight:700;color:var(--text-3);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tabs button i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#e2e8f0;font-size:10.5px;margin-right:6px;color:var(--text-2)}
+.tabs button.on i{background:var(--brand);color:#fff}
+.panel{display:none}
+.panel.on{display:block}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;align-items:start}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.box{padding:16px}
+.bh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.bh h3{margin:0;font-size:14px;font-weight:800}
+.bh small{font-size:11.5px;color:var(--text-3)}
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field label{font-size:11.5px;font-weight:800;color:var(--text-2)}
+.inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:#fff}
+.inp:focus{outline:2px solid #c7d2fe;border-color:var(--brand-2)}
+.unit{position:relative}
+.unit .inp{padding-right:46px}
+.unit span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-3);font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tchips{display:flex;flex-wrap:wrap;gap:6px}
+.tchips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;color:var(--text-2)}
+.tchips button.on{background:var(--brand-soft);border-color:var(--brand-2);color:var(--brand-ink)}
+.calc{background:var(--brand-soft);border:1px solid #c7d2fe;border-radius:12px;padding:12px;font-size:12.5px;color:var(--brand-ink)}
+.calc b{font-size:18px}
+.bench{display:grid;gap:8px;margin-top:12px}
+.bench .r{display:grid;grid-template-columns:86px 1fr 70px;gap:8px;align-items:center;font-size:12px}
+.bench .r .bar{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden}
+.bench .r .bar i{display:block;height:100%;border-radius:999px}
+.bench .r b{text-align:right}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--text-2);margin-top:6px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:12px;height:10px;border-radius:3px}
+table.led{width:100%;border-collapse:collapse;font-size:12.5px}
+.led th{font-size:11px;color:var(--text-3);font-weight:800;text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.led td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.led td.amt{text-align:right;font-weight:800;white-space:nowrap}
+.led th.amt{text-align:right}
+.led .in{color:var(--ok)}
+.led .out{color:var(--text)}
+.led .tag{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.led .tag.in{background:var(--ok-soft)}
+.led .tag.out{background:#f1f5f9;color:var(--text-2)}
+.led .del{border:0;background:transparent;color:var(--text-3);font-size:15px;padding:0 4px}
+.led .del:hover{color:var(--bad)}
+.led tr.planned td{color:var(--text-2);font-style:italic}
+.addrow{display:grid;grid-template-columns:110px 84px 1fr 1.2fr 110px auto;gap:6px;margin-top:10px}
+.addrow .inp{padding:7px 8px;font-size:12.5px}
+.ledscroll{max-height:360px;overflow-y:auto}
+.ex{display:grid;gap:9px}
+.ex .r{display:grid;grid-template-columns:110px 1fr 110px;gap:10px;align-items:center;font-size:12px}
+.ex .bar{position:relative;height:12px;border-radius:999px;background:#eef2f7}
+.ex .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+.ex .bar em{position:absolute;top:-3px;bottom:-3px;width:2px;background:#0f172a;opacity:.55}
+.ex .r b{text-align:right;white-space:nowrap}
+.ex .r b small{display:block;font-weight:600;color:var(--text-3);font-size:10.5px}
+.pl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
+.pl .tot{font-weight:800;font-size:15px;border-top:1px solid var(--line);padding-top:8px}
+.note{font-size:11.5px;color:var(--text-3);margin-top:10px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;opacity:0;transition:.25s;z-index:2000;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* events */
+.efilter{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.gantt{overflow-x:auto}
+.gantt table{border-collapse:collapse;min-width:720px;width:100%;font-size:11.5px}
+.gantt th{font-weight:700;color:var(--text-3);padding:4px 2px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+.gantt td{padding:5px 2px;border-bottom:1px solid #f1f5f9;height:28px}
+.gantt td.nm{white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;font-weight:700;padding-right:10px;color:var(--text)}
+.gantt .bar{height:14px;border-radius:999px}
+.gantt .now{position:relative}
+.ecards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.ec{padding:14px;display:flex;flex-direction:column;gap:8px}
+.ec .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.ec h4{margin:4px 0 0;font-size:14px}
+.ty{font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px;color:#fff;white-space:nowrap}
+.ty.off{background:var(--off)}.ty.on{background:var(--on)}.ty.sup{background:var(--sup)}
+.fit{text-align:center;min-width:52px}
+.fit b{display:block;font-size:20px;font-weight:800;line-height:1}
+.fit small{font-size:10px;color:var(--text-3);font-weight:700}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px}
+.meta dt{color:var(--text-3)}
+.meta dd{margin:0;font-weight:600}
+.idea{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--text-2)}
+.idea b{color:var(--text)}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{font-size:11.5px;font-weight:700;color:var(--brand);text-decoration:none;border:1px solid #c7d2fe;border-radius:8px;padding:3px 8px;background:#fff}
+.links a:hover{background:var(--brand-soft)}
+.ec .act{display:flex;gap:6px;margin-top:auto}
+.ec.picked{border-color:var(--brand-2);box-shadow:0 0 0 2px rgba(99,102,241,.2),var(--sh)}
+.plan{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--head);color:#fff;border-radius:var(--r)}
+.plan .chs{display:flex;flex-wrap:wrap;gap:6px}
+.plan .chs span{background:rgba(255,255,255,.12);border-radius:999px;padding:3px 10px;font-size:12px}
+.plan b{color:#a5b4fc}
+
+/* interior */
+.mood{display:flex;flex-wrap:wrap;gap:8px}
+.mood span{font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 11px;background:#fff;border:1px solid var(--line)}
+.mood span em{font-style:normal;font-weight:600;color:var(--text-3);margin-left:4px;font-size:11px}
+.concepts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.cc{overflow:hidden;display:flex;flex-direction:column}
+.board{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:72px 72px;gap:4px;padding:4px;background:#f8fafc}
+.board div{border-radius:8px;position:relative;overflow:hidden}
+.board div:first-child{grid-row:1 / 3}
+.board div span{position:absolute;left:6px;bottom:5px;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.pal{display:flex;height:16px}
+.pal i{flex:1}
+.cc .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.cc h4{margin:0;font-size:15px;display:flex;justify-content:space-between;gap:8px}
+.cc h4 em{font-style:normal;color:var(--ok);font-size:13px;white-space:nowrap}
+.cc p{margin:0;font-size:12.5px;color:var(--text-2)}
+.els{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px}
+.els dt{color:var(--text-3);font-weight:700}
+.els dd{margin:0}
+.cost{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:8px;font-size:12px;color:var(--text-2)}
+.cost b{font-size:16px;color:var(--text)}
+.cc.best{border-color:var(--ok);box-shadow:0 0 0 2px rgba(5,150,105,.15),var(--sh)}
+.bestTag{font-size:10.5px;font-weight:800;color:#fff;background:var(--ok);border-radius:999px;padding:1px 8px;margin-left:6px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:flex;gap:8px;font-size:12.5px;color:var(--text-2)}
+.checks li:before{content:'☐';color:var(--brand);font-weight:800}
+.tips{display:grid;gap:8px}
+.tips div{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--text-2)}
+.tips i{font-style:normal;font-size:18px;line-height:1.2}
+
+@media (max-width:1100px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:1fr}
+  .concepts{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .gnb{padding:0 12px;gap:10px}
+  .demo-pill{display:none}
+  .phead{padding:14px 16px 10px}
+  .wrap{padding:0 16px 28px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi .v{font-size:18px}
+  .concepts,.g3{grid-template-columns:1fr}
+  .row3{grid-template-columns:1fr 1fr}
+  .addrow{grid-template-columns:1fr 1fr}
+  .addrow .memo{grid-column:1 / -1}
+  .ex .r{grid-template-columns:86px 1fr 92px}
+  .led th:nth-child(2),.led td:nth-child(2){display:none}
+  .led td{font-size:12px}
+  .led td:nth-child(3){white-space:nowrap}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html" class="on"><b>5</b>손님 모으기</a>
+  </nav>
+  <span class="demo-pill">추가안 시안 · 데모 데이터</span>
+</header>
+
+<div class="phead">
+  <div>
+    <div class="eyebrow">CASE 5 · 손님 모으기 — 상권분석 정보 추가 입력</div>
+    <h1>가계부처럼 매출 목표 · 지출을 적고, 행사 연계와 인테리어 추천까지</h1>
+    <p>내 가게 정보를 넣으면 상권 평균과 비교한 목표, 지출 구조, 같이 할 만한 온 · 오프라인 행사, 상권에 어울리는 인테리어를 보여줍니다.</p>
+  </div>
+  <div class="seg" id="scSeg" aria-label="시나리오">
+    <button data-s="A">A · 운영 6개월 디저트 카페</button>
+    <button data-s="B">B · 오픈 2개월 샐러드</button>
+    <button data-s="C">C · 오픈 준비 이자카야</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card store" id="store"></div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="tabs" id="tabs" role="tablist">
+    <button data-t="profile"><i>1</i>내 가게 정보</button>
+    <button data-t="ledger" class="on"><i>2</i>매출 · 지출 가계부</button>
+    <button data-t="events"><i>3</i>온 · 오프라인 행사 연계</button>
+    <button data-t="interior"><i>4</i>상권 맞춤 인테리어</button>
+  </div>
+
+  <!-- 1. 내 가게 정보 -->
+  <section class="panel" id="p-profile">
+    <div class="g2">
+      <div class="card box">
+        <div class="bh"><h3>상권분석에 넣을 내 가게 정보</h3><small>입력하면 목표 · 행사 · 인테리어 추천에 바로 반영</small></div>
+        <div class="row"><div class="field"><label for="fName">상호</label><input class="inp" id="fName"></div>
+          <div class="field"><label for="fInd">업종</label><select class="inp" id="fInd"><option>디저트 카페</option><option>샐러드 · 포케</option><option>이자카야</option><option>카페</option><option>베이커리</option><option>네일 · 뷰티</option><option>필라테스</option></select></div></div>
+        <div class="field"><label>위치</label><input class="inp" id="fPlace" readonly style="background:var(--surface-2)"></div>
+        <div class="row3">
+          <div class="field"><label for="fArea">전용면적</label><div class="unit"><input class="inp" id="fArea" type="number" min="1"><span>㎡</span></div></div>
+          <div class="field"><label for="fSeats">좌석 수</label><div class="unit"><input class="inp" id="fSeats" type="number" min="0"><span>석</span></div></div>
+          <div class="field"><label for="fTicket">객단가</label><div class="unit"><input class="inp" id="fTicket" type="number" min="1000" step="500"><span>원</span></div></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label for="fOpen">영업 시작</label><input class="inp" id="fOpen" type="time"></div>
+          <div class="field"><label for="fClose">영업 종료</label><input class="inp" id="fClose" type="time"></div>
+          <div class="field"><label for="fMkt">월 마케팅 예산</label><div class="unit"><input class="inp" id="fMkt" type="number" min="0" step="10"><span>만원</span></div></div>
+        </div>
+        <div class="field"><label>주 타깃 손님</label><div class="tchips" id="fTargets"></div></div>
+        <div class="field"><label>판매 채널</label><div class="tchips" id="fChannels"></div></div>
+        <div class="field"><label for="fMenu">대표 메뉴 · 서비스</label><input class="inp" id="fMenu"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="resetBtn">예시 데이터로 되돌리기</button><button class="btn btn-primary" id="saveBtn">저장하고 분석에 반영</button></div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card box">
+          <div class="bh"><h3>이 정보로 계산한 것</h3><small id="zoneName"></small></div>
+          <div class="calc" id="needCalc"></div>
+          <div class="bench" id="benchBars"></div>
+          <p class="note">상권 평균 · 상위 25%는 같은 상권 · 같은 업종 점포의 추정 월매출입니다 (데모). 실서비스에서는 서울시 상권분석서비스 추정매출로 교체합니다.</p>
+        </div>
+        <div class="card box">
+          <div class="bh"><h3>상권 손님과 내 타깃 비교</h3><small>방문객 구성 (데모)</small></div>
+          <div class="bench" id="targetMatch"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 가계부 -->
+  <section class="panel on" id="p-ledger">
+    <div class="g2">
+      <div style="display:grid;gap:12px">
+        <div class="card box">
+          <div class="bh"><h3>월 매출 목표</h3><small>상권 평균과 비교</small></div>
+          <div class="row">
+            <div class="field"><label for="goal">월 평균 매출 목표</label><div class="unit"><input class="inp" id="goal" type="number" min="0" step="50"><span>만원</span></div></div>
+            <div class="field"><label for="days">월 영업일</label><div class="unit"><input class="inp" id="days" type="number" min="1" max="31"><span>일</span></div></div>
+          </div>
+          <input type="range" id="goalRange" min="1000" max="6000" step="50" style="width:100%;accent-color:var(--brand)">
+          <div class="calc" id="goalCalc" style="margin-top:10px"></div>
+        </div>
+        <div class="card box chart">
+          <div class="bh"><h3>월별 매출 추이</h3><small id="chartSub"></small></div>
+          <div id="chart"></div>
+          <div class="legend"><span><i style="background:#6366f1"></i>실제 매출</span><span><i style="background:repeating-linear-gradient(45deg,#c7d2fe 0 3px,#eef2ff 3px 6px);border:1px dashed #6366f1"></i>이번 달 (월말 예상)</span><span><i style="background:#0f172a;height:2px"></i>내 목표</span><span><i style="background:none;border-top:2px dashed #f59e0b;height:0"></i>상권 평균</span></div>
+        </div>
+        <div class="card box">
+          <div class="bh"><h3>이번 달 손익</h3><small id="plSub"></small></div>
+          <div class="pl" id="pl"></div>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card box">
+          <div class="bh"><h3 id="ledTitle">이번 달 장부</h3><div style="display:flex;gap:6px"><button class="btn btn-sm" id="csvBtn">CSV 내보내기</button><button class="btn btn-sm" id="ledReset">예시로 초기화</button></div></div>
+          <div class="ledscroll"><table class="led"><thead><tr><th>날짜</th><th>구분</th><th>항목</th><th>메모</th><th class="amt">금액</th><th></th></tr></thead><tbody id="ledBody"></tbody></table></div>
+          <form class="addrow" id="addForm">
+            <input class="inp" type="date" id="aDate" required aria-label="날짜">
+            <select class="inp" id="aType" aria-label="구분"><option value="in">매출</option><option value="out" selected>지출</option></select>
+            <select class="inp" id="aCat" aria-label="항목"></select>
+            <input class="inp memo" id="aMemo" placeholder="메모 (예: 우유 · 버터)" aria-label="메모">
+            <div class="unit"><input class="inp" id="aAmt" type="number" min="1" placeholder="금액" required aria-label="금액"><span>만원</span></div>
+            <button class="btn btn-primary" type="submit">추가</button>
+          </form>
+        </div>
+        <div class="card box">
+          <div class="bh"><h3>지출 구조</h3><small>매출 대비 비율 · 검은 선 = 업계 적정선</small></div>
+          <div class="ex" id="exBars"></div>
+          <p class="note" id="exNote"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 행사 연계 -->
+  <section class="panel" id="p-events">
+    <div class="card box">
+      <div class="efilter">
+        <div class="seg" id="evSeg"><button data-f="all" class="on">전체</button><button data-f="off">오프라인 행사</button><button data-f="on">온라인 프로모션</button><button data-f="sup">지원사업</button></div>
+        <small class="muted">일정은 예시이며 실제 일정 · 조건은 링크에서 확인하세요 · 적합도는 내 업종 · 타깃 · 상권 기준</small>
+      </div>
+      <div class="gantt" id="gantt"></div>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--off)"></i>오프라인 행사</span><span><i style="background:var(--on)"></i>온라인 프로모션</span><span><i style="background:var(--sup)"></i>지원사업</span><span class="muted">흐린 막대 = 적합도 70 미만</span></div>
+    </div>
+    <div class="ecards" id="ecards"></div>
+    <div class="plan" id="planBar" style="margin-top:12px"></div>
+  </section>
+
+  <!-- 4. 인테리어 -->
+  <section class="panel" id="p-interior">
+    <div class="card box" style="margin-bottom:12px">
+      <div class="bh"><h3>상권 무드 분석</h3><small id="moodSub">주변 매장 리뷰 · SNS 사진 키워드 (데모)</small></div>
+      <div class="mood" id="mood"></div>
+    </div>
+    <div class="concepts" id="concepts"></div>
+    <div class="g3" style="margin-top:12px">
+      <div class="card box"><div class="bh"><h3>예산 계산</h3><small>평당 단가 × 면적</small></div>
+        <div class="field"><label for="grade">마감 수준</label><select class="inp" id="grade"><option value="0">기본 (셀프 · 부분 시공)</option><option value="1" selected>중급 (일반 업체)</option><option value="2">고급 (설계 + 시공)</option></select></div>
+        <div class="pl" id="budget"></div>
+      </div>
+      <div class="card box"><div class="bh"><h3>이 자리 공간 팁</h3><small id="tipSub"></small></div><div class="tips" id="tips"></div></div>
+      <div class="card box"><div class="bh"><h3>공사 전 체크리스트</h3><small>인허가 · 규정</small></div><ul class="checks" id="checks"></ul></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// [데모 데이터] 매출 · 지출 · 상권 평균 · 행사 일정은 시안 확인용 가상값입니다.
+// 링크는 실제 공식 사이트(구청 · 소상공인 지원기관 · 플랫폼 사업자 센터)로만 연결합니다.
+const MONTHS = ['4월','5월','6월','7월','8월','9월','10월'];
+const CAT = {
+  sales:{n:'매출',t:'in'},
+  rent:{n:'임대료·관리비',t:'fixed',max:15},
+  labor:{n:'인건비',t:'fixed',max:30},
+  food:{n:'재료비·매입',t:'var',max:35},
+  util:{n:'공과금',t:'fixed',max:5},
+  fee:{n:'카드·배달 수수료',t:'var',max:6},
+  mkt:{n:'마케팅·행사',t:'var',max:6},
+  supply:{n:'소모품·포장재',t:'var',max:4},
+  etc:{n:'기타',t:'fixed',max:5},
+};
+const TARGET_OPTS = ['20대 여성','20대 남성','30대 직장인','40대 이상','가족 단위','관광 · 외부 방문객','반려동물 동반','동네 주민'];
+const CHANNEL_OPTS = ['매장','포장','배달','예약','온라인 판매','정기구독'];
+const SC = {
+  A:{ status:['run','운영 6개월'], icon:'🥐', zone:'연무장길 카페·팝업거리', zoneId:'yeonmu', floor:'2층',
+      profile:{name:'온도 성수 (가상)',ind:'디저트 카페',place:'성수 아뜰리에빌딩 2층 201호',area:84,seats:28,ticket:14500,open:'11:00',close:'21:00',mkt:60,targets:['20대 여성','30대 직장인','관광 · 외부 방문객'],channels:['매장','포장','예약'],menu:'시그니처 휘낭시에 · 핸드드립'},
+      goal:3200, days:27, hist:[1850,2650,2900,3050,2780,3120], zoneAvg:2850, top25:4100, month:'2026년 10월', asOf:25, monthDays:31, plan:false,
+      visitors:{'20대 여성':31,'20대 남성':12,'30대 직장인':24,'40대 이상':15,'관광 · 외부 방문객':38,'가족 단위':8,'반려동물 동반':6,'동네 주민':10},
+      entries:[
+        ['2026-10-05','in','sales','10/1~10/5 매출 (카드 · 현금)',520],['2026-10-12','in','sales','10/6~10/12 매출',760],['2026-10-19','in','sales','10/13~10/19 매출 (팝업 주간)',690],['2026-10-25','in','sales','10/20~10/25 매출',610],
+        ['2026-10-01','out','rent','월세 + 관리비 (201호)',305],['2026-10-10','out','labor','매니저 1 · 파트타임 3명 급여',640],['2026-10-05','out','food','버터 · 밀가루 · 원두',420],['2026-10-18','out','food','과일 · 생크림 · 포장 디저트 재료',330],
+        ['2026-10-15','out','util','전기 · 수도 · 인터넷',62],['2026-10-21','out','etc','세무 기장 · 화재보험',30],['2026-10-12','out','mkt','인스타그램 광고',45],['2026-10-25','out','fee','카드 수수료',31],['2026-10-20','out','supply','테이크아웃 컵 · 박스',22]] },
+  B:{ status:['new','오픈 2개월'], icon:'🥗', zone:'성수역 지식산업센터 오피스', zoneId:'office', floor:'1층',
+      profile:{name:'그린볼 성수 (가상)',ind:'샐러드 · 포케',place:'성수 테크타워 1층 102호',area:72,seats:16,ticket:11800,open:'08:00',close:'20:00',mkt:80,targets:['30대 직장인','20대 여성'],channels:['매장','포장','배달','예약','정기구독'],menu:'포케 · 샐러드 정기구독'},
+      goal:3800, days:22, hist:[null,null,null,null,null,3150], zoneAvg:3400, top25:4800, month:'2026년 10월', asOf:25, monthDays:31, plan:false,
+      visitors:{'20대 여성':20,'20대 남성':14,'30대 직장인':52,'40대 이상':18,'관광 · 외부 방문객':6,'가족 단위':3,'반려동물 동반':1,'동네 주민':5},
+      entries:[
+        ['2026-10-03','in','sales','10/1~10/3 매출 (평일 3일)',520],['2026-10-10','in','sales','10/6~10/10 매출',940],['2026-10-17','in','sales','10/13~10/17 매출',910],['2026-10-24','in','sales','10/20~10/24 매출',1020],
+        ['2026-10-01','out','rent','월세 + 관리비 (102호)',468],['2026-10-10','out','labor','주방 2 · 홀 1 급여',780],['2026-10-06','out','food','채소 · 연어 · 곡물',520],['2026-10-20','out','food','채소 · 단백질 재료',460],
+        ['2026-10-15','out','util','전기 · 가스 · 수도',52],['2026-10-25','out','fee','배달앱 중개 · 카드 수수료',140],['2026-10-08','out','mkt','입주사 샘플링 · 전단',70],['2026-10-14','out','supply','친환경 포장 용기',58]] },
+  C:{ status:['pre','11월 20일 오픈 예정'], icon:'🍶', zone:'뚝섬역 먹자골목', zoneId:'ttuk', floor:'지하 1층',
+      profile:{name:'이자카야 등 (가상)',ind:'이자카야',place:'뚝섬 코너하우스 지하 1층 B01호',area:95,seats:34,ticket:38000,open:'17:00',close:'02:00',mkt:120,targets:['30대 직장인','20대 남성','20대 여성'],channels:['매장','예약'],menu:'숯불 꼬치 · 하이볼'},
+      goal:3600, days:24, hist:[null,null,null,null,null,null], zoneAvg:3100, top25:4500, month:'2026년 11월 (예상)', asOf:30, monthDays:30, plan:true, planDays:9,
+      visitors:{'20대 여성':22,'20대 남성':25,'30대 직장인':34,'40대 이상':19,'관광 · 외부 방문객':12,'가족 단위':2,'반려동물 동반':0,'동네 주민':8},
+      entries:[
+        ['2026-11-30','in','sales','예상 매출 (11/20 오픈 · 9영업일)',1350],
+        ['2026-11-01','out','rent','월세 + 관리비 (B01호)',175],['2026-11-20','out','labor','주방 2 · 홀 2 (오픈 첫 달)',520],['2026-11-18','out','food','식자재 초도 매입',480],['2026-11-18','out','food','주류 초도 매입',380],
+        ['2026-11-25','out','util','전기 · 가스 · 환기 설비',70],['2026-11-15','out','mkt','오픈 이벤트 · 당근 광고',150],['2026-11-30','out','fee','카드 수수료',25]] },
+};
+
+const EVENTS = [
+  {id:'popup', ty:'off', name:'성수 팝업 위크', s:'2026-11-06', e:'2026-11-15', where:'연무장길 · 성수동2가 일대', effect:'주말 유동 +35% 예상', cost:'자체 이벤트 비용', fit:{A:94,B:46,C:52},
+   idea:{A:'팝업 방문객 대상 “팝업 영수증 지참 시 음료 사이즈업” — 2층이라 계단 입구 입간판 필수', B:'팝업 스태프 · 운영사 대상 단체 도시락 사전주문 받기', C:'팝업 마감 후 21시 이후 “2차 하이볼 1+1”'},
+   links:[['성동구청 행사 · 축제','https://www.sd.go.kr'],['대한민국 구석구석 축제','https://korean.visitkorea.or.kr']]},
+  {id:'flea', ty:'off', name:'서울숲 주말 플리마켓', s:'2026-11-14', e:'2026-11-29', where:'서울숲 일대 (격주 주말)', effect:'가족 · 반려동물 방문객', cost:'셀러 참가비 (주최 측 공지)', fit:{A:82,B:40,C:30},
+   idea:{A:'플리마켓 셀러로 구움과자 세트 판매 + 매장 쿠폰 동봉', B:'건강 도시락 · 스무디 테이크아웃 부스', C:'참여 비추천 — 낮 시간 행사'},
+   links:[['성동구청 행사 · 축제','https://www.sd.go.kr']]},
+  {id:'festa', ty:'off', name:'성동 골목상권 페스타 (스탬프 투어)', s:'2026-11-20', e:'2026-11-29', where:'성동구 골목상권 참여 점포', effect:'지역화폐 결제 + 스탬프 방문', cost:'참여 무료 (신청 필요)', fit:{A:78,B:70,C:88},
+   idea:{A:'스탬프 3개 완성 시 미니 휘낭시에 증정', B:'점심 스탬프 5회 = 포케 1회 무료', C:'오픈 시기와 겹침 — 오픈 이벤트를 스탬프 투어와 묶어 홍보'},
+   links:[['성동구청 소상공인 지원','https://www.sd.go.kr'],['제로페이 · 지역사랑상품권 가맹','https://www.zeropay.or.kr']]},
+  {id:'night', ty:'off', name:'뚝도시장 금토 야시장', s:'2026-11-06', e:'2026-12-19', where:'뚝도시장 · 뚝섬역 남측', effect:'금 · 토 18~22시 유동 +40%', cost:'참여 무료 (상인회 협의)', fit:{A:38,B:22,C:91},
+   idea:{A:'저녁 위주 행사라 효과 낮음', B:'영업시간 밖 — 비추천', C:'야시장 방문객 대상 “지하 1층 숨은 이자카야” 입구 조명 · 입간판 + 꼬치 테이크아웃'},
+   links:[['성동구청 전통시장 소식','https://www.sd.go.kr']]},
+  {id:'xmas', ty:'off', name:'연말 크리스마스 마켓', s:'2026-12-12', e:'2026-12-25', where:'성수 · 서울숲 일대', effect:'연말 선물 · 모임 수요', cost:'부스 비용 (주최 측 공지)', fit:{A:90,B:48,C:84},
+   idea:{A:'크리스마스 한정 구움과자 박스 예약 판매', B:'연말 회식 대체 “샐러드 케이터링” 기업 대상 제안', C:'연말 모임 예약 코스 (4인 세트) 사전 판매'},
+   links:[['대한민국 구석구석 축제','https://korean.visitkorea.or.kr']]},
+  {id:'lunch', ty:'off', name:'입주사 점심 할인 주간', s:'2026-11-02', e:'2026-11-13', where:'성수역 지식산업센터 (관리단 협의)', effect:'평일 11~14시 집중', cost:'할인분 부담', fit:{A:40,B:95,C:35},
+   idea:{A:'오후 3시 커피 · 디저트 세트로 응용', B:'관리단 공지 + 사원증 제시 10% 할인, 정기구독 가입 유도', C:'비추천'},
+   links:[['서울시 상권분석서비스','https://golmok.seoul.go.kr']]},
+  {id:'smart', ty:'on', name:'네이버 스마트플레이스 쿠폰 · 예약', s:'2026-11-02', e:'2026-12-31', where:'네이버 지도 · 플레이스', effect:'지도 검색 노출 · 예약 전환', cost:'무료 (수수료 별도 확인)', fit:{A:92,B:80,C:93},
+   idea:{A:'“성수 디저트” 검색 노출용 사진 · 메뉴 정비 + 첫 방문 쿠폰', B:'점심 사전주문(픽업) 기능 연결', C:'지하 매장은 지도 검색이 생명 — 입구 사진 · 찾아오는 길 필수 등록'},
+   links:[['네이버 스마트플레이스','https://smartplace.naver.com']]},
+  {id:'daangn', ty:'on', name:'당근 비즈프로필 동네 광고', s:'2026-11-02', e:'2026-12-31', where:'당근 · 반경 동네', effect:'주민 · 직장인 근거리 노출', cost:'일 예산 설정 (소액 가능)', fit:{A:70,B:84,C:86},
+   idea:{A:'평일 오후 한정 쿠폰으로 주민 단골 확보', B:'반경 1km 직장인 대상 “첫 주문 할인”', C:'오픈 소식 + 오픈 첫 주 하이볼 1+1'},
+   links:[['당근 비즈니스','https://business.daangn.com']]},
+  {id:'insta', ty:'on', name:'인스타그램 지역 해시태그 챌린지', s:'2026-11-09', e:'2026-11-30', where:'#성수디저트 · #뚝섬맛집', effect:'SNS 언급량 · 외부 방문객', cost:'광고 예산 선택', fit:{A:95,B:58,C:76},
+   idea:{A:'창가석 포토존 인증 시 다음 방문 쿠폰', B:'“오늘의 포케” 인증 리그램 이벤트', C:'숨은 지하 이자카야 컨셉 사진 · 릴스'},
+   links:[['인스타그램 비즈니스','https://business.instagram.com']]},
+  {id:'baemin', ty:'on', name:'배달앱 첫 주문 할인 프로모션', s:'2026-11-02', e:'2026-11-30', where:'배달앱 가게 페이지', effect:'신규 주문 유입', cost:'할인 · 광고비 부담', fit:{A:42,B:88,C:55},
+   idea:{A:'디저트는 배달 파손 위험 — 포장 위주 권장', B:'점심 배달 최소주문 낮추고 사무실 단체 주문 쿠폰', C:'안주 포장 메뉴만 소량 운영'},
+   links:[['배민 사장님광장','https://ceo.baemin.com']]},
+  {id:'kakao', ty:'on', name:'카카오톡 채널 단골 쿠폰', s:'2026-11-02', e:'2026-12-31', where:'카카오톡 채널', effect:'재방문율 향상', cost:'메시지 발송 비용', fit:{A:84,B:90,C:80},
+   idea:{A:'신메뉴 출시 알림 + 생일 쿠폰', B:'정기구독 고객 메뉴 공지 · 주간 메뉴 발송', C:'예약 확인 · 단체 예약 안내'},
+   links:[['카카오비즈니스','https://business.kakao.com']]},
+  {id:'semas', ty:'sup', name:'소상공인 온라인 판로 · 마케팅 지원사업', s:'2026-11-02', e:'2026-12-31', where:'소상공인시장진흥공단 공고', effect:'광고 · 촬영 · 입점 비용 지원', cost:'자부담 비율 공고 확인', fit:{A:80,B:82,C:78},
+   idea:{A:'상품 촬영 · 라이브커머스 지원으로 구움과자 온라인 판매 시작', B:'정기구독 온라인 판로 지원 신청', C:'오픈 직후 홍보 · 사진 촬영 지원 확인'},
+   links:[['소상공인시장진흥공단','https://www.semas.or.kr'],['소상공인마당 (공고 · 교육)','https://www.sbiz.or.kr']]},
+  {id:'sbdc', ty:'sup', name:'서울시 소상공인 컨설팅 · 교육', s:'2026-11-02', e:'2026-12-31', where:'서울신용보증재단 소상공인종합지원', effect:'경영 · 인테리어 · 마케팅 컨설팅', cost:'무료 (신청 필요)', fit:{A:72,B:76,C:88},
+   idea:{A:'원가 · 메뉴 가격 컨설팅', B:'배달 수수료 구조 개선 상담', C:'오픈 전 상권 · 인테리어 · 인허가 컨설팅'},
+   links:[['서울신용보증재단 소상공인 지원','https://www.seoulsbdc.or.kr']]},
+];
+const TY = { off:'오프라인 행사', on:'온라인 프로모션', sup:'지원사업' };
+const TY_COL = { off:'#0ea5e9', on:'#8b5cf6', sup:'#10b981' };
+
+const INTERIOR = {
+  A:{ mood:[['노출 콘크리트',42],['포토존',35],['창가 자리',31],['우드톤',24],['갤러리',18],['빈티지 조명',14]], floorTip:'2층 · 남측 통창',
+      concepts:[
+        {name:'인더스트리얼 웨어하우스',fit:92,desc:'성수 창고 카페 문법을 따르되, 2층 통창 창가석을 주인공으로.',pal:['#6b7280','#d6d3d1','#27272a','#b45309','#f5f5f4'],
+         tiles:[['노출 콘크리트','repeating-radial-gradient(circle at 30% 40%,#9ca3af 0 2px,#a8a29e 2px 5px,#8b8f96 5px 7px)'],['블랙 철재','linear-gradient(135deg,#27272a,#3f3f46)'],['에디슨 전구','radial-gradient(circle at 50% 40%,#fde68a 0 12%,#b45309 30%,#292524 70%)'],['오크 상판','repeating-linear-gradient(90deg,#b07a4a 0 6px,#a16a3c 6px 9px,#c08a58 9px 14px)'],['테라조 바닥','radial-gradient(circle at 20% 30%,#f87171 0 3px,transparent 4px),radial-gradient(circle at 70% 60%,#78716c 0 3px,transparent 4px),radial-gradient(circle at 40% 80%,#a8a29e 0 2px,transparent 3px),#e7e5e4']],
+         els:{'바닥':'에폭시 · 테라조','벽':'노출 콘크리트 + 블랙 프레임','조명':'2700K 에디슨 펜던트','가구':'오크 상판 + 철제 다리','사인':'창문 레터링 · 계단 네온'},photo:'통창 앞 1인 바 테이블 — 연무장길이 배경으로 찍히는 자리',unit:[110,160,230]},
+        {name:'미니멀 갤러리',fit:88,desc:'흰 벽과 간접조명으로 디저트를 작품처럼. 팝업 · 전시 협업에 유리.',pal:['#fafaf9','#e7e5e4','#d6c7b0','#a8a29e','#1c1917'],
+         tiles:[['화이트 도장','linear-gradient(135deg,#ffffff,#f1f0ee)'],['라이트 우드','repeating-linear-gradient(90deg,#e3cfa9 0 7px,#d8c098 7px 10px,#ead9b8 10px 15px)'],['간접조명','linear-gradient(180deg,#fefce8,#fde68a 50%,#fafaf9)'],['석재 진열대','linear-gradient(135deg,#d6d3d1,#e7e5e4 40%,#c7c2bd)'],['린넨','repeating-linear-gradient(45deg,#ede6da 0 2px,#e4dccd 2px 4px)']],
+         els:{'바닥':'밝은 마이크로토핑','벽':'화이트 + 전시 레일','조명':'3000K 라인 간접조명','가구':'라이트 우드 · 석재 쇼케이스','사인':'미니멀 각인 사인'},photo:'석재 쇼케이스 위 디저트 정면 컷 + 흰 벽 배경',unit:[100,150,220]},
+        {name:'빈티지 레트로',fit:71,desc:'테라코타와 체리우드로 따뜻하게. 동네 단골에는 좋지만 성수 외부 방문객 선호와는 차이.',pal:['#b45309','#c2410c','#7c2d12','#fde68a','#f5f5f4'],
+         tiles:[['테라코타 타일','repeating-linear-gradient(0deg,#c2410c 0 18px,#f5f5f4 18px 20px),#c2410c'],['체리우드','repeating-linear-gradient(90deg,#7c2d12 0 6px,#8b3a1c 6px 9px,#6b2410 9px 14px)'],['패브릭 소파','repeating-linear-gradient(45deg,#d97706 0 3px,#b45309 3px 6px)'],['황동','linear-gradient(135deg,#fbbf24,#b45309 60%,#fde68a)'],['레이스 커튼','radial-gradient(circle,#fff 0 2px,transparent 3px) 0 0/8px 8px,#f5f5f4']],
+         els:{'바닥':'체크 타일','벽':'우드 웨인스코팅','조명':'2400K 패브릭 스탠드','가구':'체리우드 · 벨벳 소파','사인':'황동 각인 간판'},photo:'벨벳 소파 + 레트로 조명 코너',unit:[100,145,210]},
+      ],
+      tips:[['🪟','통창 쪽에 1인 바 테이블을 길게 — 거리에서 보이는 “앉아 있는 손님”이 2층 간판 역할'],['🪜','계단 입구 첫 3칸에 브랜드 컬러 · 메뉴 사진 (거리뷰 노출도 72점 보완)'],['🍰','쇼케이스는 계단에서 올라오자마자 정면에 — 입장 3초 안에 상품이 보이게']],
+      checks:['옥외광고물 표시 허가 (2층 돌출간판 · 창문 이용 광고)','휴게음식점 영업신고 · 위생교육','2층 피난 동선 · 소화기 위치','건물주 원상복구 범위 · 인테리어 공사 기간 무상 협의'] },
+  B:{ mood:[['깔끔함',46],['빠른 픽업',41],['초록 식물',28],['밝은 조명',26],['1인석',22],['친환경',17]], floorTip:'1층 · 성수이로 전면 유리',
+      concepts:[
+        {name:'클린 그린',fit:90,desc:'흰 타일 · 식물 · 오크로 “건강하다”는 인상을 가장 빨리 전달.',pal:['#ffffff','#d1fae5','#10b981','#b07a4a','#0f172a'],
+         tiles:[['화이트 타일','repeating-linear-gradient(0deg,#fff 0 16px,#e5e7eb 16px 17px),repeating-linear-gradient(90deg,#fff 0 16px,#e5e7eb 16px 17px)'],['플랜테리어','radial-gradient(circle at 30% 60%,#16a34a 0 18%,transparent 19%),radial-gradient(circle at 70% 40%,#22c55e 0 22%,transparent 23%),#d1fae5'],['오크','repeating-linear-gradient(90deg,#c08a58 0 6px,#b07a4a 6px 9px)'],['주광색 조명','linear-gradient(180deg,#f8fafc,#e0f2fe)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)']],
+         els:{'바닥':'밝은 타일','벽':'화이트 타일 + 식물 벽','조명':'4000K 주광색','가구':'오크 1인 바 · 스툴','사인':'초록 원형 로고 사인'},photo:'식물 벽 앞 볼(bowl) 탑뷰',unit:[100,140,200]},
+        {name:'그랩앤고 모던',fit:86,desc:'점심 피크 회전을 위한 픽업 동선 중심. 매장보다 포장 · 배달 비중이 클 때.',pal:['#0f172a','#e5e7eb','#f59e0b','#ffffff','#9ca3af'],
+         tiles:[['픽업 선반','repeating-linear-gradient(0deg,#e5e7eb 0 10px,#9ca3af 10px 12px)'],['메뉴보드','linear-gradient(135deg,#0f172a,#1e293b)'],['포인트 컬러','linear-gradient(135deg,#f59e0b,#fbbf24)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)'],['키오스크','linear-gradient(180deg,#334155,#0f172a)']],
+         els:{'바닥':'논슬립 타일','벽':'메뉴보드 월','조명':'4000K 트랙','가구':'픽업 선반 · 키오스크','사인':'전면 라이트박스'},photo:'사전주문 픽업 선반 (이름표 컵)',unit:[90,130,180]},
+        {name:'웜 캐주얼',fit:68,desc:'베이지 · 라탄으로 편안하게. 오피스 상권의 빠른 회전과는 거리가 있음.',pal:['#f5f0e6','#d6c7b0','#a16207','#78716c','#ffffff'],
+         tiles:[['베이지 도장','linear-gradient(135deg,#f5f0e6,#ebe2d0)'],['라탄','repeating-linear-gradient(45deg,#d6b98c 0 3px,#b8925e 3px 5px),repeating-linear-gradient(-45deg,#d6b98c 0 3px,#b8925e 3px 5px)'],['리넨','repeating-linear-gradient(45deg,#ede6da 0 2px,#e4dccd 2px 4px)'],['우드','repeating-linear-gradient(90deg,#a16207 0 6px,#92400e 6px 9px)'],['웜 조명','radial-gradient(circle,#fde68a,#f5f0e6 70%)']],
+         els:{'바닥':'우드 패턴','벽':'베이지 도장','조명':'3000K','가구':'라탄 의자','사인':'원목 간판'},photo:'라탄 의자 창가석',unit:[95,135,190]},
+      ],
+      tips:[['🚶','로비 쪽 출입구에 픽업 선반 — 매장 안까지 안 들어와도 되게'],['🧾','키오스크 + 사전주문으로 11:30~12:30 줄 분산'],['🪟','전면 유리에 “오늘의 메뉴” 대형 사진 (거리뷰 노출도 92점 활용)']],
+      checks:['휴게 · 일반음식점 영업신고 (조리 범위 확인)','지식산업센터 관리규약 · 입점 업종 제한','배기 덕트 · 그리스트랩 기존 설비 인수 확인','전면 간판 관리단 디자인 가이드'] },
+  C:{ mood:[['어두운 조명',44],['노렌 · 종이등',33],['바 좌석',29],['숯불',25],['레트로',21],['숨은 가게',19]], floorTip:'지하 1층 · 창 없음',
+      concepts:[
+        {name:'이자카야 노렌',fit:91,desc:'짙은 우드와 종이등, 입구 노렌으로 “지하에 숨은 술집” 경험을 강점으로.',pal:['#3f2a1d','#7c2d12','#fef3c7','#1c1917','#dc2626'],
+         tiles:[['짙은 우드','repeating-linear-gradient(90deg,#3f2a1d 0 6px,#4a3222 6px 9px,#2f1f15 9px 14px)'],['종이등','radial-gradient(circle at 50% 50%,#fef3c7 0 30%,#f59e0b 55%,#1c1917 75%)'],['노렌','repeating-linear-gradient(90deg,#1e3a8a 0 22px,#1e40af 22px 24px)'],['붉은 포인트','linear-gradient(135deg,#dc2626,#991b1b)'],['다다미','repeating-linear-gradient(0deg,#d9c58c 0 3px,#c9b37a 3px 5px)']],
+         els:{'바닥':'짙은 우드 데크','벽':'목재 루버 + 메뉴 목패','조명':'2200K 종이등','가구':'바 카운터 + 소규모 룸','사인':'계단 입구 노렌 · 등불 간판'},photo:'계단 내려오는 길 노렌 + 붉은 등',unit:[130,180,250]},
+        {name:'다크 무드 바',fit:84,desc:'블랙과 네온 포인트로 2차 손님을 위한 하이볼 바 분위기.',pal:['#0a0a0a','#27272a','#a855f7','#22d3ee','#fafafa'],
+         tiles:[['블랙 도장','linear-gradient(135deg,#0a0a0a,#27272a)'],['네온','linear-gradient(90deg,#a855f7,#22d3ee)'],['메탈 바','linear-gradient(135deg,#52525b,#18181b 50%,#71717a)'],['스모크 유리','linear-gradient(135deg,rgba(63,63,70,.9),rgba(24,24,27,.95))'],['가죽 스툴','radial-gradient(circle,#7c2d12,#431407)']],
+         els:{'바닥':'블랙 에폭시','벽':'블랙 + 네온 라인','조명':'포인트 스폿 + 네온','가구':'긴 바 테이블','사인':'계단 네온 사인'},photo:'네온 문구 벽 앞 하이볼 잔',unit:[120,170,240]},
+        {name:'레트로 포차',fit:77,desc:'타일 · 형광 간판 · 스테인리스로 가성비 노포 느낌. 객단가는 낮아질 수 있음.',pal:['#16a34a','#f8fafc','#dc2626','#facc15','#9ca3af'],
+         tiles:[['녹색 타일','repeating-linear-gradient(0deg,#16a34a 0 14px,#f8fafc 14px 15px),repeating-linear-gradient(90deg,#16a34a 0 14px,#f8fafc 14px 15px)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)'],['형광 간판','linear-gradient(135deg,#facc15,#fde047)'],['빨간 의자','radial-gradient(circle,#ef4444,#991b1b)'],['방수 장판','repeating-linear-gradient(45deg,#a3a3a3 0 4px,#8a8a8a 4px 8px)']],
+         els:{'바닥':'방수 타일','벽':'녹색 타일','조명':'5000K 형광','가구':'스테인리스 원형 테이블','사인':'노란 형광 간판'},photo:'녹색 타일 벽 + 소주잔',unit:[100,140,190]},
+      ],
+      tips:[['💡','계단 입구 조명을 거리에서 보이게 — 거리뷰 노출도 31점이라 입구 연출이 매출을 좌우'],['🌀','배기 덕트 재사용 + 숯불 사용 시 환기 용량 재점검'],['🪑','바 좌석 위주로 1~2인 2차 손님 회전 높이기']],
+      checks:['일반음식점 영업신고 · 지하층 소방 시설 (피난 · 제연)','숯불 사용 시 환기 · 화재 안전 점검','침수 대비 (역류 방지 · 배수 펌프) 확인','계단 입구 돌출간판 · 입간판 도로점용 여부'] },
+};
+
+// ── 상태 ──────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const man = v => `${Math.round(v).toLocaleString()}만`;
+let S = null, key = SC[params.get('s')] ? params.get('s') : 'A';
+let tab = 'ledger', evFilter = 'all';
+
+function fresh(k){
+  const d = SC[k];
+  return { profile: structuredClone(d.profile), goal:d.goal, days:d.days, entries:d.entries.map(e => ({ d:e[0], t:e[1], c:e[2], m:e[3], a:e[4] })), picked:[] };
+}
+function load(k){
+  try { const raw = localStorage.getItem('placeos-case5-' + k); if (raw) return JSON.parse(raw); } catch (e) {}
+  return fresh(k);
+}
+function save(){ try { localStorage.setItem('placeos-case5-' + key, JSON.stringify(S)); } catch (e) {} }
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800); }
+
+// ── 계산 ──────────────────────────────────────────────
+function calc(){
+  const d = SC[key];
+  const rev = S.entries.filter(e => e.t === 'in').reduce((a,e) => a + e.a, 0);
+  const out = S.entries.filter(e => e.t === 'out');
+  const exp = out.reduce((a,e) => a + e.a, 0);
+  const byCat = {}; out.forEach(e => byCat[e.c] = (byCat[e.c] || 0) + e.a);
+  const fixed = out.filter(e => CAT[e.c].t === 'fixed').reduce((a,e) => a + e.a, 0);
+  const varc = exp - fixed;
+  // 진행 중인 달은 월말까지 일할 환산
+  // 오픈 준비(plan)는 첫 달 영업일 매출을 월 영업일로 환산
+  const proj = d.plan ? rev / d.planDays * S.days : rev / d.asOf * d.monthDays;
+  const projFixed = fixed, projVar = d.plan ? varc : varc / d.asOf * d.monthDays;
+  const varRate = proj > 0 ? projVar / proj : .45;
+  const bep = varRate < 1 ? projFixed / (1 - varRate) : Infinity;
+  const hist = d.hist.filter(v => v !== null);
+  const avg = hist.length ? hist.reduce((a,v) => a + v, 0) / hist.length : null;
+  return { rev, exp, byCat, fixed, varc, proj, varRate, bep, avg, profit: rev - exp, projProfit: proj - projFixed - projVar };
+}
+
+// ── 렌더: 공통 ────────────────────────────────────────
+function renderStore(){
+  const d = SC[key], p = S.profile;
+  $('#store').innerHTML = `<div class="ic">${d.icon}</div><div class="t"><b>${esc(p.name)} · ${esc(p.ind)}</b><span>${esc(p.place)} · ${esc(d.zone)} · ${p.area}㎡ · ${p.seats}석 · ${esc(p.open)}~${esc(p.close)}</span></div>
+    <span class="badge ${d.status[0]}">${d.status[1]}</span>
+    <a class="btn btn-sm" href="case4-nearby-competitors.html?s=${key}">📍 주변 경쟁 보기</a>
+    <a class="btn btn-sm" href="case1-district-map.html?zone=${d.zoneId}">🗺 상권 정보</a>`;
+}
+function renderKpis(){
+  const d = SC[key], c = calc();
+  const pct = S.goal ? c.proj / S.goal * 100 : 0;
+  const timePct = d.plan ? 100 : d.asOf / d.monthDays * 100;
+  $('#kpis').innerHTML = `
+    <div class="card kpi"><div class="l">${d.plan ? '11월 예상 매출 (오픈 첫 달)' : '이번 달 매출 (10/' + d.asOf + ' 기준)'}</div><div class="v">${man(c.rev)}<small>원</small></div>
+      <div class="d">${d.plan ? `${d.planDays}영업일 · 월 ${S.days}일 환산 ${man(c.proj)}원` : `월말 예상 ${man(c.proj)}원`}</div></div>
+    <div class="card kpi"><div class="l">목표 달성률 (${d.plan ? '월 환산' : '월말 예상'})</div><div class="v ${pct >= 100 ? 'good' : pct < 85 ? 'bad' : ''}">${pct.toFixed(0)}<small>%</small></div>
+      <div class="prog"><i style="width:${Math.min(100, pct)}%;background:${pct >= 100 ? 'var(--ok)' : 'var(--brand)'}"></i></div><div class="d">목표 ${man(S.goal)}원</div></div>
+    <div class="card kpi"><div class="l">최근 월평균 매출</div><div class="v">${c.avg === null ? '—' : man(c.avg)}<small>${c.avg === null ? '' : '원'}</small></div>
+      <div class="d">${c.avg === null ? '오픈 전 · 상권 평균 ' + man(d.zoneAvg) + '원' : `상권 평균 ${man(d.zoneAvg)}원 대비 <b class="${c.avg >= d.zoneAvg ? 'good' : 'bad'}">${c.avg >= d.zoneAvg ? '+' : ''}${((c.avg / d.zoneAvg - 1) * 100).toFixed(0)}%</b>`}</div></div>
+    <div class="card kpi"><div class="l">${d.plan ? '11월 예상 지출' : '이번 달 지출'}</div><div class="v">${man(c.exp)}<small>원</small></div>
+      <div class="d">순이익 <b class="${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : ''}${man(c.profit)}원</b>${d.plan ? '' : ` · 월말 예상 ${c.projProfit >= 0 ? '+' : ''}${man(c.projProfit)}`}</div></div>
+    <div class="card kpi"><div class="l">손익분기 월매출</div><div class="v">${isFinite(c.bep) ? man(c.bep) : '—'}<small>원</small></div>
+      <div class="d">고정비 ${man(c.fixed)} · 변동비율 ${(c.varRate * 100).toFixed(0)}%</div></div>`;
+}
+
+// ── 1. 프로필 ─────────────────────────────────────────
+function renderProfile(){
+  const p = S.profile, d = SC[key];
+  $('#fName').value = p.name; $('#fInd').value = p.ind; $('#fPlace').value = `${p.place} (${d.zone})`;
+  $('#fArea').value = p.area; $('#fSeats').value = p.seats; $('#fTicket').value = p.ticket;
+  $('#fOpen').value = p.open; $('#fClose').value = p.close; $('#fMkt').value = p.mkt; $('#fMenu').value = p.menu;
+  $('#fTargets').innerHTML = TARGET_OPTS.map(t => `<button type="button" class="${p.targets.includes(t) ? 'on' : ''}" data-v="${esc(t)}">${esc(t)}</button>`).join('');
+  $('#fChannels').innerHTML = CHANNEL_OPTS.map(t => `<button type="button" class="${p.channels.includes(t) ? 'on' : ''}" data-v="${esc(t)}">${esc(t)}</button>`).join('');
+  $('#zoneName').textContent = d.zone;
+  renderNeed();
+}
+function renderNeed(){
+  const p = S.profile, d = SC[key];
+  const perDay = S.goal * 10000 / S.days / Math.max(1, p.ticket);
+  const turns = p.seats ? perDay / p.seats : 0;
+  $('#needCalc').innerHTML = `월 목표 <b>${man(S.goal)}원</b>을 채우려면 영업일 ${S.days}일 · 객단가 ${p.ticket.toLocaleString()}원 기준<br>하루 <b>${Math.ceil(perDay).toLocaleString()}명</b>의 손님이 필요합니다${p.seats ? ` (좌석 ${p.seats}석 기준 <b>${turns.toFixed(1)}회전</b>${p.channels.includes('포장') || p.channels.includes('배달') ? ', 포장 · 배달 포함' : ''})` : ''}.`;
+  const max = Math.max(S.goal, d.top25) * 1.1;
+  const rows = [['내 목표', S.goal, '#4f46e5'], ['상권 평균', d.zoneAvg, '#f59e0b'], ['상권 상위 25%', d.top25, '#059669']];
+  $('#benchBars').innerHTML = rows.map(([n, v, c]) => `<div class="r"><span>${n}</span><div class="bar"><i style="width:${v / max * 100}%;background:${c}"></i></div><b>${man(v)}</b></div>`).join('');
+  const vis = d.visitors, mx = Math.max(...Object.values(vis));
+  $('#targetMatch').innerHTML = Object.entries(vis).sort((a,b) => b[1] - a[1]).map(([n, v]) => {
+    const mine = p.targets.includes(n);
+    return `<div class="r"><span style="${mine ? 'font-weight:800;color:var(--brand-ink)' : ''}">${mine ? '★ ' : ''}${esc(n)}</span><div class="bar"><i style="width:${v / mx * 100}%;background:${mine ? '#4f46e5' : '#cbd5e1'}"></i></div><b>${v}%</b></div>`;
+  }).join('') + `<p class="note" style="margin-top:4px">★ = 내가 고른 타깃. ${p.targets.filter(t => (vis[t] || 0) >= 20).length ? '상권 주 방문객과 타깃이 잘 맞습니다.' : '내 타깃이 상권 주 방문객과 다릅니다 — 타깃이나 홍보 채널을 다시 보세요.'}</p>`;
+}
+function bindProfile(){
+  const num = (id, k) => $(id).addEventListener('input', e => { S.profile[k] = Math.max(0, +e.target.value || 0); renderNeed(); renderStore(); });
+  num('#fArea','area'); num('#fSeats','seats'); num('#fTicket','ticket'); num('#fMkt','mkt');
+  [['#fName','name'],['#fInd','ind'],['#fOpen','open'],['#fClose','close'],['#fMenu','menu']].forEach(([id,k]) => $(id).addEventListener('input', e => { S.profile[k] = e.target.value; renderStore(); }));
+  const chips = (id, k) => $(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const arr = S.profile[k], v = b.dataset.v, i = arr.indexOf(v);
+    if (i >= 0) arr.splice(i, 1); else arr.push(v);
+    b.classList.toggle('on'); renderNeed();
+  });
+  chips('#fTargets','targets'); chips('#fChannels','channels');
+  $('#saveBtn').onclick = () => { save(); renderAll(); toast('저장했어요 · 목표 · 행사 · 인테리어 추천에 반영됨'); };
+  $('#resetBtn').onclick = () => { S.profile = structuredClone(SC[key].profile); save(); renderAll(); toast('예시 가게 정보로 되돌렸어요'); };
+}
+
+// ── 2. 가계부 ─────────────────────────────────────────
+function renderGoal(){
+  const p = S.profile;
+  $('#goal').value = S.goal; $('#goalRange').value = S.goal; $('#days').value = S.days;
+  const perDay = S.goal * 10000 / S.days / Math.max(1, p.ticket);
+  const d = SC[key];
+  const gap = S.goal - d.zoneAvg;
+  $('#goalCalc').innerHTML = `하루 <b>${Math.ceil(perDay).toLocaleString()}명</b> × 객단가 ${p.ticket.toLocaleString()}원 × ${S.days}일 · 상권 평균(${man(d.zoneAvg)})보다 <b>${gap >= 0 ? man(gap) + ' 높은' : man(-gap) + ' 낮은'}</b> 목표${S.goal > d.top25 ? ' — 상위 25%보다 높아 공격적입니다' : ''}`;
+}
+function renderChart(){
+  const d = SC[key], c = calc();
+  const W = 560, H = 230, L = 46, B = 26, T = 14, R = 10;
+  const vals = [...d.hist, d.plan ? null : c.proj];
+  const labels = d.plan ? ['5월','6월','7월','8월','9월','10월','11월'] : MONTHS;
+  const planVal = d.plan ? c.proj : null;
+  const raw = Math.max(S.goal, d.zoneAvg, d.top25 * .9, ...vals.filter(v => v !== null), planVal || 0) * 1.08;
+  const stepV = Math.ceil(raw / 4 / 500) * 500, max = stepV * 4;
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const bw = (W - L - R) / labels.length;
+  let s = `<defs><pattern id="hp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#eef2ff"/><line x1="0" y1="0" x2="0" y2="6" stroke="#c7d2fe" stroke-width="3"/></pattern></defs>`;
+  for (let i = 0; i <= 4; i++){
+    const v = stepV * i;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#eef2f7"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#94a3b8">${v.toLocaleString()}</text>`;
+  }
+  labels.forEach((lb, i) => {
+    const x = L + bw * i + bw * .2, w = bw * .6;
+    const isLast = i === labels.length - 1;
+    let v = vals[i];
+    if (isLast && d.plan) v = planVal;
+    if (v === null || v === undefined){
+      s += `<text x="${x + w/2}" y="${H - B - 6}" font-size="10" text-anchor="middle" fill="#cbd5e1">오픈 전</text>`;
+    } else if (isLast){
+      const actual = d.plan ? 0 : c.rev;
+      s += `<rect x="${x}" y="${y(v)}" width="${w}" height="${H - B - y(v)}" rx="4" fill="url(#hp)" stroke="#6366f1" stroke-dasharray="4 3"/>`;
+      if (actual) s += `<rect x="${x}" y="${y(actual)}" width="${w}" height="${H - B - y(actual)}" rx="4" fill="#6366f1" opacity=".9"/>`;
+      s += `<text x="${x + w/2}" y="${y(v) - 6}" font-size="11" text-anchor="middle" font-weight="800" fill="#4f46e5">${Math.round(v).toLocaleString()}${d.plan ? ' (예상)' : ''}</text>`;
+    } else {
+      s += `<rect x="${x}" y="${y(v)}" width="${w}" height="${H - B - y(v)}" rx="4" fill="#6366f1"/><text x="${x + w/2}" y="${y(v) - 6}" font-size="10.5" text-anchor="middle" fill="#334155" font-weight="700">${v.toLocaleString()}</text>`;
+    }
+    s += `<text x="${x + w/2}" y="${H - 8}" font-size="11" text-anchor="middle" fill="#64748b">${lb}</text>`;
+  });
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(S.goal)}" y2="${y(S.goal)}" stroke="#0f172a" stroke-width="2"/><text x="${L + 4}" y="${y(S.goal) - 5}" font-size="10.5" font-weight="800" fill="#0f172a">목표 ${S.goal.toLocaleString()}</text>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(d.zoneAvg)}" y2="${y(d.zoneAvg)}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"/><text x="${L + 4}" y="${y(d.zoneAvg) + (Math.abs(y(d.zoneAvg) - y(S.goal)) < 16 ? 13 : -5)}" font-size="10.5" font-weight="800" fill="#b45309">상권 평균 ${d.zoneAvg.toLocaleString()}</text>`;
+  $('#chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="월별 매출 추이 (단위 만원)">${s}</svg>`;
+  $('#chartSub').textContent = '단위 만원 · ' + (d.plan ? '오픈 전 · 11월은 예상치' : `${labels[labels.length - 1]}은 ${d.asOf}일까지 실적 + 월말 예상`);
+}
+function renderLedger(){
+  const d = SC[key];
+  $('#ledTitle').textContent = `${d.month} 장부`;
+  const rows = [...S.entries].map((e, i) => ({ ...e, i })).sort((a,b) => a.d.localeCompare(b.d) || (a.t === 'in' ? -1 : 1));
+  $('#ledBody').innerHTML = rows.map(e => `<tr class="${d.plan ? 'planned' : ''}"><td>${e.d.slice(5).replace('-','/')}</td><td><span class="tag ${e.t}">${e.t === 'in' ? '매출' : '지출'}</span></td><td>${CAT[e.c].n}</td><td>${esc(e.m)}</td><td class="amt ${e.t}">${e.t === 'in' ? '+' : '−'}${e.a.toLocaleString()}만</td><td><button class="del" data-i="${e.i}" aria-label="삭제">×</button></td></tr>`).join('');
+  $('#ledBody').querySelectorAll('.del').forEach(b => b.onclick = () => { S.entries.splice(+b.dataset.i, 1); save(); renderLedgerAll(); });
+  const c = calc();
+  const ordered = Object.keys(CAT).filter(k => k !== 'sales');
+  const base = d.plan ? c.rev : c.rev;
+  let over = [];
+  $('#exBars').innerHTML = ordered.map(k => {
+    const v = c.byCat[k] || 0;
+    const pct = base ? v / base * 100 : 0;
+    const bad = pct > CAT[k].max;
+    if (bad) over.push(CAT[k].n);
+    return `<div class="r"><span>${CAT[k].n}<br><small class="muted">${CAT[k].t === 'fixed' ? '고정비' : '변동비'}</small></span><div class="bar"><i style="width:${Math.min(100, pct / 50 * 100)}%;background:${bad ? 'var(--bad)' : '#6366f1'}"></i><em style="left:${CAT[k].max / 50 * 100}%"></em></div><b class="${bad ? 'bad' : ''}">${man(v)}<small>${pct.toFixed(1)}% · 적정 ${CAT[k].max}%↓</small></b></div>`;
+  }).join('');
+  $('#exNote').innerHTML = (over.length ? `<b class="bad">${over.join(' · ')}</b> 비율이 적정선을 넘었습니다. ` : '모든 항목이 적정선 안에 있습니다. ') + (d.plan ? '오픈 첫 달은 매출이 9영업일분이라 비율이 높게 나옵니다.' : '진행 중인 달은 매출이 덜 잡혀 비율이 높게 보일 수 있습니다.');
+  $('#pl').innerHTML = `
+    <span>${d.plan ? '예상 매출' : '매출 (현재까지)'}</span><b class="good">+${man(c.rev)}</b>
+    <span>고정비 (임대료 · 인건비 · 공과금)</span><b>−${man(c.fixed)}</b>
+    <span>변동비 (재료 · 수수료 · 마케팅 · 소모품)</span><b>−${man(c.varc)}</b>
+    <span class="tot">${d.plan ? '예상 순이익' : '현재 순이익'}</span><b class="tot ${c.profit >= 0 ? 'good' : 'bad'}">${c.profit >= 0 ? '+' : '−'}${man(Math.abs(c.profit))}</b>
+    <span class="muted">손익분기 월매출</span><b class="muted">${isFinite(c.bep) ? man(c.bep) : '—'}</b>`;
+  $('#plSub').textContent = d.plan ? '오픈 첫 달 시뮬레이션' : `10/${d.asOf} 기준 · 월말 예상 순이익 ${c.projProfit >= 0 ? '+' : '−'}${man(Math.abs(c.projProfit))}`;
+}
+function renderLedgerAll(){ renderGoal(); renderChart(); renderLedger(); renderKpis(); }
+function bindLedger(){
+  $('#aCat').innerHTML = Object.entries(CAT).map(([k,v]) => `<option value="${k}">${v.n}</option>`).join('');
+  $('#aType').onchange = e => { $('#aCat').value = e.target.value === 'in' ? 'sales' : 'food'; };
+  $('#aCat').value = 'food';
+  $('#aCat').onchange = e => { $('#aType').value = e.target.value === 'sales' ? 'in' : 'out'; };
+  $('#addForm').onsubmit = e => {
+    e.preventDefault();
+    const a = +$('#aAmt').value; if (!a) return;
+    S.entries.push({ d:$('#aDate').value, t:$('#aType').value, c:$('#aCat').value, m:$('#aMemo').value || CAT[$('#aCat').value].n, a });
+    $('#aAmt').value = ''; $('#aMemo').value = '';
+    save(); renderLedgerAll(); toast('장부에 추가했어요');
+  };
+  const setGoal = v => { S.goal = Math.max(0, Math.round(+v || 0)); save(); renderLedgerAll(); renderNeed(); };
+  $('#goal').addEventListener('change', e => setGoal(e.target.value));
+  $('#goalRange').addEventListener('input', e => setGoal(e.target.value));
+  $('#days').addEventListener('change', e => { S.days = Math.min(31, Math.max(1, +e.target.value || 1)); save(); renderLedgerAll(); renderNeed(); });
+  $('#ledReset').onclick = () => { const f = fresh(key); S.entries = f.entries; S.goal = f.goal; S.days = f.days; save(); renderLedgerAll(); toast('예시 장부로 초기화했어요'); };
+  $('#csvBtn').onclick = () => {
+    const lines = [['날짜','구분','항목','메모','금액(만원)'], ...S.entries.map(e => [e.d, e.t === 'in' ? '매출' : '지출', CAT[e.c].n, e.m, e.a])];
+    const csv = '﻿' + lines.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+    a.download = `placeos-장부-${key}.csv`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+}
+
+// ── 3. 행사 ──────────────────────────────────────────
+const WEEKS = Array.from({length:9}, (_, i) => { const dt = new Date(2026, 10, 2 + i * 7); return dt; });
+function renderEvents(){
+  const list = EVENTS.filter(e => evFilter === 'all' || e.ty === evFilter).map(e => ({ ...e, f: adjFit(e) })).sort((a,b) => b.f - a.f);
+  const day = 864e5, start = WEEKS[0].getTime(), end = start + 63 * day;
+  const pos = s => Math.max(0, Math.min(1, (new Date(s + 'T00:00:00').getTime() - start) / (end - start)));
+  $('#gantt').innerHTML = `<table><thead><tr><th style="text-align:left">행사 (적합도 순)</th>${WEEKS.map(w => `<th>${w.getMonth() + 1}/${w.getDate()}</th>`).join('')}</tr></thead><tbody>
+    ${list.map(e => `<tr><td class="nm">${S.picked.includes(e.id) ? '✓ ' : ''}${esc(e.name)} <span class="muted" style="font-weight:600">${e.f}</span></td><td colspan="9" style="position:relative"><div style="position:absolute;left:${pos(e.s) * 100}%;width:${Math.max(1.5, (pos(e.e) - pos(e.s)) * 100 + 100 / 63)}%;top:7px"><div class="bar" style="background:${TY_COL[e.ty]};opacity:${e.f >= 70 ? 1 : .35}"></div></div></td></tr>`).join('')}
+  </tbody></table>`;
+  $('#ecards').innerHTML = list.map(e => {
+    const picked = S.picked.includes(e.id);
+    return `<div class="card ec ${picked ? 'picked' : ''}">
+      <div class="top"><div><span class="ty ${e.ty}">${TY[e.ty]}</span><h4>${esc(e.name)}${e.ty === 'off' ? ' <span class="muted" style="font-size:11px;font-weight:600">(예시)</span>' : ''}</h4></div>
+        <div class="fit"><b style="color:${e.f >= 80 ? 'var(--ok)' : e.f >= 60 ? 'var(--brand)' : 'var(--text-3)'}">${e.f}</b><small>적합도</small></div></div>
+      <dl class="meta"><dt>기간</dt><dd>${e.s.slice(5).replace('-','.')} – ${e.e.slice(5).replace('-','.')}</dd><dt>장소 · 채널</dt><dd>${esc(e.where)}</dd><dt>기대 효과</dt><dd>${esc(e.effect)}</dd><dt>비용</dt><dd>${esc(e.cost)}</dd></dl>
+      <div class="idea"><b>연계 아이디어 · </b>${esc(e.idea[key])}</div>
+      <div class="links">${e.links.map(([n,u]) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${esc(n)} ↗</a>`).join('')}</div>
+      <div class="act"><button class="btn btn-sm ${picked ? '' : 'btn-primary'}" data-pick="${e.id}">${picked ? '✓ 계획에 담김 (빼기)' : '＋ 내 계획에 담기'}</button></div>
+    </div>`;
+  }).join('');
+  $('#ecards').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => {
+    const id = b.dataset.pick, i = S.picked.indexOf(id);
+    if (i >= 0) S.picked.splice(i, 1); else S.picked.push(id);
+    save(); renderEvents();
+  });
+  const picked = EVENTS.filter(e => S.picked.includes(e.id));
+  const budget = S.profile.mkt;
+  $('#planBar').innerHTML = picked.length
+    ? `<div><b>내 연계 계획 ${picked.length}개</b> · 월 마케팅 예산 ${budget}만원 안에서 진행<div class="chs" style="margin-top:6px">${picked.map(e => `<span>${esc(e.name)}</span>`).join('')}</div></div><button class="btn btn-sm" id="toLedger">장부에 마케팅 예산 ${budget}만원 추가</button>`
+    : `<div>마음에 드는 행사를 <b>‘내 계획에 담기’</b>로 모아 보세요. 담은 행사는 위 일정표에 ✓로 표시됩니다.</div>`;
+  const tl = $('#toLedger');
+  if (tl) tl.onclick = () => {
+    const d = SC[key];
+    S.entries.push({ d: d.plan ? '2026-11-15' : '2026-10-25', t:'out', c:'mkt', m:`행사 연계 예산 (${picked.map(e => e.name).slice(0,2).join(', ')}${picked.length > 2 ? ' 외' : ''})`, a: budget });
+    save(); renderLedgerAll(); toast('가계부에 마케팅 예산을 추가했어요');
+  };
+}
+// 내 가게 정보(타깃 · 채널)를 반영한 적합도 보정
+function adjFit(e){
+  let f = e.fit[key];
+  const p = S.profile;
+  if (e.id === 'baemin' && !p.channels.includes('배달')) f -= 20;
+  if (e.id === 'smart' && p.channels.includes('예약')) f += 3;
+  if ((e.id === 'flea' || e.id === 'popup') && p.targets.includes('관광 · 외부 방문객')) f += 4;
+  if (e.id === 'flea' && p.targets.includes('반려동물 동반')) f += 4;
+  if (e.id === 'daangn' && p.targets.includes('동네 주민')) f += 6;
+  if (e.id === 'lunch' && !p.targets.includes('30대 직장인')) f -= 15;
+  return Math.max(5, Math.min(99, f));
+}
+
+// ── 4. 인테리어 ──────────────────────────────────────
+function renderInterior(){
+  const it = INTERIOR[key], p = S.profile;
+  const py = p.area / 3.3058;
+  $('#mood').innerHTML = it.mood.map(([k, v]) => `<span>#${esc(k)}<em>${v}%</em></span>`).join('');
+  $('#moodSub').textContent = `${SC[key].zone} 주변 매장 리뷰 · SNS 사진 키워드 (데모)`;
+  const grade = +$('#grade').value;
+  $('#concepts').innerHTML = it.concepts.map((c, i) => `<div class="card cc ${i === 0 ? 'best' : ''}">
+      <div class="board">${c.tiles.map(([n, bg]) => `<div style="background:${bg}"><span>${esc(n)}</span></div>`).join('')}</div>
+      <div class="pal">${c.pal.map(x => `<i style="background:${x}" title="${x}"></i>`).join('')}</div>
+      <div class="body">
+        <h4><span>${esc(c.name)}${i === 0 ? '<span class="bestTag">추천</span>' : ''}</span><em>상권 매칭 ${c.fit}%</em></h4>
+        <p>${esc(c.desc)}</p>
+        <dl class="els">${Object.entries(c.els).map(([k,v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}<dt>포토존</dt><dd>${esc(c.photo)}</dd></dl>
+        <div class="cost"><span>평당 ${c.unit[grade]}만원 × ${py.toFixed(1)}평</span><b>${man(c.unit[grade] * py)}원</b></div>
+      </div></div>`).join('');
+  const best = it.concepts[0];
+  const body = best.unit[grade] * py, sign = [180, 300, 520][grade], furn = Math.round(p.seats * [18, 28, 45][grade]);
+  $('#budget').innerHTML = `<span>인테리어 (${esc(best.name)})</span><b>${man(body)}</b><span>간판 · 사인물</span><b>${man(sign)}</b><span>가구 · 집기 (${p.seats}석)</span><b>${man(furn)}</b><span class="tot">합계 (설비 · 주방기기 제외)</span><b class="tot">${man(body + sign + furn)}원</b>`;
+  $('#tipSub').textContent = it.floorTip;
+  $('#tips').innerHTML = it.tips.map(([i, t]) => `<div><i>${i}</i><span>${esc(t)}</span></div>`).join('');
+  $('#checks').innerHTML = it.checks.map(t => `<li>${esc(t)}</li>`).join('');
+}
+
+// ── 공통 ─────────────────────────────────────────────
+function renderAll(){ renderStore(); renderKpis(); renderProfile(); renderLedgerAll(); renderEvents(); renderInterior(); }
+function setTab(t){
+  tab = t;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
+}
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); });
+$('#evSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  evFilter = b.dataset.f; document.querySelectorAll('#evSeg button').forEach(x => x.classList.toggle('on', x === b)); renderEvents();
+});
+$('#grade').onchange = renderInterior;
+function loadScenario(k){
+  key = k; S = load(k);
+  document.querySelectorAll('#scSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === k));
+  $('#aDate').value = SC[k].plan ? '2026-11-20' : '2026-10-26';
+  renderAll();
+  const u = new URL(location.href); u.searchParams.set('s', k); history.replaceState(null, '', u);
+}
+$('#scSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadScenario(b.dataset.s); });
+bindProfile(); bindLedger();
+loadScenario(key);
+if (params.get('tab')) setTab(params.get('tab'));
+</script>
+</body>
+</html>

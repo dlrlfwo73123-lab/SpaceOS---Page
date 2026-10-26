@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PlaceOS 추가사항 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
+  --head:#0f172a;--r:14px;
+  --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
+}
+html,body{margin:0}
+body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.gnb{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:18px;height:56px;padding:0 20px;background:var(--head);color:#fff}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;text-decoration:none;color:#fff;flex-shrink:0}
+.logo i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-style:normal;font-size:14px}
+.gnb nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+.gnb nav::-webkit-scrollbar{display:none}
+.gnb nav a{white-space:nowrap;text-decoration:none;color:#cbd5e1;font-size:13px;font-weight:500;padding:7px 12px;border-radius:999px}
+.gnb nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.gnb nav a b{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,.15);font-size:10px;margin-right:6px}
+.main{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:end;margin-bottom:22px}
+.eyebrow{font-size:12px;font-weight:800;color:var(--brand);letter-spacing:.06em}
+h1{margin:6px 0 8px;font-size:28px;letter-spacing:-.03em;line-height:1.25}
+.hero p{margin:0;color:var(--text-2);font-size:14px}
+.assume{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:12.5px;color:var(--text-2);box-shadow:var(--sh)}
+.assume b{color:var(--text)}
+.assume ul{margin:6px 0 0;padding-left:18px}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;position:relative}
+.case{position:relative;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--sh);text-decoration:none;transition:transform .15s,border-color .15s}
+.case:hover{transform:translateY(-2px);border-color:var(--brand-2)}
+.case:not(:last-child):after{content:'→';position:absolute;right:-12px;top:34px;width:12px;text-align:center;color:var(--text-3);font-weight:800}
+.num{display:flex;align-items:center;justify-content:space-between}
+.num b{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--brand);color:#fff;font-size:14px}
+.num span{font-size:22px}
+.case h2{margin:0;font-size:15px;letter-spacing:-.02em}
+.case .menu{font-size:11.5px;font-weight:700;color:var(--brand)}
+.case ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--text-2)}
+.case ul li{margin:2px 0}
+.case .go{margin-top:auto;font-size:12.5px;font-weight:800;color:var(--brand)}
+h3{margin:30px 0 10px;font-size:16px}
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:11.5px;color:var(--text-3);background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td .lk{display:flex;flex-wrap:wrap;gap:5px}
+td .lk a{font-size:11.5px;font-weight:700;text-decoration:none;color:var(--brand);border:1px solid #c7d2fe;border-radius:7px;padding:1px 7px;background:#fff}
+td .lk a:hover{background:var(--brand-soft)}
+.sc{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--head);color:#fff;font-weight:800;font-size:12px}
+.data{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.data div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--text-2)}
+.data b{display:block;color:var(--text);font-size:13px;margin-bottom:2px}
+.foot{margin-top:24px;font-size:12px;color:var(--text-3)}
+@media (max-width:1000px){
+  .hero{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr 1fr}
+  .case:after{display:none}
+  .data{grid-template-columns:1fr 1fr}
+}
+@media (max-width:600px){
+  .gnb{padding:0 12px;gap:10px}
+  .main{padding:20px 16px 40px}
+  h1{font-size:23px}
+  .flow,.data{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="gnb">
+  <a class="logo" href="index.html"><i>P</i>PlaceOS</a>
+  <nav>
+    <a href="case1-district-map.html"><b>1</b>다른 상권 찾기</a>
+    <a href="case2-3d-floor-twin.html"><b>2</b>공실 · 3D 트윈</a>
+    <a href="case3-streetview-floor.html"><b>3</b>거리뷰 · 층별보기</a>
+    <a href="case4-nearby-competitors.html"><b>4</b>이 자리와 업종</a>
+    <a href="case5-customer-ledger.html"><b>5</b>손님 모으기</a>
+  </nav>
+</header>
+
+<div class="main">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">PLACEOS · 3D 디지털 트윈 · 홈페이지 추가사항</div>
+      <h1>추가사항 5가지를 적용한 화면 시안</h1>
+      <p>placeos.co.kr에 아래 기능이 들어갔다고 가정하고, 케이스마다 HTML 화면을 따로 만들었습니다. 각 화면 위쪽의 <b>A · B · C 시나리오</b>를 바꾸면 같은 기능이 다른 조건(2층 · 1층 · 지하, 운영 중 · 오픈 준비 등)에서 어떻게 보이는지 확인할 수 있습니다.</p>
+    </div>
+    <div class="assume">
+      <b>시안 기준</b>
+      <ul>
+        <li>동네: 서울 성동구 성수동 (Case 1은 마포구 망원동도 선택 가능)</li>
+        <li>수치 · 점포 · 행사 일정은 모두 <b>데모 데이터</b></li>
+        <li>지도: 실서비스는 네이버 지도, 시안은 공개 지도 타일</li>
+        <li>케이스끼리 버튼으로 이어져 실제 사용 흐름대로 이동</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="flow">
+    <a class="case" href="case1-district-map.html">
+      <div class="num"><b>1</b><span>🗺</span></div>
+      <div class="menu">다른 상권 찾기</div>
+      <h2>동네를 상권 구역으로 나눠 추천 업종 · 특징 표시</h2>
+      <ul><li>상권 유형 · 업종 적합도 · 공실률로 지도 색칠</li><li>구역별 추천 업종 TOP 3 · 피해야 할 업종</li><li>시간대 · 연령 · 주말 비중, 상권 비교</li></ul>
+      <span class="go">화면 열기 →</span>
+    </a>
+    <a class="case" href="case2-3d-floor-twin.html">
+      <div class="num"><b>2</b><span>🏢</span></div>
+      <div class="menu">공실 선택 → 3D 트윈</div>
+      <h2>건물 층별 정보를 3D 디지털 트윈으로</h2>
+      <ul><li>층마다 운영 · 공실 · 주거 색 구분</li><li>층 분리 · 공실만 강조 보기, 지하층 표현</li><li>호실 배치 · 임대 조건 · 설비 정보</li></ul>
+      <span class="go">화면 열기 →</span>
+    </a>
+    <a class="case" href="case3-streetview-floor.html">
+      <div class="num"><b>3</b><span>🏙</span></div>
+      <div class="menu">거리뷰 · 층별보기 클릭 시</div>
+      <h2>거리뷰 위 층 라벨 + 층별 안내판 · 평면도</h2>
+      <ul><li>거리뷰에 층별 업종 · 공실 라벨(AR)</li><li>평면도 (호실 · 계단 · EV · 출입구)</li><li>촬영 시점별 간판 변화 · 간판 노출도</li></ul>
+      <span class="go">화면 열기 →</span>
+    </a>
+    <a class="case" href="case4-nearby-competitors.html">
+      <div class="num"><b>4</b><span>📍</span></div>
+      <div class="menu">이 자리와 업종</div>
+      <h2>반경 50~100m 같은 업종 · 체인점 지도 표시</h2>
+      <ul><li>반경 슬라이더 50 / 70 / 100m</li><li>같은 · 비슷한 · 함께 크는 업종, 체인 구분</li><li>경쟁 강도 · 최근 개폐업 · AI 해석</li></ul>
+      <span class="go">화면 열기 →</span>
+    </a>
+    <a class="case" href="case5-customer-ledger.html">
+      <div class="num"><b>5</b><span>🧾</span></div>
+      <div class="menu">손님 모으기</div>
+      <h2>상권분석 정보 추가 입력</h2>
+      <ul><li>가계부식 월 매출 목표 · 지출 정리</li><li>온 · 오프라인 행사 연계 후보와 링크</li><li>상권에 어울리는 인테리어 추천 · 예산</li></ul>
+      <span class="go">화면 열기 →</span>
+    </a>
+  </div>
+
+  <h3>시나리오별 바로가기</h3>
+  <div class="tbl">
+    <table>
+      <thead><tr><th></th><th>공실</th><th>상권</th><th>업종 가정</th><th>케이스 화면</th></tr></thead>
+      <tbody>
+        <tr><td><span class="sc">A</span></td><td>성수 아뜰리에빌딩 <b>2층 201호</b> (84㎡)</td><td>연무장길 카페·팝업거리 · 발달상권</td><td>디저트 카페 · 운영 6개월</td>
+          <td><div class="lk"><a href="case1-district-map.html?zone=yeonmu">1 상권</a><a href="case2-3d-floor-twin.html?s=A">2 3D</a><a href="case3-streetview-floor.html?s=A">3 거리뷰</a><a href="case4-nearby-competitors.html?s=A">4 반경</a><a href="case5-customer-ledger.html?s=A">5 손님</a></div></td></tr>
+        <tr><td><span class="sc">B</span></td><td>성수 테크타워 <b>1층 102호</b> (72㎡)</td><td>성수역 지식산업센터 · 오피스상권</td><td>샐러드 · 포케 · 오픈 2개월</td>
+          <td><div class="lk"><a href="case1-district-map.html?zone=office">1 상권</a><a href="case2-3d-floor-twin.html?s=B">2 3D</a><a href="case3-streetview-floor.html?s=B">3 거리뷰</a><a href="case4-nearby-competitors.html?s=B">4 반경</a><a href="case5-customer-ledger.html?s=B">5 손님</a></div></td></tr>
+        <tr><td><span class="sc">C</span></td><td>뚝섬 코너하우스 <b>지하 1층 B01호</b> (95㎡)</td><td>뚝섬역 먹자골목 · 골목상권</td><td>이자카야 · 오픈 준비</td>
+          <td><div class="lk"><a href="case1-district-map.html?zone=ttuk">1 상권</a><a href="case2-3d-floor-twin.html?s=C">2 3D</a><a href="case3-streetview-floor.html?s=C">3 거리뷰</a><a href="case4-nearby-competitors.html?s=C">4 반경</a><a href="case5-customer-ledger.html?s=C">5 손님</a></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>실서비스 연결 시 바꿀 데이터</h3>
+  <div class="data">
+    <div><b>상권 구역 · 매출 추정</b>서울시 상권분석서비스 (골목 · 발달상권 영역, 추정매출), 서울 생활인구</div>
+    <div><b>점포 위치 · 업종 · 개폐업</b>소상공인시장진흥공단 상가(상권)정보 API, 프랜차이즈 정보공개서 브랜드 목록</div>
+    <div><b>건물 층 · 호실</b>건축물대장 (층별개요 · 전유부), 공실 매물 DB</div>
+    <div><b>거리뷰</b>네이버 지도 파노라마 API (이미 SDK에 panorama 모듈 로드 중) + 층 라벨 오버레이</div>
+    <div><b>3D 트윈</b>현재 React Three Fiber 컴포넌트(BuildingTwin)에 층 분리 · 호실 · 지하층 표현 추가</div>
+    <div><b>행사 · 지원사업</b>구청 행사 공지, 소상공인24 · 소상공인마당 공고 (시안의 일정은 예시)</div>
+  </div>
+
+  <p class="foot">모든 화면은 단독 HTML 파일이며 인터넷 연결 시 지도 타일 · 3D 라이브러리(three.js) · 웹폰트를 CDN에서 불러옵니다. 가계부 · 행사 계획 입력값은 브라우저에만 저장됩니다.</p>
+</div>
+</body>
+</html>
