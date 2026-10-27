@@ -87,6 +87,21 @@ button{cursor:pointer}
 .grp b{font-weight:700;color:var(--text-2)}
 .anote{margin:8px 0 0;padding-left:16px;font-size:11px;color:var(--text-2)}
 .anote li{margin:3px 0}
+.lsum{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--text-2);margin-bottom:6px}
+.lsum .ok{color:var(--ok);font-weight:800}.lsum .near{color:var(--warn);font-weight:800}.lsum .diff{color:var(--bad);font-weight:800}
+.ltab{width:100%;border-collapse:collapse;font-size:11px}
+.ltab th{font-size:10px;color:var(--text-3);font-weight:600;text-align:left;padding:3px;border-bottom:1px solid var(--line)}
+.ltab td{padding:3px;border-bottom:1px solid var(--line);white-space:nowrap}
+.lst{display:inline-block;font-size:10px;font-weight:800;border-radius:5px;padding:0 5px}
+.lst.ok{background:var(--ok-soft);color:var(--ok)}.lst.near{background:var(--warn-soft);color:var(--warn)}.lst.diff{background:var(--bad-soft);color:var(--bad)}
+.lnk{border:0;background:none;padding:4px 0;font-size:11.5px;font-weight:700;color:var(--brand)}
+.lnote{font-size:11px;color:var(--text-2);margin:6px 0 0}
+.lpaste{margin-top:8px;font-size:11.5px}
+.lpaste summary{cursor:pointer;font-weight:700;color:var(--brand-ink)}
+.lpaste textarea{width:100%;margin-top:6px;font:11px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:6px}
+.lbtns{display:flex;gap:6px;margin-top:6px}
+.btn.sm{padding:5px 9px;font-size:11.5px}
+.basis{margin:6px 0 0;font-size:11.5px;color:var(--text-2);background:var(--surface-2);border:1px dashed var(--line-2);border-radius:8px;padding:5px 8px}
 .c-label{font:700 10px 'Noto Sans KR',sans-serif;color:#fff;background:#475569;border-radius:6px;padding:2px 6px;white-space:nowrap;pointer-events:none}
 .ai{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:12px;padding:10px 12px;font-size:12px;color:var(--brand-ink)}
 .ai b{display:block;font-size:11px;margin-bottom:2px}
@@ -192,6 +207,11 @@ button{cursor:pointer}
   .legend{bottom:12px;max-width:calc(100% - 24px)}
   .hint{display:none}
 }
+:focus-visible{outline:3px solid #6366f1;outline-offset:2px}
+.dsrc{margin-top:6px;font-size:12px;color:var(--text-2)}
+.dsrc summary{cursor:pointer;font-weight:700;color:var(--brand-ink);display:inline-block}
+.dsrc ul{margin:6px 0 0;padding-left:18px;max-width:900px}
+.dsrc li{margin:2px 0}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
@@ -216,6 +236,7 @@ button{cursor:pointer}
     <div class="eyebrow">CASE 2 · 공실 선택 → 건물 층별 3D 디지털 트윈</div>
     <h1>공실을 고르면 그 건물을 층별로 쪼개 3D로 보여줍니다</h1>
     <p>층마다 운영 중 · 공실 · 주거를 색으로 구분하고, 층을 누르면 호실 배치와 임대 조건 · 설비 정보가 열립니다.</p>
+    <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>건물 · 호실 · 임대 조건 · 건축물대장 값은 <b>데모 값</b>입니다. 3D는 바닥 크기 · 층수로 만든 상자 모델이고, 호실 칸은 전용면적으로 계산한 개략 배치입니다.</li><li>실서비스 출처: 건축물대장(층별개요 · 전유공용면적, 건축HUB) · 공실 매물 DB · 관리단 · 현장 확인. 공실 상태 기준일은 호실마다 표시합니다(데모 2026-10-21).</li><li>공실률은 집계 기준(호실 · 점포 · 전용 · 계약 · 미분양 · 미입주)에 따라 달라 범위로 보여줍니다.</li></ul></details>
   </div>
   <div class="seg" id="scSeg" aria-label="시나리오">
     <button data-s="A">A · 2층 공실 (근린상가)</button>
@@ -237,6 +258,7 @@ button{cursor:pointer}
       <div class="occ-l" id="occLegend"></div>
     </div>
     <div class="sec" id="vacAgg"></div>
+    <div class="sec" id="ledgerChk"></div>
     <div class="sec">
       <div class="ai" id="aiNote"></div>
     </div>
@@ -404,6 +426,19 @@ const BUILDINGS = {
   }
 };
 Object.entries(BUILDINGS).forEach(([k, b]) => b.key = k);
+// 상태 판정 근거 · 기준일 (데모). 공실 · 미입주는 건축물대장에 나오지 않아 매물 DB · 인허가(폐업 신고) · 관리단 · 현장 확인을 합쳐 판정합니다.
+const STATUS_BASIS = {
+  'A:201':'매물 DB 등록 2026-06-30 · 현장 확인 2026-10-20 (간판 철거 · 내부 비어 있음)',
+  'A:501':'매물 DB 등록 2026-03-25 · 현장 확인 2026-10-20',
+  'B:102':'매물 DB 등록 2026-08-29 · 인허가 폐업 신고 2026-08-31 · 현장 확인 2026-10-21',
+  'B:202':'매물 DB 등록 2026-05-30 · 인허가 폐업 신고 2026-06-02 · 관리단 공실 목록 2026-10-01',
+  'B:603':'관리단 공실 목록 2026-10-01',
+  'B:901':'매물 DB(전층) 등록 2026-02-27 · 관리단 공실 목록 2026-10-01',
+  'B:1102':'시행사 분양 · 임대 공고 2026-10-01 (준공 후 미분양)',
+  'B:702':'관리단 입주 예정 통보 2026-09-15 (2027-01 입주 예정)',
+  'C:B01':'매물 DB 등록 2026-01-31 · 인허가 폐업 신고 2026-01-28 · 현장 확인 2026-10-19',
+};
+const basisOf = (b, un) => STATUS_BASIS[`${b.key}:${un.no}`] || (un.st === 'op' ? '영업 중 — 상가정보 · 인허가 기준 (데모)' : '');
 
 // ── 층 배치 계산: 전용면적으로 호실 크기를 정한다 ─────────────────────────
 // 앞줄(도로 쪽, 깊이 fd)은 왼쪽→오른쪽, 복도(corr) 뒤 뒷줄은 오른쪽→왼쪽으로 채운다.
@@ -584,6 +619,60 @@ const ST_TEXT = { op:'운영 중', vac:'공실', part:'일부 공실', res:'주�
 const won = v => v >= 10000 ? `${(v/10000).toFixed(v % 10000 ? 1 : 0)}억` : `${v.toLocaleString()}만`;
 const pyeong = a => (a / 3.3058).toFixed(1);
 const m2 = v => `${Math.round(v).toLocaleString()}㎡`;
+const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+// ── 건축물대장 대조 ───────────────────────────────────
+// [데모] 건축HUB 건축물대장정보 서비스 응답 모양을 줄여 적은 값입니다(실제 대장 아님). 실제 응답(JSON)을 붙여 넣으면 같은 방식으로 대조합니다.
+// 집합건물(B)은 전유공용면적(전유부 · 호실별), 일반건축물(A · C)은 층별개요(층별 바닥면적)로 대조합니다.
+const LEDGER_DEMO = {
+  A:{ kind:'flr', items:[[-1,196.5,'제2종근린생활시설'],[1,201.2,'제2종근린생활시설'],[2,198.0,'제2종근린생활시설'],[3,198.0,'제2종근린생활시설'],[4,198.0,'제2종근린생활시설'],[5,198.3,'제2종근린생활시설']] },
+  // [층, 호, 전유면적, 용도, 공용면적(일부 호만)]
+  B:{ kind:'expos', items:[[1,'101',57.9,'제1종근린생활시설'],[1,'102',72,'제1종근린생활시설',66.0],[1,'103',52.3,'제1종근린생활시설'],[1,'104',80,'제1종근린생활시설'],[1,'105',112.4,'제1종근린생활시설'],
+    [2,'201',140,'제1종근린생활시설'],[2,'202',98,'제1종근린생활시설',78.0],[2,'203',110,'제1종근린생활시설'],[2,'204',80.2,'제1종근린생활시설'],[2,'205',240,'제1종근린생활시설'],[2,'206',79.8,'제1종근린생활시설'],[2,'207',64,'제1종근린생활시설'],[2,'208',6.5,'제1종근린생활시설'],
+    [3,'301',300,'지식산업센터'],[3,'302',250,'지식산업센터'],[3,'303',450,'지식산업센터'],[4,'401',540,'지식산업센터'],[4,'402',450,'지식산업센터'],[5,'501',540,'지식산업센터'],[5,'502',450,'지식산업센터'],
+    [6,'601',300,'지식산업센터'],[6,'602',250,'지식산업센터'],[6,'603',450,'지식산업센터'],[7,'701',540,'지식산업센터'],[7,'702',450,'지식산업센터'],[8,'801',540,'지식산업센터'],[8,'802',450,'지식산업센터'],
+    [9,'901',1037,'지식산업센터',560.0],[10,'1001',540,'지식산업센터'],[10,'1002',450,'지식산업센터'],[11,'1101',540,'지식산업센터'],[11,'1102',450,'지식산업센터'],[12,'1201',299.6,'지식산업센터'],[12,'1202',250,'지식산업센터'],[12,'1203',450,'지식산업센터']] },
+  C:{ kind:'flr', items:[[-1,160.0,'제2종근린생활시설'],[1,162.0,'제1종근린생활시설'],[2,158.0,'제1종근린생활시설'],[3,159.0,'다가구주택'],[4,159.0,'다가구주택']] },
+};
+// 데모 값을 API 응답 모양(response.body.items.item)으로 — 화면에서 '예시 응답'으로 보여주고 같은 해석기로 읽는다
+function demoResponse(k){
+  const d = LEDGER_DEMO[k], fl = lv => ({ flrGbCdNm:lv < 0 ? '지하' : '지상', flrNo:Math.abs(lv) });
+  const item = d.kind === 'flr'
+    ? d.items.map(([lv, area, use]) => ({ ...fl(lv), area, mainPurpsCdNm:use }))
+    : d.items.flatMap(([lv, ho, area, use, pub]) => [{ ...fl(lv), hoNm:ho + '호', exposPubuseGbCdNm:'전유', area, mainPurpsCdNm:use }, ...(pub ? [{ ...fl(lv), hoNm:ho + '호', exposPubuseGbCdNm:'공용', area:pub, mainPurpsCdNm:use }] : [])]);
+  return { response:{ body:{ items:{ item } } } };
+}
+// 응답 해석: response.body.items.item / items.item / items / 배열 모두 받음. 층은 flrGbCdNm('지하') 또는 flrNoNm('지하1층')으로 판단
+function parseLedger(j){
+  let it = j && j.response && j.response.body && j.response.body.items ? j.response.body.items.item : j && j.items ? (j.items.item || j.items) : j;
+  if (it && !Array.isArray(it)) it = [it];
+  if (!Array.isArray(it) || !it.length) throw new Error('항목 없음');
+  const items = it.map(x => ({
+    lv:(/지하/.test((x.flrGbCdNm || '') + (x.flrNoNm || '')) ? -1 : 1) * Math.abs(+x.flrNo || 0),
+    ho:String(x.hoNm || '').replace(/호$/, '').trim(), gb:x.exposPubuseGbCdNm || '', area:+x.area || 0, use:x.mainPurpsCdNm || '', dong:x.dongNm || '',
+  })).filter(x => x.area > 0);
+  const kind = items.some(x => x.ho || x.gb) ? 'expos' : 'flr';
+  return { kind, items, dongs:[...new Set(items.map(x => x.dong).filter(Boolean))] };
+}
+function reconcile(b, L){
+  const sum = (a, k) => a.reduce((s, x) => s + x[k], 0);
+  const stOf = d => d === null ? 'miss' : Math.abs(d) <= 3 ? 'ok' : Math.abs(d) <= 5 ? 'near' : 'diff';
+  if (L.kind === 'flr'){
+    const rows = b.floors.map(f => { const li = L.items.filter(i => i.lv === f.lv), al = sum(li, 'area'), a3 = b.W * b.D, d = al ? (a3 - al) / al * 100 : null; return { lv:f.lv, no:flName(f.lv), a3, al, d, st:stOf(d), use:(li[0] || {}).use || '' }; });
+    L.items.filter(i => !b.floors.some(f => f.lv === i.lv)).forEach(i => rows.push({ lv:i.lv, no:flName(i.lv), a3:null, al:i.area, d:null, st:'extra', use:i.use }));
+    return { kind:'flr', rows, tot:sum(L.items, 'area') };
+  }
+  const ex = L.items.filter(i => i.gb !== '공용'), pub = L.items.filter(i => i.gb === '공용'), used = new Set();
+  const rows = b.floors.flatMap(f => f.units.filter(u => LEASABLE.includes(u.st)).map(u => {
+    const nos = u.rooms ? (u.roomsNote.match(/\d+/g) || [u.no]) : [u.no];
+    const m = ex.filter(i => nos.includes(i.ho)); m.forEach(i => used.add(i));
+    const al = sum(m, 'area'), pa = sum(pub.filter(i => nos.includes(i.ho)), 'area'), d = m.length ? (u.a - al) / al * 100 : null;
+    return { lv:f.lv, no:u.no, nos, a3:u.a, al, d, st:stOf(d), merged:nos.length > 1, pub:pa, c3:pa ? contractArea(b, f.lv, u) : null };
+  }));
+  ex.filter(i => !used.has(i)).forEach(i => rows.push({ lv:i.lv, no:i.ho, nos:[i.ho], a3:null, al:i.area, d:null, st:'extra', use:i.use }));
+  return { kind:'expos', rows, tot:sum(ex, 'area'), rooms:ex.length };
+}
+const ledgerState = {};   // 시나리오별 붙여 넣은 응답 (없으면 데모)
 
 // ── three.js 기본 세팅 ─────────────────────────────────────────
 const view = document.getElementById('view');
@@ -1011,6 +1100,7 @@ function renderBuilding(){
     S.merged.length ? `합친 호실 ${S.merged.map(x => `${x.no}호(${x.roomsNote || `${x.rooms}개 호실`})`).join(', ')} → <b>호실 수</b>로는 ${S.merged.reduce((s, x) => s + x.rooms, 0)}개, <b>점포 수</b>로는 ${S.merged.length}곳으로 셉니다.` : '',
     S.unsold ? `미분양 ${m2(S.unsold)}는 분양률 통계엔 '미분양', 공실률엔 '공실'로 잡힙니다. 시행사 보유분을 빼면 ${pct(S.exUnsold.rate)}.` : '',
     S.dark ? `계약했지만 아직 영업 전인 ${m2(S.dark)}(${S.rows.filter(x => x.st === 'dark').map(x => x.no + '호').join(', ')})는 공식 공실률엔 빠지지만 <b>실질 공실</b>로는 ${pct(S.actual.rate)}입니다.` : '',
+    `<b>상태 기준일</b> · 공실 · 미입주는 매물 DB · 인허가 · 관리단 · 현장 확인으로 판정 (호실을 누르면 근거 표시, 데모)`,
     `<b>대장 대조</b> · 3D 바닥 합 ${m2(S.gfa3d)} vs 건축물대장 연면적 ${m2(S.gfaLedger)} (${S.gfaDiff > 0 ? '+' : ''}${S.gfaDiff.toFixed(1)}%) ${gfaOk ? '→ 허용 범위(±5%)' : '→ <b style="color:var(--bad)">±5% 초과: 지하 확장 · 옥탑 · 발코니 등 차이 확인 필요</b>'}`,
     S.roomsLedger ? `<b>호수 대조</b> · 대장 전유부 ${S.roomsLedger}호 vs 3D ${S.rooms.n}호 ${S.roomsLedger === S.rooms.n ? '✓ 일치' : '✗ 불일치 — 전유부 다시 확인'}` : '',
     S.overflow.length ? `<b style="color:var(--bad)">배치 오류</b> · ${S.overflow.map(o => `${flName(o.lv)} ${o.no}호 ${o.missing}㎡ 초과`).join(', ')}` : '',
@@ -1030,7 +1120,45 @@ function renderBuilding(){
     <div class="grp"><small>위치별</small>${grp(S.byPos)}</div>
     <ul class="anote">${notes.map(x => `<li>${x}</li>`).join('')}</ul>`;
   $('#aiNote').innerHTML = `<b>🤖 AI 한 줄 분석</b>${b.ai}`;
+  renderLedger();
 }
+
+const LST = { ok:['일치', 'ok'], near:['근접 (3~5%)', 'near'], diff:['면적 차이', 'diff'], miss:['대장에 없음', 'diff'], extra:['3D에 없음', 'diff'] };
+function renderLedger(){
+  const b = BUILDINGS[state.s], src = ledgerState[state.s];
+  let L, err = '';
+  try { L = parseLedger(src ? JSON.parse(src) : demoResponse(state.s)); } catch (e) { err = e.message; L = parseLedger(demoResponse(state.s)); }
+  const R = reconcile(b, L), bad = R.rows.filter(r => r.st !== 'ok');
+  const cnt = k => R.rows.filter(r => r.st === k).length;
+  const show = ledgerState[state.s + ':all'] ? R.rows : bad;
+  const pct = d => d === null ? '—' : `${d > 0 ? '+' : ''}${d.toFixed(1)}%`;
+  $('#ledgerChk').innerHTML = `
+    <div class="sec-h"><h3>건축물대장 대조</h3><small>${R.kind === 'expos' ? '전유부 · 호실 단위' : '층별개요 · 층 단위'}${src ? ' · 붙여 넣은 응답' : ' · 데모 응답'}</small></div>
+    <div class="lsum">
+      ${R.kind === 'expos' ? `<span>대장 전유 <b>${R.rooms}호</b></span><span>3D <b>${b.floors.flatMap(f => f.units.filter(u => LEASABLE.includes(u.st))).reduce((s, u) => s + (u.rooms || 1), 0)}호</b></span>` : `<span>대장 층 합 <b>${m2(R.tot)}</b></span><span>대장 연면적 <b>${m2(b.ledger.gfa)}</b></span>`}
+      <span class="ok">일치 ${cnt('ok')}</span>${cnt('near') ? `<span class="near">근접 ${cnt('near')}</span>` : ''}${cnt('diff') ? `<span class="diff">차이 ${cnt('diff')}</span>` : ''}${cnt('extra') ? `<span class="diff">3D에 없음 ${cnt('extra')}</span>` : ''}${cnt('miss') ? `<span class="diff">대장에 없음 ${cnt('miss')}</span>` : ''}
+    </div>
+    ${show.length ? `<table class="ltab"><thead><tr><th>${R.kind === 'expos' ? '호' : '층'}</th><th>3D</th><th>대장</th><th>차이</th><th>판정</th></tr></thead><tbody>${show.map(r => `<tr><td>${R.kind === 'expos' ? `${flName(r.lv)} ${r.merged ? r.nos.join('+') : r.no}` : r.no}</td><td>${r.a3 === null ? '—' : r.a3.toFixed(1)}</td><td>${r.al ? r.al.toFixed(1) : '—'}</td><td>${pct(r.d)}</td><td><span class="lst ${LST[r.st][1]}">${LST[r.st][0]}</span>${r.merged ? ' <span class="lst near">합친 호실</span>' : ''}</td></tr>`).join('')}</tbody></table>` : '<p class="muted" style="font-size:11.5px;margin:6px 0">모든 항목이 3% 안에서 일치합니다.</p>'}
+    <button type="button" class="lnk" id="ledAll">${ledgerState[state.s + ':all'] ? '차이만 보기' : `전체 ${R.rows.length}건 보기`}</button>
+    ${R.kind === 'expos' && R.rows.some(r => r.pub) ? `<p class="lnote">공용면적이 있는 호: ${R.rows.filter(r => r.pub).map(r => `${r.no}호 대장 계약 ${(r.al + r.pub).toFixed(1)}㎡ vs 3D 추정 ${r.c3.toFixed(1)}㎡ (${pct((r.c3 - r.al - r.pub) / (r.al + r.pub) * 100)})`).join(' · ')}</p>` : ''}
+    ${L.dongs.length > 1 ? `<p class="lnote" style="color:var(--bad)">응답에 동이 ${L.dongs.length}개(${L.dongs.join(', ')}) 섞여 있습니다 — 동 이름으로 먼저 거르세요.</p>` : ''}
+    ${err ? `<p class="lnote" style="color:var(--bad)">붙여 넣은 내용을 읽지 못했습니다(${esc(err)}) — 데모 응답으로 대조했습니다.</p>` : ''}
+    <details class="lpaste"><summary>실제 대장 응답 붙여 넣어 대조하기</summary>
+      <textarea id="ledTxt" rows="5" placeholder='공공데이터포털 건축물대장정보 서비스 응답(JSON)을 붙여 넣으세요'>${esc(src || '')}</textarea>
+      <div class="lbtns"><button type="button" class="btn sm" id="ledRun">대조</button><button type="button" class="btn sm" id="ledDemo">예시 응답 넣기</button>${src ? '<button type="button" class="btn sm" id="ledClear">데모로 되돌리기</button>' : ''}</div>
+      <p class="lnote">실제 값은 건축HUB 건축물대장정보 서비스의 전유공용면적(집합건물) · 층별개요(일반건축물) 조회로 받습니다. 한 지번에 동이 여럿이면 동 이름으로 먼저 거르고, 필드 이름은 공공데이터포털 명세로 다시 확인하세요. 붙여 넣은 값은 이 화면에서만 쓰고 저장 · 전송하지 않습니다.</p>
+    </details>`;
+}
+$('#ledgerChk').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'ledAll') ledgerState[state.s + ':all'] = !ledgerState[state.s + ':all'];
+  if (t.id === 'ledRun'){ const v = $('#ledTxt').value.trim(); ledgerState[state.s] = v || undefined; }
+  if (t.id === 'ledDemo'){ ledgerState[state.s] = JSON.stringify(demoResponse(state.s), null, 1); }
+  if (t.id === 'ledClear') ledgerState[state.s] = undefined;
+  const open = !!e.target.closest('details');
+  renderLedger();
+  if (open) $('#ledgerChk details').open = true;
+});
 
 function renderRight(){
   const b = BUILDINGS[state.s];
@@ -1054,6 +1182,7 @@ function renderRight(){
           <div><small>전용 3.3㎡당 월세</small><b>${(un.rent / (un.a / 3.3058)).toFixed(1)}만</b></div>
         </div>
         <p style="margin:10px 0 0;font-size:12px;color:var(--text-2)">직전 업종 · <b>${un.prev}</b></p>
+        ${basisOf(b, un) ? `<p class="basis">🗂 상태 판정 근거 · ${basisOf(b, un)}</p>` : ''}
         <p class="muted" style="margin:6px 0 0;font-size:11px">계약면적은 층 공용(코어 · 복도)과 건물 공용(로비 · 주차장)을 전용면적 비율로 나눠 더한 추정값입니다. 실제 값은 집합건축물대장 전유공용면적으로 확인하세요.</p>
       </div>
       <div class="sec"><div class="sec-h"><h3>설비 · 공간</h3><small>창업 전 확인</small></div>
@@ -1084,6 +1213,7 @@ function renderRight(){
         ${un.since ? `<dt>${st === 'dark' ? '일정' : '입점'}</dt><dd>${un.since}${st === 'dark' ? '' : '~'}</dd>` : ''}
       </dl>
       <p class="muted" style="font-size:11.5px;margin:10px 0 0">${note}</p>
+      ${st === 'dark' && basisOf(b, un) ? `<p class="basis">🗂 상태 판정 근거 · ${basisOf(b, un)}</p>` : ''}
     </div>`;
   }
   const badge = { op:'op', dark:'dark', vac:'vac', unsold:'unsold', res:'res', park:'park' }[st];
@@ -1136,6 +1266,14 @@ $('#tgReset').onclick = () => {
 
 const qf = params.get('f');
 loadScenario(state.s, qf !== null && qf !== '' ? +qf : undefined);
+
+// 접근성: 켜짐(.on) 상태를 화면 낭독기에도 알림 (aria-pressed)
+(() => {
+  const SEL = '.seg button, .tg, .pill button, .qbtn, .fchip, .mseg button, #tabs button, #modeSeg button, #elev button';
+  const sync = () => document.querySelectorAll(SEL).forEach(b => b.setAttribute('aria-pressed', b.classList.contains('fchip') ? !b.classList.contains('off') : b.classList.contains('on')));
+  sync();
+  new MutationObserver(sync).observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['class'] });
+})();
 </script>
 </body>
 </html>

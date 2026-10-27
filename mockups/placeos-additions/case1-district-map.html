@@ -171,6 +171,11 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
   .zlabel b{font-size:10.5px}
   .zlabel span{display:none}
 }
+:focus-visible{outline:3px solid #6366f1;outline-offset:2px}
+.dsrc{margin-top:6px;font-size:12px;color:var(--text-2)}
+.dsrc summary{cursor:pointer;font-weight:700;color:var(--brand-ink);display:inline-block}
+.dsrc ul{margin:6px 0 0;padding-left:18px;max-width:900px}
+.dsrc li{margin:2px 0}
 </style>
 </head>
 <body>
@@ -192,6 +197,7 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
     <div class="eyebrow">CASE 1 · 다른 상권 찾기</div>
     <h1>동네 상권을 구역별로 나눠서 추천 업종과 특징 보기</h1>
     <p>동네를 상권 단위로 쪼개 지도에 표시하고, 구역을 누르면 그 상권의 성격 · 추천 업종 · 피해야 할 업종이 나옵니다.</p>
+    <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>상권 구역 경계 · 유동인구 · 매출지수 · 업종 적합도는 <b>데모 값</b>입니다. 성수 공실률 · 1층 임대료만 2024~2026 보도치 범위로 맞췄습니다.</li><li>실서비스 출처: 서울시 상권분석서비스(골목 · 발달상권 영역, 추정매출 · 생활인구 — 분기, 분기 종료 약 2개월 뒤 공개) · 소상공인 상가(상권)정보(분기).</li><li>업종 적합도는 가중치를 실제 성과로 검증하기 전까지 <b>참고 지수</b>입니다.</li></ul></details>
   </div>
   <div class="tools">
     <select class="sel" id="hoodSel" aria-label="동네 선택">
@@ -615,7 +621,7 @@ function renderDetail(){
       </div>
     </div>
     <div class="sec">
-      <h3>이 상권 추천 업종 TOP 3 <small>적합도 100점 기준</small></h3>
+      <h3>이 상권 추천 업종 TOP 3 <small>적합도 100점 기준 · 참고 지수</small></h3>
       ${recs.map(([k,s]) => `<div class="rec"><span class="rk">${recs.findIndex(r=>r[0]===k)+1}</span><div class="b">
         <div class="nm"><span>${IND[k].e} ${IND[k].n}</span><em>${s}점</em></div>
         <div class="bar"><i style="width:${s}%"></i></div>
@@ -725,6 +731,14 @@ $('#zlist').addEventListener('click', e => { const b = e.target.closest('.zi'); 
 
 drawHood();
 renderTray();
+
+// 접근성: 켜짐(.on) 상태를 화면 낭독기에도 알림 (aria-pressed)
+(() => {
+  const SEL = '.seg button, .tg, .pill button, .qbtn, .fchip, .mseg button, #tabs button, #modeSeg button, #elev button';
+  const sync = () => document.querySelectorAll(SEL).forEach(b => b.setAttribute('aria-pressed', b.classList.contains('fchip') ? !b.classList.contains('off') : b.classList.contains('on')));
+  sync();
+  new MutationObserver(sync).observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['class'] });
+})();
 </script>
 </body>
 </html>

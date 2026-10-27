@@ -141,6 +141,14 @@ button{cursor:pointer}
 .pill.chain{background:#ede9fe;color:var(--chain)}
 .pill.new{background:#e0f2fe;color:#0369a1}
 .pill.closed{background:#fee2e2;color:var(--bad)}
+.pill.inb{background:#eef2ff;color:var(--brand-ink)}
+.pill.cross{background:#f1f5f9;color:var(--text-2)}
+.ref{font-size:10px;font-weight:800;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:2px}
+.door{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:#fff;border:2px solid var(--brand);font-size:12px;box-shadow:0 1px 4px rgba(15,23,42,.3)}
+.tl{font-size:12px;font-weight:700;color:var(--text-2)}
+.mseg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:2px;gap:2px}
+.mseg button{border:0;background:transparent;border-radius:7px;padding:4px 9px;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.mseg button.on{background:var(--brand);color:#fff}
 .brands{display:flex;flex-wrap:wrap;gap:6px}
 .brands span{font-size:11.5px;font-weight:700;background:#f5f3ff;color:var(--chain);border:1px solid #ddd6fe;border-radius:999px;padding:2px 9px}
 .insight{background:linear-gradient(135deg,#eef2ff,#f5f3ff);border:1px solid #e0e7ff;border-radius:12px;padding:12px;font-size:12.5px;color:#312e81}
@@ -170,6 +178,11 @@ button{cursor:pointer}
   .legend{grid-template-columns:auto;font-size:10.5px}
   .maptag{font-size:11px;white-space:normal;width:max-content;max-width:calc(100% - 24px);text-align:center}
 }
+:focus-visible{outline:3px solid #6366f1;outline-offset:2px}
+.dsrc{margin-top:6px;font-size:12px;color:var(--text-2)}
+.dsrc summary{cursor:pointer;font-weight:700;color:var(--brand-ink);display:inline-block}
+.dsrc ul{margin:6px 0 0;padding-left:18px;max-width:900px}
+.dsrc li{margin:2px 0}
 </style>
 </head>
 <body>
@@ -191,6 +204,7 @@ button{cursor:pointer}
     <div class="eyebrow">CASE 4 · 이 자리와 업종</div>
     <h1>공실 주변 50~100m 안의 같은 업종 · 체인점을 지도에 표시</h1>
     <p>하려는 업종을 고르면 반경 안 점포를 <b style="color:var(--same)">같은 업종</b> · <b style="color:var(--chain)">체인점</b> · <b style="color:#b45309">비슷한 업종</b> · <b style="color:var(--ok)">함께 크는 업종</b>으로 나눠 보여주고 경쟁 강도를 계산합니다.</p>
+    <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>주변 점포 위치 · 업종 · 층 · 개폐업은 <b>데모 값</b>(시드 고정 난수)이고, 체인 이름은 익명입니다. 같은 건물 입점은 3D 트윈 호실 데이터를 씁니다.</li><li>실서비스 출처: 소상공인 상가(상권)정보(좌표 · 층, 분기) · LOCALDATA 인허가(개 · 폐업) · 공정위 가맹사업 정보 · 지도 API 보행 경로.</li><li>경쟁 강도는 데모 가중치(층 · 길 건너)를 쓴 <b>참고 지수</b>입니다.</li></ul></details>
   </div>
   <div class="seg" id="scSeg" aria-label="시나리오">
     <button data-s="A">A · 연무장길 2층</button>
@@ -205,6 +219,7 @@ button{cursor:pointer}
     <div class="radius"><input type="range" id="rad" min="50" max="100" step="10" value="100"><output id="radOut">100m</output>
       <button class="qbtn" data-r="50">50m</button><button class="qbtn" data-r="70">70m</button><button class="qbtn on" data-r="100">100m</button></div>
   </div>
+  <div class="tgroup"><span class="tl">거리 기준</span><div class="mseg" id="mSeg" role="group" aria-label="거리 기준"><button type="button" data-m="real" class="on" aria-pressed="true">보행 · 층 반영</button><button type="button" data-m="line" aria-pressed="false">직선</button></div></div>
   <div class="chips" id="fchips">
     <button class="fchip" data-k="same"><i style="background:var(--same)"></i>같은 업종</button>
     <button class="fchip" data-k="chain"><i style="background:#fff;border:3px solid var(--chain);box-sizing:border-box"></i>체인점만</button>
@@ -262,12 +277,14 @@ const INDIE = {
   study:['스터디룸 공간'], flower:['플라워 스튜디오'], studio:['셀프 사진관','프로필 스튜디오'], laundry:['코인 세탁'], realty:['공인중개사','부동산 중개'],
 };
 // [업종, 개수, 체인 수] · center와 fp(건물 가로 W · 깊이 D · 앞면 방위 face)는 Case 1 · 2 · 3과 같은 값입니다 (데모 좌표).
+// fp.entry = 거리 기준점(건물 좌표 x 오른쪽 · z 도로 쪽, m): 1층 공실은 그 호실 출입문, 위층 · 지하는 1층 공용 출입구 — Case 2 · 3 평면 배치와 같은 자리.
+// fp.road = 앞 도로 폭(m)과 횡단보도 x 위치(없으면 아무 데서나 건넘). 도로 폭 · 횡단보도는 데모 가정입니다.
 const SCN = {
-  A:{ name:'성수 아뜰리에빌딩 2층 201호', zone:'연무장길 카페·팝업거리', center:[37.5427,127.0560], fp:{ W:16, D:12, face:180 }, branch:'성수연무장', def:'cafe', floorNote:'2층',
+  A:{ name:'성수 아뜰리에빌딩 2층 201호', zone:'연무장길 카페·팝업거리', center:[37.5427,127.0560], fp:{ W:16, D:12, face:180, entry:{ x:6.73, z:6, n:'1층 건물 출입구 (계단 · EV로 2층)' }, road:{ w:10, cw:[-45, 70] } }, lv:2, branch:'성수연무장', def:'cafe', floorNote:'2층',
       quota:[['cafe',14,4],['bakery',4,1],['dessert',3,1],['select',8,0],['popup',5,0],['nail',3,0],['hair',2,1],['pilates',2,0],['wine',2,0],['korean',3,0],['conv',2,2],['studio',2,0],['flower',1,0],['realty',1,0]] },
-  B:{ name:'성수 테크타워 1층 102호', zone:'성수역 지식산업센터 오피스', center:[37.5466,127.0567], fp:{ W:48, D:26, face:270 }, branch:'성수역', def:'salad', floorNote:'1층',
+  B:{ name:'성수 테크타워 1층 102호', zone:'성수역 지식산업센터 오피스', center:[37.5466,127.0567], fp:{ W:48, D:26, face:270, entry:{ x:-16.03, z:13, n:'102호 전면 출입문' }, road:{ w:25, cw:[-70, 55] } }, lv:1, branch:'성수역', def:'salad', floorNote:'1층',
       quota:[['korean',8,0],['snack',4,2],['salad',3,1],['cafe',9,5],['conv',4,4],['pharmacy',2,0],['clinic',3,0],['gym',2,1],['pilates',2,0],['study',2,1],['office',6,0],['chicken',2,2],['pub',2,0],['bakery',2,1],['laundry',1,1]] },
-  C:{ name:'뚝섬 코너하우스 지하 1층 B01호', zone:'뚝섬역 먹자골목', center:[37.5462,127.0485], fp:{ W:14, D:11, face:90 }, branch:'뚝섬역', def:'pub', floorNote:'지하 1층',
+  C:{ name:'뚝섬 코너하우스 지하 1층 B01호', zone:'뚝섬역 먹자골목', center:[37.5462,127.0485], fp:{ W:14, D:11, face:90, entry:{ x:5.83, z:5.5, n:'1층 지하 계단 입구' }, road:{ w:6, cw:null } }, lv:-1, branch:'뚝섬역', def:'pub', floorNote:'지하 1층',
       quota:[['pub',9,2],['korean',9,0],['chicken',4,3],['wine',2,0],['cafe',5,2],['conv',3,3],['snack',2,1],['nail',1,0],['hair',2,0],['realty',2,0],['dessert',1,0],['laundry',1,0]] },
 };
 const TARGETS = {
@@ -297,6 +314,58 @@ function footprintLL(sc){
   });
 }
 const FACE8 = ['북','북동','동','남동','남','남서','서','북서'];
+// 같은 건물 입점 업종 (Case 2 · 3 호실 데이터와 같은 이름) — [호, 이름, 업종, 층]
+const SAME_BLDG = {
+  A:[['101','베이커리카페','bakery',1],['102','편집숍','select',1],['B01','와인바 셀러','wine',-1],['202','사진 스튜디오','studio',2],['301','필라테스 스튜디오','pilates',3],['401','디자인 스튜디오','office',4]],
+  B:[['101','편의점','conv',1],['103','김밥·분식','snack',1],['104','약국','pharmacy',1],['105','베이커리카페','bakery',1],['201','치과','clinic',2],['203','스터디카페','study',2],['204','한의원','clinic',2],['205','필라테스','pilates',2],['207','네일·왁싱','nail',2]],
+  C:[['101','코너 카페','cafe',1],['102','공인중개사','realty',1],['201','네일샵','nail',2],['202','세무사무소','office',2]],
+};
+// 업종별 점포 층 비율 [1층, 2층, 3층 이상, 지하] (데모 가정) · 층별 경쟁 가중치
+const FLOOR_P = {
+  cafe:[.7,.22,.03,.05], bakery:[.9,.08,0,.02], dessert:[.85,.12,0,.03], salad:[.85,.15,0,0], korean:[.75,.2,.02,.03], snack:[.95,.05,0,0],
+  pub:[.45,.2,0,.35], wine:[.35,.25,0,.4], chicken:[.85,.1,0,.05], conv:[1,0,0,0], nail:[.25,.6,.15,0], hair:[.45,.45,.1,0], pilates:[.05,.35,.6,0], gym:[0,.3,.5,.2],
+  select:[.8,.2,0,0], popup:[.9,.1,0,0], pharmacy:[1,0,0,0], clinic:[.1,.5,.4,0], office:[0,.3,.7,0], study:[.05,.45,.4,.1], flower:[1,0,0,0], studio:[.2,.5,.2,.1], laundry:[.9,0,0,.1], realty:[1,0,0,0],
+};
+const FL_N = ['1층', '2층', '3층 이상', '지하'], FL_W = { '1층':1, '2층':.75, '3층 이상':.5, '지하':.7 }, CROSS_W = .6;
+const flName = lv => lv < 0 ? `지하 ${-lv}층` : `${lv}층`;
+const flBand = lv => lv < 0 ? '지하' : lv === 1 ? '1층' : lv === 2 ? '2층' : '3층 이상';
+const entryLL = sc => { const { entry } = sc.fp, r = Math.PI / 180, a = (sc.fp.face - 90) * r, b = sc.fp.face * r, mLat = 111320, mLng = 111320 * Math.cos(sc.center[0] * r);
+  const e = entry.x * Math.sin(a) + entry.z * Math.sin(b), n = entry.x * Math.cos(a) + entry.z * Math.cos(b); return [sc.center[0] + n / mLat, sc.center[1] + e / mLng]; };
+// 보행 거리 추정: 출입구에서 도로를 따라 직각으로 걷는다고 보고, 건물 뒤쪽은 건물 옆으로 돌아가며, 넓은 길(10m 이상) 건너편은 가장 가까운 횡단보도까지 돌아간다.
+function walkOf(sc, L){
+  const { W, D, entry:E, road } = sc.fp, front = D / 2, far = front + 2 + road.w;
+  const across = L.z > far;
+  let w;
+  if (across && road.w >= 10 && road.cw) w = Math.min(...road.cw.map(cx => Math.abs(E.x - cx) + Math.abs(cx - L.x))) + Math.abs(L.z - E.z);
+  else if (L.z < front && Math.abs(L.x) <= W / 2 + 1.5) w = Math.min(...[W / 2 + 1.5, -W / 2 - 1.5].map(sx => Math.abs(E.x - sx) + Math.abs(sx - L.x))) + Math.abs(E.z - L.z);
+  else w = Math.abs(L.x - E.x) + Math.abs(L.z - E.z);
+  return { w:Math.round(w), across };
+}
+// 점포마다 출입구 기준 직선 · 보행 거리, 방향, 층, 가중치를 붙인다 (층은 점포별 고정 난수 — 위치 생성 순서와 별개)
+function enrich(key, list){
+  const sc = SCN[key];
+  list.forEach((p, i) => {
+    const L = toLocal(sc.fp, p.dx, p.dy), E = sc.fp.entry;
+    const ex = E.x * Math.sin((sc.fp.face - 90) * Math.PI / 180) + E.z * Math.sin(sc.fp.face * Math.PI / 180);
+    const ny = E.x * Math.cos((sc.fp.face - 90) * Math.PI / 180) + E.z * Math.cos(sc.fp.face * Math.PI / 180);
+    const de = p.dx - ex, dn = p.dy - ny;
+    p.dl = Math.round(Math.hypot(de, dn));
+    p.dir = DIRS[Math.round(((Math.atan2(de, dn) * 180 / Math.PI + 360) % 360) / 45) % 8];
+    const wk = walkOf(sc, L); p.w = Math.max(p.dl, wk.w); p.across = wk.across && sc.fp.road.w >= 10;
+    const r = prng((key.charCodeAt(0) * 7919 + i * 104729) >>> 0)(), pr = FLOOR_P[p.cat] || [1, 0, 0, 0];
+    let acc = 0, k = 0; for (; k < 4; k++){ acc += pr[k]; if (r < acc) break; }
+    p.fl = FL_N[Math.min(k, 3)];
+  });
+  return list;
+}
+function sameBldg(key){
+  const sc = SCN[key];
+  return SAME_BLDG[key].map(([no, name, cat, lv]) => {
+    const steps = lv === sc.lv ? 0 : Math.abs((lv > 0 ? lv : lv + 1) - (sc.lv > 0 ? sc.lv : sc.lv + 1));
+    const d = lv === sc.lv ? 8 : 10 + steps * 4;   // 같은 층 8m, 다른 층은 계단 한 층당 4m
+    return { cat, name:`${name} (${no}호)`, no, lv, chain:false, brand:null, opened:2020, closed:false, inb:true, dl:d, w:d, dir:'같은 건물', fl:flBand(lv), flx:flName(lv), across:false };
+  });
+}
 
 function genPOIs(key){
   const sc = SCN[key], rnd = prng(key.charCodeAt(0) * 2654435761 >>> 0);
@@ -327,7 +396,10 @@ function genPOIs(key){
 }
 
 const params = new URLSearchParams(location.search);
-const state = { s: SCN[params.get('s')] ? params.get('s') : 'A', ind:null, R:100, show:{ same:true, chain:false, similar:true, syn:true, other:true, closed:false }, listAll:false };
+const state = { s: SCN[params.get('s')] ? params.get('s') : 'A', ind:null, R:100, real:true, show:{ same:true, chain:false, similar:true, syn:true, other:true, closed:false }, listAll:false };
+// 거리 기준: 보행 · 층 반영(기본) = 보행 거리 + 층 · 길 건너 가중치, 직선 = 출입구에서 잰 직선거리 · 가중치 없음
+const dist = p => state.real ? p.w : p.dl;
+const wt = p => state.real ? (FL_W[p.fl] || 1) * (p.across ? CROSS_W : 1) : 1;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const rel = p => { const t = TARGETS[state.ind]; return t.same.includes(p.cat) ? 'same' : t.similar.includes(p.cat) ? 'similar' : t.syn.includes(p.cat) ? 'syn' : 'other'; };
@@ -364,12 +436,14 @@ const map = L.map('map', { zoomControl:true, center:SCN[state.s].center, zoom:18
 addBasemap(map);
 const ringLayer = L.layerGroup().addTo(map);
 const poiLayer = L.layerGroup().addTo(map);
-let pois = [], markers = [];
+let pois = [], markers = [], inb = [];
+const allP = () => [...pois, ...inb];
 
 function drawBase(){
   ringLayer.clearLayers(); poiLayer.clearLayers(); markers = [];
   const sc = SCN[state.s];
-  pois = genPOIs(state.s);
+  pois = enrich(state.s, genPOIs(state.s));
+  inb = sameBldg(state.s);
   map.setView(sc.center, map.getSize().x < 520 ? 17 : 18);
   pois.forEach((p, i) => {
     const m = L.marker(p.ll, { icon: L.divIcon({ className:'', html:'<div class="poi"></div>', iconSize:[28,28], iconAnchor:[14,14] }), riseOnHover:true });
@@ -381,11 +455,13 @@ function drawBase(){
   L.polygon(footprintLL(sc), { color:'#4f46e5', weight:2, fillColor:'#6366f1', fillOpacity:.22, interactive:false }).addTo(ringLayer);
   const me = L.marker(sc.center, { icon: L.divIcon({ className:'', html:'<div class="me">★</div>', iconSize:[40,40], iconAnchor:[20,20] }), zIndexOffset:1000, interactive:false }).addTo(ringLayer);
   me.bindTooltip(`이 자리 · ${sc.floorNote} · 출입 ${FACE8[Math.round(sc.fp.face / 45) % 8]}쪽`, { permanent:true, direction:'top', offset:[0,-22], className:'me-lab' });
+  L.marker(entryLL(sc), { icon: L.divIcon({ className:'', html:'<div class="door" title="출입구 · 거리 기준점">🚪</div>', iconSize:[22,22], iconAnchor:[11,11] }), zIndexOffset:900 })
+    .bindTooltip(`출입구 · 거리 기준점<br><small>${esc(sc.fp.entry.n)}</small>`, { direction:'bottom', offset:[0,10] }).addTo(ringLayer);
 }
 
 function drawRings(){
   ringLayer.eachLayer(l => { if (l instanceof L.Circle || l.options.rlab) ringLayer.removeLayer(l); });
-  const c = SCN[state.s].center;
+  const c = entryLL(SCN[state.s]);
   L.circle(c, { radius:state.R, color:'#4f46e5', weight:2.5, fillColor:'#6366f1', fillOpacity:.08 }).addTo(ringLayer);
   if (state.R !== 50) L.circle(c, { radius:50, color:'#4f46e5', weight:1.5, dashArray:'6 6', fill:false }).addTo(ringLayer);
   const mLat = 111320;
@@ -397,7 +473,7 @@ function drawRings(){
 
 function styleMarkers(){
   pois.forEach((p, i) => {
-    const r = rel(p), inR = p.d <= state.R;
+    const r = rel(p), inR = dist(p) <= state.R;
     let visible = state.show[r];
     if (state.show.chain && !p.chain) visible = false;
     if (p.closed && !state.show.closed) visible = false;
@@ -408,20 +484,22 @@ function styleMarkers(){
     div.className = `poi ${r === 'other' ? '' : r} ${p.chain ? 'chain' : ''} ${inR ? '' : 'out'} ${p.closed ? 'closed' : ''}`;
     div.innerHTML = `${p.closed ? '' : CATS[p.cat].e}${p.chain ? '<span class="cb">체인</span>' : ''}${p.opened === 2026 && !p.closed ? '<span class="nb">NEW</span>' : ''}`;
     markers[i].setZIndexOffset(inR ? (r === 'same' ? 300 : 100) : 0);
-    markers[i].setTooltipContent(`<b>${esc(p.name)}</b>${CATS[p.cat].n} · <span style="color:${REL_COL[r]};font-weight:800">${REL_TEXT[r]}</span>${p.chain ? ' · <span style="color:#7c3aed;font-weight:800">체인</span>' : ''}<br><small>이 자리에서 ${p.dir}쪽 ${p.d}m · ${p.closed ? '최근 폐업' : p.opened === 2026 ? '최근 1년 내 개업' : p.opened + '년 개업'}</small>`);
+    markers[i].setTooltipContent(`<b>${esc(p.name)}</b>${CATS[p.cat].n} · <span style="color:${REL_COL[r]};font-weight:800">${REL_TEXT[r]}</span>${p.chain ? ' · <span style="color:#7c3aed;font-weight:800">체인</span>' : ''}<br><small>출입구에서 ${p.dir}쪽 ${p.dl}m · 보행 약 ${p.w}m${p.across ? ' (길 건너)' : ''} · ${p.fl}<br>${p.closed ? '최근 폐업' : p.opened === 2026 ? '최근 1년 내 개업' : p.opened + '년 개업'}</small>`);
   });
 }
 
 // ── 분석 ──────────────────────────────────────────────
 function stats(R){
-  const act = pois.filter(p => !p.closed && p.d <= R);
+  const act = allP().filter(p => !p.closed && dist(p) <= R);
   const by = r => act.filter(p => rel(p) === r);
   const same = by('same'), similar = by('similar'), syn = by('syn'), other = by('other');
   const sameChain = same.filter(p => p.chain);
   return { act, same, similar, syn, other, sameChain, chainAll: act.filter(p => p.chain) };
 }
+// 경쟁 강도: 같은 업종 10 · 그중 체인 +5 · 비슷한 업종 4점을 점포마다 층 · 길 건너 가중치(wt)로 곱해 더함
 function compScore(st, R){
-  const raw = st.same.length * 10 + st.sameChain.length * 5 + st.similar.length * 4;
+  const sw = a => a.reduce((s, p) => s + wt(p), 0);
+  const raw = sw(st.same) * 10 + sw(st.sameChain) * 5 + sw(st.similar) * 4;
   return Math.min(100, Math.round(raw / Math.pow(Math.max(.25, (R / 100) ** 2), .6) * .6));
 }
 const compLabel = v => v >= 75 ? ['매우 높음','#b91c1c'] : v >= 55 ? ['높음','#dc2626'] : v >= 35 ? ['보통','#b45309'] : ['낮음','#047857'];
@@ -430,23 +508,27 @@ function renderSide(){
   const sc = SCN[state.s], t = TARGETS[state.ind], R = state.R;
   const st = stats(R), s50 = stats(50), s100 = stats(100);
   const score = compScore(st, R), [lab, lc] = compLabel(score);
-  const nearest = pois.filter(p => !p.closed && rel(p) === 'same').sort((a,b) => a.d - b.d)[0];
+  const nearest = allP().filter(p => !p.closed && rel(p) === 'same').sort((a,b) => dist(a) - dist(b))[0];
   const brandSet = [...new Set(st.sameChain.map(p => p.brand))];
   const allBrands = [...new Set(st.chainAll.map(p => p.brand))];
-  const recentOpen = pois.filter(p => rel(p) === 'same' && p.d <= R && p.opened === 2026 && !p.closed).length;
-  const recentClose = pois.filter(p => rel(p) === 'same' && p.d <= R && p.closed).length;
-  const closedAny = pois.filter(p => p.d <= R && p.closed).length;
-  const list = pois.filter(p => p.d <= R && (rel(p) === 'same' || (rel(p) === 'similar' && p.chain) || (state.show.closed && p.closed && rel(p) === 'same'))).sort((a,b) => a.d - b.d);
+  const recentOpen = pois.filter(p => rel(p) === 'same' && dist(p) <= R && p.opened === 2026 && !p.closed).length;
+  const recentClose = pois.filter(p => rel(p) === 'same' && dist(p) <= R && p.closed).length;
+  const closedAny = pois.filter(p => dist(p) <= R && p.closed).length;
+  const list = allP().filter(p => dist(p) <= R && (rel(p) === 'same' || (rel(p) === 'similar' && (p.chain || p.inb)) || (state.show.closed && p.closed && rel(p) === 'same'))).sort((a,b) => dist(a) - dist(b));
+  const crossSame = st.same.filter(p => p.across).length, upSame = st.same.filter(p => p.fl !== '1층').length;
+  const inbRel = inb.filter(p => ['same', 'similar', 'syn'].includes(rel(p)));
   const shown = state.listAll ? list : list.slice(0, 8);
   const tot = st.act.length || 1;
 
   // 해석
   const pts = [];
   if (s50.same.length >= 3) pts.push(`반경 50m 안에 같은 업종이 <b>${s50.same.length}곳</b> — 바로 옆 경쟁이 치열합니다.`);
-  else if (s50.same.length === 0) pts.push(`반경 50m 안에는 같은 업종이 <b>없습니다</b>. 가장 가까운 곳은 ${nearest ? `${nearest.d}m 떨어진 ${esc(nearest.name)}` : '반경 밖'}입니다.`);
+  else if (s50.same.length === 0) pts.push(`반경 50m 안에는 같은 업종이 <b>없습니다</b>. 가장 가까운 곳은 ${nearest ? `${state.real ? '보행 ' : ''}${dist(nearest)}m 떨어진 ${esc(nearest.name)}` : '반경 밖'}입니다.`);
   else pts.push(`반경 50m 안 같은 업종 <b>${s50.same.length}곳</b>, ${R}m까지 넓히면 <b>${st.same.length}곳</b>입니다.`);
   if (st.sameChain.length) pts.push(`같은 업종 중 체인점 <b>${st.sameChain.length}곳</b>(${brandSet.slice(0,3).map(esc).join(' · ')}) — 가격으로 맞서기보다 차별화로 승부해야 합니다.`);
   else pts.push('같은 업종에 체인점이 없어 <b>가격 경쟁 압박은 낮은 편</b>입니다.');
+  if (state.real && (crossSame || upSame)) pts.push(`같은 업종 중 ${crossSame ? `<b>길 건너 ${crossSame}곳</b>` : ''}${crossSame && upSame ? ' · ' : ''}${upSame ? `<b>1층이 아닌 곳 ${upSame}곳</b>` : ''}은 손님이 덜 겹친다고 보고 경쟁 가중치를 낮췄습니다.`);
+  if (inbRel.length) pts.push(`같은 건물에 ${inbRel.map(p => `${p.flx} ${esc(p.name.replace(/ \(.*\)$/, ''))}`).slice(0, 3).join(' · ')} — ${inbRel.some(p => rel(p) !== 'syn') ? '같은 건물 경쟁부터 확인하세요.' : '건물 안 손님을 함께 쓸 수 있습니다.'}`);
   if (st.syn.length) pts.push(`함께 크는 업종 <b>${st.syn.length}곳</b>(${[...new Set(st.syn.map(p => CATS[p.cat].n))].slice(0,3).join(' · ')}) 손님이 넘어올 수 있습니다.`);
   pts.push('성수동은 성동구 <b>지속가능발전구역</b>(2023 성수동 전역 확대)이라 대기업 · 프랜차이즈 휴게음식점 · 제과점 · 일반음식점 입점 제한이 추진됐습니다 — 체인 경쟁이 쉽게 늘지 않는 대신, 가맹점 창업이면 입점 가능 여부부터 확인하세요.');
   pts.push(`최근 1년 같은 업종 개업 <b>${recentOpen}</b> · 폐업 <b>${recentClose}</b>${recentOpen > recentClose ? ' — 아직 들어오는 업종입니다.' : recentClose > recentOpen ? ' — 빠지는 흐름이니 주의하세요.' : '.'}`);
@@ -457,19 +539,20 @@ function renderSide(){
     <div class="sec">
       <div class="sh"><h3>반경 ${R}m 안 점포</h3><small>영업 중 ${st.act.length}곳 기준</small></div>
       <div class="tiles">
-        <div class="tile same"><b>${st.same.length}</b><span>같은 업종</span><small>50m 안 ${s50.same.length}</small></div>
+        <div class="tile same"><b>${st.same.length}</b><span>같은 업종</span><small>50m 안 ${s50.same.length}${state.real && crossSame ? ` · 길 건너 ${crossSame}` : ''}</small></div>
         <div class="tile chain"><b>${st.sameChain.length}</b><span>그중 체인</span><small>전체 체인 ${st.chainAll.length}</small></div>
         <div class="tile similar"><b>${st.similar.length}</b><span>비슷한 업종</span><small>대체 수요</small></div>
         <div class="tile syn"><b>${st.syn.length}</b><span>함께 크는</span><small>손님 공유</small></div>
       </div>
     </div>
     <div class="sec">
-      <div class="sh"><h3>경쟁 강도</h3><small>같은 업종 · 체인 · 비슷한 업종 밀도</small></div>
+      <div class="sh"><h3>경쟁 강도 <span class="ref">참고 지수</span></h3><small>${state.real ? '층 · 길 건너 가중 반영' : '단순 개수'}</small></div>
       <div class="comp">
         <div class="meter"><div class="track"><span class="knob" style="left:${score}%"></span></div><div class="ends"><span>여유</span><span>과밀</span></div></div>
         <div class="score"><b style="color:${lc}">${score}</b><span style="color:${lc}">${lab}</span></div>
       </div>
-      ${nearest ? `<p style="margin:10px 0 0;font-size:12px;color:var(--text-2)">가장 가까운 같은 업종 · <b>${esc(nearest.name)}</b> (${nearest.dir}쪽 ${nearest.d}m${nearest.chain ? ', 체인' : ''})</p>` : ''}
+      ${nearest ? `<p style="margin:10px 0 0;font-size:12px;color:var(--text-2)">가장 가까운 같은 업종 · <b>${esc(nearest.name)}</b> (${nearest.inb ? `같은 건물 ${nearest.flx}` : `${nearest.dir}쪽 ${dist(nearest)}m · ${nearest.fl}${nearest.across ? ' · 길 건너' : ''}`}${nearest.chain ? ', 체인' : ''})</p>` : ''}
+      <p class="muted" style="font-size:11px;margin:6px 0 0">산식: 같은 업종 10 + 그중 체인 5 + 비슷한 업종 4 (점포마다 ${state.real ? '1층 1 · 2층 0.75 · 3층 이상 0.5 · 지하 0.7, 길 건너 ×0.6' : '가중치 없음'}), 반경 넓이로 보정. 데모 가중치라 실제 성과로 검증 전까지는 참고 지수입니다.</p>
     </div>
     <div class="sec">
       <div class="sh"><h3>업종 구성</h3><small>반경 ${R}m · 영업 중</small></div>
@@ -484,14 +567,14 @@ function renderSide(){
           <tr><td>전체 점포</td><td>${s50.act.length}</td><td>${s100.act.length}</td></tr>
         </tbody>
       </table>
-      <p class="muted" style="font-size:11px;margin:8px 0 0">거리는 건물 중심에서 잰 직선거리이고, 대상 건물 바닥(보라 윤곽) 안에는 점포를 찍지 않습니다. 같은 건물 입점 업종은 3D 트윈 층별 정보를 보세요. 실서비스는 보행 경로 거리, 대로 건너편 여부, 층(1층 · 지하 · 2층)을 함께 반영하는 게 좋습니다.</p>
+      <p class="muted" style="font-size:11px;margin:8px 0 0">거리는 출입구(🚪, ${esc(sc.fp.entry.n)})에서 잽니다. 보행 거리는 도로를 따라 직각으로 걷는 추정이고, 폭 10m 이상인 길 건너편은 가장 가까운 횡단보도까지 돌아가는 거리를 더했습니다(도로 폭 ${sc.fp.road.w}m · 횡단보도 위치는 데모 가정). 점포 층은 업종별 비율로 정한 데모 값입니다. 같은 건물 입점 업종은 3D 트윈 호실 데이터를 씁니다. 실서비스는 지도 API 보행 경로와 상가정보의 층 항목으로 바꿉니다.</p>
     </div>
     <div class="sec">
       <div class="sh"><h3>같은 업종 · 체인점 목록</h3><small>가까운 순 · 누르면 지도 이동</small></div>
-      ${list.length ? `<ul class="plist">${shown.map(p => { const r = rel(p); return `<li data-i="${pois.indexOf(p)}">
+      ${list.length ? `<ul class="plist">${shown.map(p => { const r = rel(p); return `<li tabindex="0" role="button" ${p.inb ? `data-lv="${p.lv}"` : `data-i="${pois.indexOf(p)}"`} aria-label="${esc(p.name)} ${p.inb ? '같은 건물 ' + p.flx : dist(p) + 'm'}">
         <span class="e ${r}">${CATS[p.cat].e}</span>
-        <span class="t"><b>${esc(p.name)}${p.chain ? '<span class="pill chain">체인</span>' : ''}${p.opened === 2026 && !p.closed ? '<span class="pill new">NEW</span>' : ''}${p.closed ? '<span class="pill closed">폐업</span>' : ''}</b><small>${CATS[p.cat].n} · ${REL_TEXT[r]} · ${p.closed ? '최근 폐업' : p.opened + '년~'}</small></span>
-        <span class="d">${p.d}m<small>${p.dir}쪽</small></span></li>`; }).join('')}</ul>
+        <span class="t"><b>${esc(p.name)}${p.inb ? '<span class="pill inb">같은 건물</span>' : ''}${p.chain ? '<span class="pill chain">체인</span>' : ''}${p.opened === 2026 && !p.closed ? '<span class="pill new">NEW</span>' : ''}${p.closed ? '<span class="pill closed">폐업</span>' : ''}${p.across ? '<span class="pill cross">길 건너</span>' : ''}</b><small>${CATS[p.cat].n} · ${REL_TEXT[r]} · ${p.inb ? '3D 트윈 호실' : p.closed ? '최근 폐업' : p.opened + '년~'}</small></span>
+        <span class="d">${p.inb ? p.flx : dist(p) + 'm'}<small>${p.inb ? '같은 건물' : `${p.dir}쪽 · ${p.fl}`}</small></span></li>`; }).join('')}</ul>
         ${list.length > 8 ? `<button class="more" id="moreBtn">${state.listAll ? '접기' : `${list.length - 8}곳 더 보기`}</button>` : ''}`
         : '<p class="muted" style="font-size:12px;margin:0">반경 안에 같은 업종이 없습니다.</p>'}
     </div>
@@ -511,14 +594,16 @@ function renderSide(){
       <a class="btn" href="case1-district-map.html">🗺 다른 상권과 비교</a>
       <a class="btn btn-primary" href="case5-customer-ledger.html?s=${state.s}">🧾 손님 모으기 계획</a>
     </div>`;
+  $('#side').querySelectorAll('.plist li').forEach(li => li.onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); li.click(); } });
   $('#side').querySelectorAll('.plist li').forEach(li => li.onclick = () => {
+    if (li.dataset.lv !== undefined){ location.href = `case2-3d-floor-twin.html?s=${state.s}&f=${li.dataset.lv}`; return; }
     const m = markers[+li.dataset.i];
     if (!poiLayer.hasLayer(m)) m.addTo(poiLayer);
     map.panTo(m.getLatLng()); m.openTooltip();
     const el = m.getElement().firstChild; el.classList.add('hl'); setTimeout(() => el.classList.remove('hl'), 1400);
   });
   const mb = $('#moreBtn'); if (mb) mb.onclick = () => { state.listAll = !state.listAll; renderSide(); };
-  $('#maptag').textContent = `반경 ${R}m · ${t.e} ${t.n} 기준 · 같은 업종 ${st.same.length}곳 (체인 ${st.sameChain.length})`;
+  $('#maptag').textContent = `${state.real ? '보행' : '직선'} ${R}m · ${t.e} ${t.n} 기준 · 같은 업종 ${st.same.length}곳 (체인 ${st.sameChain.length})${state.real ? ' · 원은 직선거리' : ''}`;
 }
 
 function refresh(){ drawRings(); styleMarkers(); renderSide(); }
@@ -540,6 +625,12 @@ $('#fchips').addEventListener('click', e => {
   refresh();
 });
 document.querySelector('.fchip[data-k=chain]').classList.add('off');
+$('#mSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  state.real = b.dataset.m === 'real';
+  document.querySelectorAll('#mSeg button').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
+  refresh();
+});
 function loadScenario(s){
   state.s = s; state.ind = SCN[s].def; state.listAll = false;
   $('#indSel').value = state.ind;
@@ -549,6 +640,14 @@ function loadScenario(s){
 }
 $('#scSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadScenario(b.dataset.s); });
 loadScenario(state.s);
+
+// 접근성: 켜짐(.on) 상태를 화면 낭독기에도 알림 (aria-pressed)
+(() => {
+  const SEL = '.seg button, .tg, .pill button, .qbtn, .fchip, .mseg button, #tabs button, #modeSeg button, #elev button';
+  const sync = () => document.querySelectorAll(SEL).forEach(b => b.setAttribute('aria-pressed', b.classList.contains('fchip') ? !b.classList.contains('off') : b.classList.contains('on')));
+  sync();
+  new MutationObserver(sync).observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['class'] });
+})();
 </script>
 </body>
 </html>

@@ -137,6 +137,11 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
   .files{grid-template-columns:1fr}
   .add{grid-template-columns:52px 1fr;gap:10px}
 }
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.feat{padding:14px 16px}
+.feat h4{margin:0 0 4px;font-size:14px}
+.feat p{margin:0;font-size:12.5px;color:var(--text-2)}
+@media (max-width:900px){.feats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -164,14 +169,15 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     <a href="#facts">7. 사실 확인 근거</a>
     <a href="#limits">8. 검증 한계</a>
     <a href="#req4">9. 추가 점검 (공실 · 3D · 공실률 · 인테리어)</a>
-    <a href="#sources">10. 출처</a>
+    <a href="#todo">10. 남은 과제 처리 · 공실 맞춤 디자인</a>
+    <a href="#sources">11. 출처</a>
   </aside>
 
   <main>
     <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
     <h1>시안 5개를 검증한 결과와 차별점, 추가할 정보</h1>
     <p class="lead">앞서 만든 HTML 시안 5개(상권 구역 지도 · 층별 3D 트윈 · 거리뷰 층별보기 · 반경 업종 분석 · 손님 모으기)를 코드 · 화면 · 수치 · 법규 · 외부 서비스 기준으로 점검했습니다. 바로 고칠 수 있는 문제는 시안에 반영했고, 실데이터가 있어야 풀리는 문제는 남은 과제로 정리했습니다.</p>
-    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 66개 링크</span></div>
+    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장) · 남은 과제 처리 (10장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 66개 링크</span></div>
 
     <div class="stats">
       <div class="card stat"><div class="l">이번에 고친 문제</div><div class="v">15건</div><div class="d">지도 깨짐 · 수치 보정 · 법규 누락 등</div></div>
@@ -347,7 +353,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
         </table>
       </div>
 
-      <h3>남은 과제 (13건)</h3>
+      <h3>남은 과제 (13건) <small class="muted" style="font-weight:500">— 처리 상태는 10장</small></h3>
       <div class="card tbl">
         <table class="t">
           <thead><tr><th>심각도</th><th>과제</th><th>왜 문제인가</th><th>해결 방향</th></tr></thead>
@@ -645,7 +651,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
         </table>
       </div>
 
-      <h3>요청 4 관련 남은 과제 (6건)</h3>
+      <h3>요청 4 관련 남은 과제 (6건) <small class="muted" style="font-weight:500">— 처리 상태는 10장</small></h3>
       <div class="card tbl">
         <table class="t">
           <thead><tr><th>과제</th><th>왜 남았나</th><th>해결 방향</th></tr></thead>
@@ -663,8 +669,59 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     </section>
 
     <!-- 10 -->
+    <section id="todo">
+      <h2><span class="n">10</span>남은 과제 처리 · 공실 맞춤 인테리어 디자인 설정</h2>
+      <p class="sub">4장(13건)과 9장(6건)의 남은 과제 19건 가운데 시안 안에서 풀 수 있는 것을 처리했습니다. 실데이터 · 제휴 · 계약이 있어야 하는 6건은 그대로 남깁니다. 손님 모으기에는 상권 분석 키워드로 공실 인테리어를 설계하는 설정을 추가했습니다.</p>
+      <div class="stats">
+        <div class="card stat"><div class="l">해결</div><div class="v">2건</div><div class="d">반경 거리 · 층, 대장 대조 로직</div></div>
+        <div class="card stat"><div class="l">부분 해결</div><div class="v">11건</div><div class="d">시안에서 할 수 있는 만큼</div></div>
+        <div class="card stat"><div class="l">남김</div><div class="v">6건</div><div class="d">실데이터 · 계약 필요</div></div>
+        <div class="card stat"><div class="l">새 기능</div><div class="v">키워드 디자인</div><div class="d">키워드 24개 · 설정 7가지</div></div>
+      </div>
+
+      <h3>남은 과제 19건 처리 상태</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>상태</th><th>과제</th><th>이번에 한 일</th><th>아직 남은 것</th><th>화면</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill p-ok">해결</span></td><td>반경 분석의 거리 · 층 미반영</td><td>거리를 건물 중심이 아닌 <b>출입구</b>에서 재고, 도로를 따라 걷는 <b>보행 거리</b>를 추정(건물 뒤는 옆으로 돌아감, 폭 10m 이상 길 건너편은 가까운 횡단보도까지 우회). 점포마다 층(1층 · 2층 · 3층 이상 · 지하)을 두고 경쟁 가중치(1 · 0.75 · 0.5 · 0.7, 길 건너 ×0.6) 반영. <b>같은 건물 입점</b>(3D 트윈 호실)도 경쟁에 포함. '보행 · 층 반영 / 직선' 전환</td><td>도로 폭 · 횡단보도 위치 · 점포 층은 데모 가정 → 지도 API 보행 경로 · 상가정보 층 항목으로 교체</td><td>4</td></tr>
+            <tr><td><span class="pill p-ok">해결</span></td><td>집합건축물대장 자동 대조</td><td>건축HUB 건축물대장정보 응답(JSON)을 읽는 해석기와 대조 로직. 집합건물은 전유부(호실 · 전유면적 · 공용면적), 일반건축물은 층별개요로 대조. 합친 호실(204+206), 3D에 없는 호(208), 면적 차이(105호 +6.8%) 판정, 공용면적이 있는 호는 대장 계약면적과 3D 추정치 비교(102호 +1.6%). 실제 응답을 붙여 넣으면 그대로 대조</td><td>API 인증키로 자동 호출하는 연동(서버), 필드명은 명세로 재확인</td><td>2</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>모든 핵심 수치가 가상</td><td>화면마다 'ⓘ 데이터 출처 · 기준'을 두어 데모 값 · 실서비스 출처 · 갱신 주기를 밝힘</td><td>서울시 상권분석서비스 · 상가정보 · 인허가 연동</td><td>1~5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>점수 공식이 검증되지 않음</td><td>경쟁 강도 · 간판 노출도 · 업종 적합도에 '참고 지수' 표시, 경쟁 강도 산식 공개. 인테리어 적합도는 가중치를 사용자가 직접 조정</td><td>과거 개 · 폐업 데이터로 백테스트</td><td>1 · 3 · 4 · 5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>평면 · 호실 정보 확보</td><td>대장 전유부 응답으로 호실 · 면적을 대조하는 경로 마련</td><td>실제 평면 모양(도면 · 스캔)</td><td>2</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>데이터 갱신 지연</td><td>출처별 갱신 주기와 공실 상태 기준일(호실별) 표시</td><td>실제 기준일 연동</td><td>2 · 3 · 각 화면</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>매출 데이터 공개 정책</td><td>'익명 · 범위로만 제공' 동의 항목 예시, 다른 매장 매출은 개별 숫자로 보여주지 않는다는 원칙 표시</td><td>실제 동의 절차 · 약관</td><td>5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>가계부 저장 방식</td><td>백업 파일(.json) 내보내기 · 불러오기 — 기기를 바꿔도 옮길 수 있음. 형식이 다른 파일은 거부</td><td>로그인 후 암호화 서버 저장</td><td>5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>접근성</td><td>키보드 포커스 표시, 켜짐 상태를 화면 낭독기에 알림(aria-pressed), 거리뷰 층을 Tab · Enter로 선택, 반경 목록 키보드 선택, 알림 메시지 낭독(aria-live)</td><td>3D 화면 키보드 조작, 전체 화면 낭독기 점검</td><td>1~5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>실제 건물 · 출입구 좌표</td><td>거리 기준점을 출입구로 바꾸고, 그 위치가 3D 배치의 출입구(1층 공실은 그 호실 문, 위층 · 지하는 1층 공용 출입구)와 같은지 자동 점검</td><td>도로명주소 건물 · 출입구 좌표(이용 신청)</td><td>4</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>공실 · 미입주 판정</td><td>호실마다 상태 판정 근거와 기준일(매물 DB · 폐업 신고 · 관리단 · 현장 확인) 표시</td><td>판정 데이터 실제 연동</td><td>2 · 3</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>인테리어 적합도 가중치</td><td>키워드 강도 · 디자인 방향 · 가중치를 사용자가 조정. 기본 설정이면 기존 점수와 같은지 자동 점검</td><td>실제 매장 성과로 보정</td><td>5</td></tr>
+            <tr><td><span class="pill p-mid">부분</span></td><td>실제 이미지 생성 연동</td><td>프롬프트로 만든 이미지를 올려 생성 예시와 나란히 비교(이 화면에서만, 저장 · 전송 안 함). 프롬프트에 키워드 요소 · 배치 문장 추가</td><td>생성 AI 연동 · 약관 · 고지</td><td>5</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>상권 경계 근사치</td><td colspan="2">서울시 상권 영역 폴리곤 데이터가 필요</td><td>1</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>3D 형태 · 주변 건물</td><td colspan="2">3D 도시 모델(S-Map 등) 활용 검토 필요</td><td>2</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>거리뷰가 그림</td><td colspan="2">네이버 파노라마 키 · 층 높이 매칭 개발 필요</td><td>3</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>지도 타일 약관</td><td colspan="2">실서비스 지도 계약으로 통일</td><td>1 · 4</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>CDN 의존</td><td colspan="2">시안 단계에서는 감수, 서비스에서는 번들링</td><td>1 · 2 · 4</td></tr>
+            <tr><td><span class="pill p-gray">남김</span></td><td>실제 평면 모양</td><td colspan="2">도면 업로드 · 현장 스캔 제휴 필요 (Case 5 배치안은 3D 칸 치수와 자동 대조)</td><td>2 · 3 · 5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>새 기능 · 상권 키워드로 공실 인테리어 디자인 (손님 모으기 ④)</h3>
+      <div class="feats">
+        <div class="card feat"><h4>① 키워드 설정</h4><p>상권 분석 키워드(주변 매장 리뷰 · SNS 사진, 데모)마다 반영 강도를 <b>끔 · 약 · 중 · 강</b>으로 고르고, 분석에 없는 요소(네온, 테라조, 벽돌, 단체석, 노트북 작업, 반려동물 동반)를 추가합니다. 키워드 사전 24개는 각각 공간 그림 · 배치 · 비용 · 점검 항목으로 이어집니다.</p></div>
+        <div class="card feat"><h4>② 디자인 방향 · 브랜드</h4><p>'상권에 맞추기 ↔ 차별화' 방향을 정하면 적합도의 무드 · 차별화 비중이 바뀌고, 차별화 쪽에서는 주변에 흔한(30% 이상) 키워드를 한 단계 낮춰 반영합니다. 브랜드 색을 켜면 포인트 색 · 간판에 적용하고 명암비를 다시 검사합니다.</p></div>
+        <div class="card feat"><h4>③ 키워드 맞춤안</h4><p>추천 콘셉트에 키워드 요소를 덧씌웁니다. 같은 자리(바닥 · 조명 · 좌석)를 두 키워드가 원하면 (상권 비율 × 강도)가 큰 쪽이 이기고, 표에 '적용 · 일부 · 밀림 · 대체(창 없음)'로 보여줍니다. 공간 그림 · 팔레트 · 자재 · 조명 · AI 프롬프트가 함께 바뀝니다.</p></div>
+        <div class="card feat"><h4>④ 공실 배치안</h4><p>공실 실측 치수(3D 칸과 자동 대조) · 문 · 창 위치에 주방(업종별 비율) · 카운터 또는 오픈 키친 바 · 창가 바 · 포토존 · 픽업 선반 · 전실 · 단체석을 배치하고, 남는 자리에 테이블을 채워 좌석 수를 목표와 비교합니다.</p></div>
+        <div class="card feat"><h4>⑤ 맞춤 견적 · 점검</h4><p>콘셉트 기본 공사(전체 / 부분 ×0.6) + 키워드 요소 비용 − 기존 설비 재사용 절감(덕트 · 그리스트랩 · 가스 · 화장실)을 계산해 예산에 반영하고, 숯불 · 식물 벽 · 노출 천장 · 네온 같은 요소의 공사 전 점검 항목을 체크리스트에 더합니다.</p></div>
+        <div class="card feat"><h4>⑥ 자동 점검 · 한계</h4><p>기본 설정의 적합도 = 기존 값, 키워드를 많이 켜도 배치 칸이 겹치거나 벽 밖으로 나가지 않음, 공실 치수 = 3D 칸을 자동 점검합니다. 단가 · 주방 비율 · 좌석 모듈은 업계 통상 참고치 · 데모이고, 피난 통로 · 위생 기준은 안내만 합니다(설계 · 소방 · 위생 확인 필요).</p></div>
+      </div>
+      <p class="note" style="margin-top:12px">예시(기본 설정): A 2층 201호(디저트 카페)는 미니멀 갤러리 + 노출 콘크리트 · 포토존 · 창가 바 등 6개 키워드로 창가 바 16석 + 테이블, 주방 22%, 내부 화장실 유지 절감. C 지하 B01호(이자카야)는 이자카야 노렌 + 숯불 · 바 좌석 · 숨은 가게로 오픈 키친 바 19석 + 4인석, 기존 배기 덕트 쪽 숯불 구이대, 계단 홀 쪽 노렌 전실.</p>
+    </section>
+
+    <!-- 11 -->
     <section id="sources">
-      <h2><span class="n">10</span>출처</h2>
+      <h2><span class="n">11</span>출처</h2>
       <p class="sub">웹 검색으로 확인한 자료입니다. 날짜가 표시된 것은 기사 · 공지 기준일입니다.</p>
       <div class="card pad">
         <ol class="srcs">
