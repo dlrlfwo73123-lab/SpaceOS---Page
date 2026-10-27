@@ -7,11 +7,13 @@
 //      Case 5 공실 치수 · Case 4 출입구 · 같은 건물 입점이 공통 건물 블록과 맞는지, 인테리어 배치안이 겹치거나 벽 밖으로 나가지 않는지.
 //   ⑦ 실사 참고 사진: Case 5 안 사진 묶음(PHOTOLIB) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
 //      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지,
-//      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내).
+//      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내 · PNG 변환).
+//   ⑧ PlaceOS 참고.html(Case 1~5 한 파일): 원본과 같은 최신 내용인지, 카드 · 화면 안 메뉴 · 주소(#case4?s=C)로 화면이 바뀌는지.
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
 const fs = require('fs');
 const vm = require('vm');
+const { pathToFileURL } = require('url');
 const { chromium } = require('playwright');
 
 const dir = path.resolve(process.argv[2] || path.join(__dirname, 'placeos-additions'));
@@ -69,7 +71,22 @@ const PAGES = [
       ['eval', `(async () => { const im = [...document.querySelectorAll('#phGrid img, #idetail [data-v=mainphoto] img')]; for (const i of im){ i.scrollIntoView(); await i.decode().catch(() => {}); } return im.length === 4 && im.every(i => i.naturalWidth > 0); })()`, '실사 사진이 그려지지 않음'],
       ['click', '#tabs button[data-t=profile]'], ['click', '#scSeg button[data-s=C]']] },
   { file: 'verification-report.html', must: ['#summary', '#sources'], act: [] },
+  { file: 'PlaceOS 참고.html', must: ['#home .rc', '#docs'],
+    act: [['click', '#home .rc-open[data-go=case5]'],
+      ['eval', WAIT_FRAME('case5', '#ledBody tr'), '묶음 파일 안 Case 5가 열리지 않음'],
+      // 화면 안 헤더 메뉴(링크)로 Case 2로 넘어가는지
+      ['eval', `(async () => { document.querySelector('iframe[data-id=case5]').contentDocument.querySelector('.gnb a[href^="case2"]').click();
+        return (await (${WAIT_FRAME('case2', '#elev button')})) && location.hash.startsWith('#case2') && document.querySelector('iframe.on').dataset.id === 'case2'; })()`, '묶음 파일 안 화면 이동(Case 5 → Case 2)이 안 됨'],
+      // 주소로 화면 · 시나리오 열기
+      ['eval', `(async () => { location.hash = '#case4?s=C'; if (!(await (${WAIT_FRAME('case4', '.poi')}))) return false;
+        return document.querySelector('iframe[data-id=case4]').contentDocument.querySelector('#scSeg button.on').dataset.s === 'C'; })()`, '주소(#case4?s=C)로 화면 · 시나리오가 열리지 않음'],
+      ['eval', `(() => { document.querySelector('iframe[data-id=case4]').contentDocument.querySelector('.gnb .logo').click(); return new Promise(r => setTimeout(() => r(!document.body.classList.contains('in-case')), 300)); })()`, '화면 안 로고로 목차에 돌아오지 않음']] },
 ];
+// 묶음 파일(PlaceOS 참고.html) 안 iframe에 요소가 생길 때까지 기다리는 식 (최대 15초)
+function WAIT_FRAME(id, sel){
+  return `new Promise(r => { const t0 = Date.now(); (function w(){ const f = document.querySelector('iframe[data-id=${id}]'), d = f && f.contentDocument;
+    if (d && d.querySelector('${sel}')) return r(true); if (Date.now() - t0 > 15000) return r(false); setTimeout(w, 150); })(); })`;
+}
 const VIEWS = [{ name: '데스크톱', width: 1440, height: 900 }, { name: '모바일', width: 390, height: 844 }];
 // 지도 타일 한두 장이 늦거나 빠지는 것은 화면 동작과 무관해 경고로만 봅니다.
 const SOFT = /Failed to load resource|net::ERR_|GL Driver Message|GPU stall/;
@@ -121,6 +138,17 @@ function crossChecks(){
     });
     if (new Set(L.photos.map(p => p.id)).size !== L.photos.length) errs.push('사진 id 중복');
   } catch (e) { errs.push('사진 묶음 검사 실패: ' + e.message); }
+  // PlaceOS 참고.html 이 지금 시안 파일로 다시 만든 것과 같은지(시안을 고치고 묶음을 안 만들었으면 실패)
+  try {
+    const bp = path.join(__dirname, 'build-placeos-ref.cjs');
+    if (!fs.existsSync(bp)) errs.push('build-placeos-ref.cjs 가 check-pages.cjs 옆에 없음 — 묶음 파일 최신 여부를 확인할 수 없음');
+    else {
+      const B = require(bp), t = read(B.OUT), a = t.indexOf('<script type="application/json" id="docs">'), b = t.indexOf('</script>', a);
+      const have = JSON.parse(t.slice(t.indexOf('>', a) + 1, b)), want = B.build(dir).docs;
+      const old = Object.keys(want).filter(k => !have[k] || have[k].html !== want[k].html);
+      if (old.length) errs.push(`PlaceOS 참고.html 이 최신 시안과 다름(${old.join(', ')}) — node build-placeos-ref.cjs 로 다시 만드세요`);
+    }
+  } catch (e) { errs.push('PlaceOS 참고.html 검사 실패: ' + e.message); }
   if (c1.length !== 3 || c2.length !== 3 || c4.length !== 3) errs.push(`시나리오 좌표를 다 찾지 못함 (Case1 ${c1.length} · Case2/3 ${c2.length} · Case4 ${c4.length})`);
   else if (norm(c1) !== norm(c2) || norm(c2) !== norm(c4)) errs.push(`시나리오 건물 좌표가 화면마다 다름: Case1 ${norm(c1)} / Case2·3 ${norm(c2)} / Case4 ${norm(c4)}`);
   return errs;
@@ -130,7 +158,7 @@ function crossChecks(){
   const browser = await chromium.launch();
   let fails = 0;
   const cross = crossChecks();
-  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점 · 실사 사진 묶음)');
+  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점 · 실사 사진 묶음 · PlaceOS 참고 최신)');
   cross.forEach(e => console.log('    - ' + e));
   if (cross.length) fails++;
   for (const pg of PAGES) {
@@ -143,7 +171,7 @@ function crossChecks(){
         if (m.type() !== 'error') return;
         (SOFT.test(m.text()) ? warns : errors).push('콘솔: ' + m.text());
       });
-      const url = 'file://' + path.join(dir, pg.file);
+      const url = pathToFileURL(path.join(dir, pg.file)).href;
       try {
         await page.goto(url, { waitUntil: 'load', timeout: 30000 });
         await page.waitForTimeout(1500);

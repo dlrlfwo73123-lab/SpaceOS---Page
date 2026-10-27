@@ -172,14 +172,15 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     <a href="#todo">10. 남은 과제 처리 · 공실 맞춤 디자인</a>
     <a href="#photo">11. 실사 참고 사진 · 남은 과제 2차</a>
     <a href="#aigen">12. 업종 실사 사진 · AI 이미지 생성</a>
-    <a href="#sources">13. 출처</a>
+    <a href="#onefile">13. AI 내려받기 수정 · PlaceOS 참고</a>
+    <a href="#sources">14. 출처</a>
   </aside>
 
   <main>
     <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
     <h1>시안 5개를 검증한 결과와 차별점, 추가할 정보</h1>
     <p class="lead">앞서 만든 HTML 시안 5개(상권 구역 지도 · 층별 3D 트윈 · 거리뷰 층별보기 · 반경 업종 분석 · 손님 모으기)를 코드 · 화면 · 수치 · 법규 · 외부 서비스 기준으로 점검했습니다. 바로 고칠 수 있는 문제는 시안에 반영했고, 실데이터가 있어야 풀리는 문제는 남은 과제로 정리했습니다.</p>
-    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장) · 남은 과제 처리 (10장) · 실사 참고 사진 · 2차 처리 (11장) · 업종 실사 사진 · AI 이미지 생성 (12장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 76개 링크</span></div>
+    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장) · 남은 과제 처리 (10장) · 실사 참고 사진 · 2차 처리 (11장) · 업종 실사 사진 · AI 이미지 생성 (12장) · 내려받기 수정 · 한 파일 (13장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 76개 링크</span></div>
 
     <div class="stats">
       <div class="card stat"><div class="l">이번에 고친 문제</div><div class="v">15건</div><div class="d">지도 깨짐 · 수치 보정 · 법규 누락 등</div></div>
@@ -807,8 +808,36 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     </section>
 
     <!-- 13 -->
+    <section id="onefile">
+      <h2><span class="n">13</span>AI 이미지 내려받기 수정 · PlaceOS 참고(한 파일)</h2>
+      <p class="sub">AI로 만든 이미지를 내려받으면 파일이 열리지 않던 문제를 고치고, Case 1~5를 HTML 한 파일로 묶은 <b>PlaceOS 참고.html</b>을 만들었습니다.</p>
+      <h3>AI 이미지 내려받기가 안 보이던 원인과 수정</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>원인</th><th>증상</th><th>수정</th></tr></thead>
+          <tbody>
+            <tr><td>서비스가 보낸 JPEG(또는 WebP)를 이름만 <code>.png</code>로 저장</td><td>확장자와 내용이 달라 일부 뷰어 · 앱에서 열리지 않음</td><td>만들 때 받은 그림을 캔버스로 다시 그려 <b>진짜 PNG</b>로 바꿔 보관하고 그 파일을 저장(가로 × 세로 · 용량 표시)</td></tr>
+            <tr><td>무료 체험은 내려받을 때 같은 주소를 <b>한 번 더 요청</b></td><td>사용 한도(15초에 1번 등)에 걸리면 오류 글(JSON)이 그림 대신 <code>.png</code>로 저장됨</td><td>만들 때 한 번만 받고(fetch) 그 바이트를 그대로 씀. 오류 응답이면 그림 대신 한국어 안내</td></tr>
+            <tr><td>큰 그림을 data: 주소로 바로 내려받기</td><td>브라우저에 따라 큰 data 주소 내려받기가 실패할 수 있음</td><td>Blob 주소로 바꿔 저장</td></tr>
+            <tr><td>다른 출처 읽기가 막힌 경우</td><td>그림은 보이지만 파일로 못 받음</td><td>버튼을 '새 탭에서 열기'로 바꾸고 "오른쪽 클릭 → 이미지 저장" 안내</td></tr>
+            <tr><td>내려받기 파일 이름에 한글(<code>placeos-장부-A.csv</code>, <code>PlaceOS 추가사항.zip</code>)</td><td>일부 브라우저가 이름을 무시해 <code>download</code>(확장자 없음)로 저장</td><td>영문 이름으로(<code>placeos-ledger-A-날짜.csv</code>, <code>PlaceOS-additions.zip</code> — 풀면 'PlaceOS 추가사항' 폴더)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:8px">모의 응답 시험: 무료 체험 · Gemini · OpenAI 모두 내려받은 파일의 첫 8바이트가 PNG 서명(89 50 4E 47 0D 0A 1A 0A)이고 브라우저에서 열림. 무료 체험이 두 번째 요청에 429를 주도록 해도 정상 PNG가 저장되고 서비스 요청은 1번만 감. 첫 요청이 429면 "사용 한도를 넘었습니다" 안내.</p>
+      <h3>PlaceOS 참고.html — Case 1~5 한 파일</h3>
+      <div class="feats">
+        <div class="card feat"><h4>① 그대로 담기</h4><p>다섯 화면을 원본 그대로 파일 안에 넣고(약 3.7MB), 연 화면만 그때 띄웁니다. 각 화면은 따로 떨어진 틀(iframe) 안에서 돌아가 서로의 코드 · 스타일이 섞이지 않습니다.</p></div>
+        <div class="card feat"><h4>② 화면 사이 이동</h4><p>화면 안 헤더 메뉴, '🏙 거리뷰 · 층별보기' · '📍 이 자리 주변 업종 분석' 같은 이동 버튼, Case 4의 층 클릭 이동을 가로채 이 파일 안에서 화면을 바꿉니다. 로고를 누르면 목차로 돌아옵니다.</p></div>
+        <div class="card feat"><h4>③ 주소 · 뒤로 가기</h4><p>주소창이 <code>#case2?s=B</code>처럼 바뀌어 그 주소로 바로 열 수 있고, 시나리오를 바꾸면 주소도 따라갑니다. 뒤로 가기로 앞 화면에 돌아갑니다. 3D 라이브러리 예비 CDN 전환도 파일 안에서 동작합니다.</p></div>
+        <div class="card feat"><h4>④ 만들기 · 최신 확인</h4><p><code>node build-placeos-ref.cjs</code>가 시안 파일로 묶음 파일을 다시 만들고, 자동 점검이 묶음 파일이 최신 시안과 같은지 비교합니다(시안만 고치고 다시 안 묶으면 실패).</p></div>
+      </div>
+      <p class="note" style="margin-top:10px">자동 점검에 더한 것: 묶음 파일 최신 여부, 카드로 Case 5 열기, 화면 안 메뉴로 Case 5 → Case 2 이동, <code>#case4?s=C</code> 주소로 화면 · 시나리오 열기, 로고로 목차 복귀(데스크톱 · 모바일). 한계: 저장 공간(localStorage)은 원본 파일과 같이 쓰고, '검증 리포트' 메뉴는 같은 폴더의 verification-report.html 을 새 탭으로 엽니다(파일만 따로 보내면 열리지 않음).</p>
+    </section>
+
+    <!-- 14 -->
     <section id="sources">
-      <h2><span class="n">13</span>출처</h2>
+      <h2><span class="n">14</span>출처</h2>
       <p class="sub">웹 검색으로 확인한 자료입니다. 날짜가 표시된 것은 기사 · 공지 기준일입니다.</p>
       <div class="card pad">
         <ol class="srcs">

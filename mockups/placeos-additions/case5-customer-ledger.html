@@ -1902,10 +1902,12 @@ function bindLedger(){
   $('#csvBtn').onclick = () => {
     const lines = [['날짜','구분','항목','메모','금액(만원)'], ...S.entries.map(e => [e.d, e.t === 'in' ? '매출' : '지출', CAT[e.c].n, e.m, e.a])];
     const csv = '﻿' + lines.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
+    // 파일 이름은 영문으로 — 한글 이름은 일부 브라우저에서 'download'(확장자 없음)로 바뀌어 저장됨
+    const a = document.createElement('a'), d = new Date();
     a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
-    a.download = `placeos-장부-${key}.csv`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    a.download = `placeos-ledger-${key}-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
 }
 
@@ -2365,14 +2367,40 @@ async function aiOpenAI(prompt){
   if (!d || !(d.b64_json || d.url)) throw aiErr(200, '이미지가 없는 응답');
   return { url:d.b64_json ? 'data:image/png;base64,' + d.b64_json : d.url, note:d.revised_prompt ? '고쳐 쓴 프롬프트: ' + d.revised_prompt.slice(0, 160) : '' };
 }
-function aiFree(prompt){
+// 무료 서비스는 한 번만 받아(fetch) 그 바이트를 그대로 씀 — 내려받을 때 다시 요청하면 사용 한도에 걸려 오류 글이 그림 대신 저장될 수 있음
+async function aiFree(prompt){
   const seed = Math.floor(Math.random() * 1e6), url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=800&seed=${seed}&model=${encodeURIComponent(AIG.model.free)}&nologo=true`;
+  let r = null;
+  try { r = await fetchT(url, {}, 150000); } catch (e) { if (/오래 걸려/.test(e.message)) throw e; }
+  if (r){
+    const ct = r.headers.get('content-type') || '';
+    if (!r.ok || !/^image\//.test(ct)){ const t = await r.text().catch(() => ''); throw aiErr(r.ok ? 200 : r.status, t.replace(/<[^>]*>/g, ' ').trim() || '이미지가 아닌 응답'); }
+    return { blob:await r.blob(), url, note:`seed ${seed}` };
+  }
+  // fetch가 막히면(다른 출처 읽기 거부 등) 그림 태그로만 받아 화면에 보여 줌 — 이때는 내려받기 대신 새 탭에서 저장
   return new Promise((ok, no) => {
     const im = new Image(), t = setTimeout(() => { im.src = ''; no(new Error('시간이 너무 오래 걸려 멈췄습니다 — 무료 서비스가 붐비면 생깁니다, 잠시 뒤 다시 해 보세요')); }, 150000);
-    im.onload = () => { clearTimeout(t); ok({ url, note:`seed ${seed}` }); };
+    im.onload = () => { clearTimeout(t); ok({ url, note:`seed ${seed} · 화면 표시만 가능` }); };
     im.onerror = () => { clearTimeout(t); no(new Error('무료 서비스에서 이미지를 받지 못했습니다 — 사용 한도 · 접속 상태를 확인하거나 Gemini · OpenAI 키를 쓰세요')); };
     im.src = url;
   });
+}
+// 받은 그림(JPEG · WebP · PNG 무엇이든)을 진짜 PNG로 다시 저장 — 이름만 .png인 JPEG는 일부 뷰어에서 안 열림
+function dataBlob(d){
+  const m = String(d).match(/^data:([^;,]+)(;base64)?,(.*)$/); if (!m) return null;
+  const bin = m[2] ? atob(m[3]) : decodeURIComponent(m[3]), a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return new Blob([a], { type:m[1] });
+}
+async function toPng(blob){
+  const u = URL.createObjectURL(blob);
+  try {
+    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('서비스가 보낸 파일이 그림이 아닙니다 — 다시 만들어 보세요')); i.src = u; });
+    const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+    cv.getContext('2d').drawImage(im, 0, 0);
+    const png = await new Promise((ok, no) => cv.toBlob(b => b ? ok(b) : no(new Error('PNG로 바꾸지 못했습니다')), 'image/png'));
+    return { blob:png, w:cv.width, h:cv.height };
+  } finally { URL.revokeObjectURL(u); }
 }
 async function aiRun(){
   const cu = cur(), ph = phLast, P = AIP[AIG.prov];
@@ -2390,7 +2418,10 @@ async function aiRun(){
       out = await aiGemini(lead + aiPrompt(cu, ph), imgs);
     } else if (AIG.prov === 'openai') out = await aiOpenAI(aiPrompt(cu, ph));
     else out = await aiFree(aiPrompt(cu, ph, true));
-    const it = { id:'ai' + (++AIG.n), url:out.url, prov:AIG.prov, model:AIG.model[AIG.prov], at:new Date(), sec:Math.round((performance.now() - t0) / 1000), concept:c.name, shot:(SHOTS.find(x => x.id === S.interior.shot) || SHOTS[0]).ko, refs, note:out.note, scen:key };
+    let src = out.blob || (String(out.url).startsWith('data:') ? dataBlob(out.url) : null);
+    if (!src && out.url && !out.note.includes('화면 표시만')){ try { const r2 = await fetch(out.url); if (r2.ok && /^image\//.test(r2.headers.get('content-type') || '')) src = await r2.blob(); } catch (e) {} }
+    const png = src ? await toPng(src) : null;
+    const it = { id:'ai' + (++AIG.n), url:png ? URL.createObjectURL(png.blob) : out.url, blob:png ? png.blob : null, w:png ? png.w : 0, h:png ? png.h : 0, prov:AIG.prov, model:AIG.model[AIG.prov], at:new Date(), sec:Math.round((performance.now() - t0) / 1000), concept:c.name, shot:(SHOTS.find(x => x.id === S.interior.shot) || SHOTS[0]).ko, refs, note:out.note, scen:key };
     AIG.items.unshift(it); AIG.items = AIG.items.slice(0, 8); AIG.pick = it.id;
     AIG.msg = `완성 (${it.sec}초) — 위 비교 화면에 놓았습니다.`;
     toast('AI 이미지를 만들었어요');
@@ -2407,8 +2438,8 @@ function renderAigen(cu, ph){
   const box = $('#aigen'); if (!box) return;
   const P = AIP[AIG.prov], ae = document.activeElement, editing = ae && box.contains(ae) && /^(aiKey|aiModelX)$/.test(ae.id);
   const items = AIG.items.filter(x => x.scen === key);
-  const grid = items.length ? items.map(it => `<figure class="aig${AIG.pick === it.id ? ' on' : ''}" data-ai="${it.id}"><img src="${esc(it.url)}" alt="AI 생성 이미지 — ${esc(it.concept)}"><figcaption><b>${esc(it.concept)}</b> · ${esc(it.shot)}<br><small>${esc(AIP[it.prov].n)} ${esc(it.model)} · ${it.at.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' })} · ${it.sec}초${it.refs.length ? ' · 참고: ' + esc(it.refs.join(', ')) : ''}</small>${it.note ? `<br><small class="muted">${esc(it.note)}</small>` : ''}
-      <div class="rph-act"><button type="button" class="btn sm${AIG.pick === it.id ? ' on' : ''}" data-aipick="${it.id}" aria-pressed="${AIG.pick === it.id}">${AIG.pick === it.id ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button><button type="button" class="btn sm" data-aidl="${it.id}">내려받기</button><button type="button" class="btn sm" data-aidel="${it.id}">지우기</button></div></figcaption></figure>`).join('')
+  const grid = items.length ? items.map(it => `<figure class="aig${AIG.pick === it.id ? ' on' : ''}" data-ai="${it.id}"><img src="${esc(it.url)}" alt="AI 생성 이미지 — ${esc(it.concept)}"><figcaption><b>${esc(it.concept)}</b> · ${esc(it.shot)}<br><small>${esc(AIP[it.prov].n)} ${esc(it.model)} · ${it.at.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' })} · ${it.sec}초${it.blob ? ` · PNG ${it.w}×${it.h} · ${(it.blob.size / 1048576).toFixed(1)}MB` : ' · 내려받기 대신 새 탭에서 저장'}${it.refs.length ? ' · 참고: ' + esc(it.refs.join(', ')) : ''}</small>${it.note ? `<br><small class="muted">${esc(it.note)}</small>` : ''}
+      <div class="rph-act"><button type="button" class="btn sm${AIG.pick === it.id ? ' on' : ''}" data-aipick="${it.id}" aria-pressed="${AIG.pick === it.id}">${AIG.pick === it.id ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button><button type="button" class="btn sm" data-aidl="${it.id}">${it.blob ? '⬇ PNG 내려받기' : '새 탭에서 열기'}</button><button type="button" class="btn sm" data-aidel="${it.id}">지우기</button></div></figcaption></figure>`).join('')
     : '<p class="muted aig-empty">아직 만든 이미지가 없습니다. 위에서 서비스를 고르고 [✨ 이미지 만들기]를 누르세요.</p>';
   const prompt = cu ? aiPrompt(cu, ph, AIG.prov === 'free') : '';
   if (editing){ $('#aiGrid').innerHTML = grid; $('#aiSt').innerHTML = esc(AIG.msg); $('#aiPrompt').value = prompt; return; }
@@ -2436,12 +2467,14 @@ function bindAigen(){
     if (b.closest('#aiProv')){ AIG.prov = b.dataset.v; AIG.msg = ''; aiSave(); re(); const nb = box.querySelector(`#aiProv button[data-v="${AIG.prov}"]`); if (nb) nb.focus(); return; }
     if (b.id === 'aiGo') return aiRun();
     if (b.dataset.aipick){ AIG.pick = AIG.pick === b.dataset.aipick ? null : b.dataset.aipick; renderIPhotos(); const nb = box.querySelector(`[data-aipick="${b.dataset.aipick}"]`); if (nb) nb.focus(); return; }
-    if (b.dataset.aidel){ AIG.items = AIG.items.filter(x => x.id !== b.dataset.aidel); if (AIG.pick === b.dataset.aidel) AIG.pick = null; return renderIPhotos(); }
+    if (b.dataset.aidel){ const gone = AIG.items.find(x => x.id === b.dataset.aidel); if (gone && gone.blob) URL.revokeObjectURL(gone.url); AIG.items = AIG.items.filter(x => x.id !== b.dataset.aidel); if (AIG.pick === b.dataset.aidel) AIG.pick = null; return renderIPhotos(); }
     if (b.dataset.aidl){
+      // 만들 때 이미 PNG로 바꿔 둔 파일을 그대로 저장(다시 요청하지 않음)
       const it = AIG.items.find(x => x.id === b.dataset.aidl); if (!it) return;
-      const name = `placeos-${key}-ai-${it.id}.png`, go = href => { const a = document.createElement('a'); a.href = href; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
-      if (it.url.startsWith('data:')) return go(it.url);
-      fetch(it.url).then(r => r.blob()).then(bl => { const u = URL.createObjectURL(bl); go(u); setTimeout(() => URL.revokeObjectURL(u), 2000); }).catch(() => window.open(it.url, '_blank', 'noopener'));
+      if (!it.blob){ window.open(it.url, '_blank', 'noopener'); return toast('새 탭의 그림을 오른쪽 클릭 → "이미지를 다른 이름으로 저장"으로 받으세요'); }
+      const name = `placeos-${key}-ai-${it.at.toISOString().slice(0, 19).replace(/[-:T]/g, '')}.png`, a = document.createElement('a');
+      a.href = it.url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      toast(`${name} 내려받기 (PNG ${it.w}×${it.h})`);
     }
   });
   box.addEventListener('change', e => {
