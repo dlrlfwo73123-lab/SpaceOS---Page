@@ -163,14 +163,15 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     <a href="#adds">6. 추가하면 좋을 정보</a>
     <a href="#facts">7. 사실 확인 근거</a>
     <a href="#limits">8. 검증 한계</a>
-    <a href="#sources">9. 출처</a>
+    <a href="#req4">9. 추가 점검 (공실 · 3D · 공실률 · 인테리어)</a>
+    <a href="#sources">10. 출처</a>
   </aside>
 
   <main>
     <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
     <h1>시안 5개를 검증한 결과와 차별점, 추가할 정보</h1>
     <p class="lead">앞서 만든 HTML 시안 5개(상권 구역 지도 · 층별 3D 트윈 · 거리뷰 층별보기 · 반경 업종 분석 · 손님 모으기)를 코드 · 화면 · 수치 · 법규 · 외부 서비스 기준으로 점검했습니다. 바로 고칠 수 있는 문제는 시안에 반영했고, 실데이터가 있어야 풀리는 문제는 남은 과제로 정리했습니다.</p>
-    <div class="meta"><span>검증일 2026-10-26</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 54개 링크</span></div>
+    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 66개 링크</span></div>
 
     <div class="stats">
       <div class="card stat"><div class="l">이번에 고친 문제</div><div class="v">15건</div><div class="d">지도 깨짐 · 수치 보정 · 법규 누락 등</div></div>
@@ -572,8 +573,98 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     </section>
 
     <!-- 9 -->
+    <section id="req4">
+      <h2><span class="n">9</span>추가 점검 · 공실 위치 · 3D 트윈 · 집합건물 공실률 · 인테리어</h2>
+      <p class="sub">2026-10-27 요청으로 네 가지를 다시 점검했습니다. 찾은 문제 25건은 모두 시안에서 고쳤고, 실데이터 · 제휴가 있어야 풀리는 6건은 맨 아래 남은 과제로 적었습니다. 수치는 여전히 데모입니다.</p>
+
+      <div class="stats">
+        <div class="card stat"><div class="l">공실 위치</div><div class="v">6건</div><div class="d">좌표 통일 · 방위 · 구역 안 배치</div></div>
+        <div class="card stat"><div class="l">3D 트윈</div><div class="v">7건</div><div class="d">면적 = 칸 크기, 바닥 넘침 해소</div></div>
+        <div class="card stat"><div class="l">집합건물 공실률</div><div class="v">6건</div><div class="d">기준 6가지 · 상태 7가지</div></div>
+        <div class="card stat"><div class="l">인테리어</div><div class="v">6건</div><div class="d">콘셉트 12개 · 이미지 생성 · 프롬프트</div></div>
+      </div>
+
+      <h3>① 공실 위치 정확성</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>문제</th><th>확인 방법 · 근거</th><th>수정 내용</th><th>파일</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>B 건물 좌표가 화면마다 다름</td><td>Case 4는 [37.5458, 127.0590]으로, 시안의 성수이로 경계(구역 경계 약 127.0563)에서 동쪽으로 약 210m 떨어져 '성수이로 동측 1층'과 맞지 않았음</td><td>성수이로 동측 [37.5466, 127.0567]로 통일. 자동 점검이 Case 1 · 2 · 3 · 4 좌표가 같은지 매번 비교</td><td>1 · 2 · 3 · 4</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>지도 공실 점이 실제 매물과 무관</td><td>점을 구역 꼭짓점 평균 둘레에 각도로 찍어 구역 밖 · 길 위로 나갈 수 있었고, A · B · C 건물 위치에는 아무 표시가 없었음</td><td>A · B · C 핀을 Case 2~4와 같은 건물 좌표에 찍고, 나머지 점은 구역 다각형 안(경계에서 15m, 점끼리 25m 이상)에만 '예시 위치'로 표시</td><td>1</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>'이 상권 공실 3D로 보기'가 엉뚱한 건물로 연결</td><td>수제화거리 → B, 망원동 6개 구역 → 성수 A · B · C처럼 구역 밖 건물을 열었음</td><td>구역 안에 데모 건물이 있을 때만 바로 연결. 없으면 가장 가까운 데모 매물과 거리(m)를 밝히고, 망원동은 '데모 매물 없음'으로 표시</td><td>1</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>건물 방향이 거리뷰와 반대로 보임</td><td>3D 나침반이 모든 건물을 '앞면 = 남쪽'으로 가정했고, 평면도 북쪽 화살표는 항상 위. B(서향) · C(동향)는 거리뷰 촬영 방향(동쪽 · 서쪽을 보고 찍음)과 어긋났음</td><td>건물마다 앞면 방위(face)를 데이터로 두고 나침반 = 카메라 방위 + 180° − face, 평면도 화살표는 180° − face만큼 회전. 호실 위치를 '앞줄(성수이로 쪽, 서향) · 도로에서 보아 왼쪽'처럼 글로 표시</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>주변 점포가 대상 건물 안에 찍힘</td><td>B는 48×26m인데 주변 점포 최소 거리가 11m였음</td><td>대상 건물 윤곽을 지도에 그리고, 윤곽 + 3m 안에는 점포를 만들지 않음. '출입 서쪽' 같은 출입 방향 표시</td><td>4</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>주소 표현 오류</td><td>A를 '연무장길 대로변'으로 적었으나 연무장길은 대로가 아님</td><td>'연무장길 북측'으로 수정</td><td>2 · 3</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>② 공실을 3D 디지털 트윈으로 구성하는 정확성</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>문제</th><th>확인 방법 · 근거</th><th>수정 내용</th><th>파일</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>3D 호실 크기가 면적과 무관</td><td>칸 폭을 임의 비율로 나누고 깊이는 건물 전체를 써서, A 201호는 표기 84㎡인데 3D 칸이 약 103㎡, B 202호는 표기 98㎡인데 약 180㎡였음</td><td>공통 배치 함수 추가: 계단 · EV · WC 코어는 뒤쪽 왼쪽, 앞줄(도로 쪽) → 복도 → 뒷줄 순서로 전용면적만큼 칸을 잘라 주고 남는 칸은 '공용'. 25개 층 전부 호실 칸 = 전용면적(±1㎡), 칸 합 = 바닥 면적을 자동 점검</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>B 사무실 층 면적이 바닥보다 큼</td><td>바닥 34×22m = 748㎡인데 2호 층 560×2 = 1,120㎡, 3호 층 380×3 = 1,140㎡, 9층 전층 1,180㎡</td><td>건물을 48×26m(층당 1,248㎡)로 키우고 코어 96㎡ · 복도 115㎡를 뺀 1,037㎡ 안에 호실 배치(2호 층 540 + 450, 3호 층 300 + 250 + 450, 9층 전층 1,037㎡)</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>Case 2와 Case 3의 건물 데이터가 서로 다름</td><td>Case 3는 별도 데이터라 B 3~12층 구성 · 공실이 달랐고, 지하 주차장을 '주거'로 표시. Case 2의 5층 503호 공실은 조건식 오류로 아예 만들어지지 않았음</td><td>두 화면이 똑같은 '공통 건물 블록'을 쓰도록 통합. 자동 점검이 두 파일의 블록이 글자 하나까지 같은지 확인</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>C 지하 B01호가 바닥을 거의 다 차지</td><td>바닥 11×9m = 99㎡에 B01 95㎡ — 계단 · 화장실 자리가 없음</td><td>14×11m(154㎡)로 조정해 코어 · 복도 · 출입 계단 자리를 확보. 3 · 4층 주거도 92㎡로 맞춤</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>연면적 표기가 3D와 따로 놂</td><td>표기 연면적 A 781㎡ · B 18,420㎡ · C 342㎡였는데 3D 바닥 합은 1,152 · 10,472 · 495㎡</td><td>건축물대장 연면적을 데이터로 두고 3D 바닥 합과 대조해 차이율 표시. ±5%를 넘으면 경고(B −5.1% → 지하주차장 확장 · 옥탑 확인 필요)</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>거리뷰 간판 · 출입구가 평면과 안 맞음</td><td>1층 간판 폭이 임의 비율이었고, 지하 계단은 항상 오른쪽 끝. 2019년 화면에 2026년 입주 예정 사무실 이름이 나왔음</td><td>평면 앞줄 칸 폭 그대로 1층 간판을 그리고, 지하 계단은 평면의 공용 출입구 칸에 그림. 뒷줄 공실은 '거리에서 안 보임'으로 표시하고 간판 노출도 12점 이하. 과거 시점은 직전 업종 · '이전 입주사'로 표시</td><td>3</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>'층고' 자리에 천장고 값</td><td>201호 '층고 3.3m'로 나왔지만 이 층 층고는 3.6m (3.3m는 천장고)</td><td>'천장고'로 고치고 층고를 함께 표시</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>③ 계획상가(집합건물) 실내 공실 집계 · 공실률</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>문제</th><th>확인 방법 · 근거</th><th>수정 내용</th><th>파일</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>공실률을 한 가지 기준으로만 보여줌</td><td>같은 B 건물이 기준에 따라 14.7%(호실 수) ~ 22.9%(계약 · 미입주 포함)까지 차이남. 보도된 공식 통계도 평균이라 위치별 차이를 가림 — 미사지구 집합상가는 평균 약 10%인데 상가 안쪽 · 상층부는 40~50%</td><td>기준 6가지 표: 호실 수 · 점포 수 · ★전용면적(기본) · 계약면적 · 미분양 제외 · 실질 공실. '이 건물 공실률 14.7% ~ 22.9%'처럼 범위로 먼저 보여줌</td><td>2</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>미분양 · 미입주를 구분하지 않음</td><td>지식산업센터는 2023~2025년 준공분 평균 공실률 43.5%, 미분양률 26.9%(2026년 5월 기준)로, 분양 · 임대가 섞여 공실 판단이 어려움</td><td>상태를 영업 · 공실 · 미분양 공실 · 계약 후 미입주 · 공용 · 주거 · 주차 7가지로 나눔. 1102호(시행사 보유 미분양), 702호(계약 · 미입주) 예시와 각각 어느 통계에 잡히는지 설명</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>공용면적을 반영하지 않음</td><td>상가는 계약(분양)면적에 공용면적이 들어가 전용률이 보통 50~60%. 전용 기준과 계약 기준 월세 비교가 안 됐음</td><td>계약면적 = 전용 + 그 층 공용(코어 · 복도)을 전용 비율로 나눈 몫 + 건물 공용(로비 · 관리실 · 주차장)을 건물 전체 전용 비율로 나눈 몫. 102호 전용 72㎡ → 계약 약 140㎡(전용률 51%), 전용 3.3㎡당 월세도 표시</td><td>2 · 3</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>합친 호실 처리 없음</td><td>구분소유 호실 2개를 터서 한 점포로 쓰면 호실 수 · 점포 수가 달라짐</td><td>204호(204 + 206호) 예시 — 호실 수로는 2개, 점포 수로는 1곳으로 세어 표에 반영</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>용도 · 위치별 공실률 없음</td><td>2026년 2분기부터 1층 공실률(일반상가 6.7%)이 따로 발표됨. 근생층과 업무층은 수요가 다름</td><td>근생 · 업무, 지하 · 1층 · 2층 이상 공실률을 따로 표시</td><td>2</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>건축물대장 대조 없음</td><td>3D 호실 수 · 면적이 대장과 맞는지 확인할 방법이 없었음</td><td>대장 전유부 호수(34호)와 3D 호실 수, 대장 연면적과 3D 바닥 합을 대조해 일치 · 경고 표시</td><td>2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>④ 인테리어 색감 · 이미지 생성 구체화와 다양성</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>심각도</th><th>문제</th><th>확인 방법 · 근거</th><th>수정 내용</th><th>파일</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sev h">높음</span></td><td>콘셉트가 3개로 고정되고 적합도가 숫자로만 박혀 있음</td><td>가게 정보(업종 · 타깃)를 바꿔도 추천이 그대로였음</td><td>콘셉트 12개 라이브러리를 업종 35% · 상권 무드 25% · 공간 조건 20% · 타깃 손님 12% · 차별화 8%로 계산해 상위 6개 표시. 점수 근거 문장 표시(예: '창 없는 지하라 오히려 몰입감이 큼', '주변 매장 42%가 이미 같은 스타일')</td><td>5</td></tr>
+            <tr><td><span class="sev h">높음</span></td><td>공간 이미지가 없음</td><td>CSS 무늬 타일 5칸뿐이라 실제 공간 느낌을 알 수 없었음</td><td>1점 투시 공간 그림을 자동 생성(바닥 무늬 · 천장 · 창 · 가구 · 조명 · 간판). 낮/밤 2 × 시점 2 × 팔레트 3 × 배치 12 = 콘셉트당 144가지</td><td>5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>색이 HEX 5개뿐</td><td>어디에 얼마나 쓰는지(역할 · 비율) · 무슨 마감인지 없었음</td><td>베이스 · 서브 · 포인트 역할, 60 · 30 · 10 비율, 추천 마감재, 영문 이름. 비율대로 색 막대 표시. '밝게(창 없는 공간 보정)' · '차분하게' 변형</td><td>5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>조명 정보가 부족</td><td>색온도만 일부 있고 연색성 · 밝기 없음</td><td>색온도(K) · 연색성(CRI) · 권장 밝기(lx, 일반 가이드) · 조명 기구를 콘셉트마다 명시하고 색온도 색 칩 표시</td><td>5</td></tr>
+            <tr><td><span class="sev m">중간</span></td><td>이미지 생성 AI에 넣을 설명이 없음</td><td>콘셉트 이름만으로는 컷마다 결과가 달라짐</td><td>한 · 영 프롬프트 자동 작성(면적 · 층 · 창 · 천장고 · 팔레트 HEX · 자재 · 조명 · 카메라) + 컷 5종(입구 전경 · 대표 좌석 · 카운터 · 포토존 · 야간 간판) + 제외어. AI 이미지 속 한글이 깨지기 쉬워 간판 글자는 비우고 나중에 합성하도록 안내</td><td>5</td></tr>
+            <tr><td><span class="sev l">낮음</span></td><td>간판 가독성 검사 없음</td><td>클린 그린(흰 글자 · 초록 바탕) 2.54:1, 레트로 포차(빨강 · 노랑) 3.15:1로 낮았음</td><td>명암비를 계산해 4.5:1 미만이면 바탕과 글자 중 덜 바뀌는 쪽 수정안 제시(→ 4.88:1, 4.53:1). WCAG 글자 기준을 빌린 참고 지표이고, 로고는 원래 WCAG 예외라는 점을 표시</td><td>5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>요청 4 관련 남은 과제 (6건)</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>과제</th><th>왜 남았나</th><th>해결 방향</th></tr></thead>
+          <tbody>
+            <tr><td>실제 건물 · 출입구 좌표</td><td>시안 좌표는 데모. 건물 중심 · 주출입구 좌표는 행안부 내비게이션용DB로 제공되지만 이용 신청 · 심사가 필요</td><td>도로명주소 → 건물 좌표 · 출입구 좌표를 받아 저장(소수 5자리 ≈ 1m). UTM-K(EPSG:5179) ↔ WGS84 변환은 검증된 라이브러리로 처리하고, 지도 API마다 좌표계 코드가 다른 점(예: 네이버 NHN:2048)을 확인</td></tr>
+            <tr><td>실제 평면 모양</td><td>지금 배치는 전용면적만 맞춘 직사각형 개략 배치</td><td>임대인 · 중개사 도면 업로드, 현장 스캔 제휴. 도면이 오면 같은 데이터 구조(호실 · 면적 · 위치)에 그대로 연결</td></tr>
+            <tr><td>집합건축물대장 자동 대조</td><td>시안의 대장 값은 가정</td><td>건축HUB 건축물대장정보 서비스(전유부 · 전유공용면적)로 호수 · 전용 · 공용면적을 받아 자동 대조. 한 지번에 동이 여럿이면 동 단위 관리번호로 구분</td></tr>
+            <tr><td>공실 · 미입주 판정</td><td>'계약했지만 영업 전'은 대장에 나오지 않음</td><td>매물 DB · 인허가(LOCALDATA) · 현장 확인을 합쳐 상태를 판정하고, 판정 근거와 날짜를 표시</td></tr>
+            <tr><td>인테리어 적합도 가중치</td><td>가중치 · 무드 비율 · 타깃 선호는 데모 가정</td><td>실제 매장 리뷰 · 사진 분류와 매장 성과로 보정. HEX를 실물 도료 · 타일 칩으로 매칭</td></tr>
+            <tr><td>실제 이미지 생성 연동</td><td>지금은 프롬프트와 그림 예시까지만</td><td>사용할 생성 AI의 이용 약관 · 저작권, 실제 공간과 다를 수 있다는 고지, 생성 이미지 표시 방식을 정한 뒤 연동</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:12px">자동 점검 스크립트(<code>check-pages.cjs</code>)에 데이터 검사를 추가했습니다: 호실 전용면적 = 3D · 평면 칸 면적, 층 칸 합 = 바닥, Case 2 · 3 공통 건물 블록 일치, Case 1~4 시나리오 좌표 일치. 좌표 하나를 일부러 틀리게 바꿔 실패로 잡히는 것도 확인했습니다.</p>
+    </section>
+
+    <!-- 10 -->
     <section id="sources">
-      <h2><span class="n">9</span>출처</h2>
+      <h2><span class="n">10</span>출처</h2>
       <p class="sub">웹 검색으로 확인한 자료입니다. 날짜가 표시된 것은 기사 · 공지 기준일입니다.</p>
       <div class="card pad">
         <ol class="srcs">
@@ -612,6 +703,13 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
           <li><a href="https://data.go.kr/data/15143710/openapi.do" target="_blank" rel="noopener">공정위 브랜드별 가맹점 · 직영점 API</a></li>
           <li><a href="https://www.reb.or.kr/r-one/portal/openapi/openApiListPage.do" target="_blank" rel="noopener">한국부동산원 R-ONE Open API</a></li>
           <li><a href="https://us.fitgap.com/products/placer-ai" target="_blank" rel="noopener">Placer.ai 기능 정리 (제3자)</a></li>
+          <li><a href="https://www.newsis.com/view/NISX20260729_0003728100" target="_blank" rel="noopener">뉴시스 · 2026년 2분기 상가 공실률 (일반 13.4% · 집합 10.5% · 1층 6.7%)</a> · <a href="https://news.mtn.co.kr/news-detail/2026073016150554199" target="_blank" rel="noopener">머니투데이방송</a> <span>· 2026.7</span></li>
+          <li><a href="https://v.daum.net/v/UNYVnKMVvn" target="_blank" rel="noopener">하남 미사 상가 안쪽 · 상층부 공실률 최대 50%</a> · <a href="https://www.news1.kr/articles/5352077" target="_blank" rel="noopener">뉴스1 · 미사 집합상가 공실률</a></li>
+          <li><a href="https://news.mtn.co.kr/news-detail/2026091119060443983" target="_blank" rel="noopener">지식산업센터 공실 43.5% · 미분양 26.9%</a> · <a href="https://www.hankyung.com/article/202609080680i" target="_blank" rel="noopener">한국경제</a> <span>· 2026.9</span></li>
+          <li><a href="https://www.lawtalk.co.kr/posts/87361" target="_blank" rel="noopener">전용 · 공급 · 계약면적 차이 (로톡)</a> · <a href="https://www.asiatoday.co.kr/kn/view.php?key=108012" target="_blank" rel="noopener">상가 전용률 보도</a></li>
+          <li><a href="https://www.data.go.kr/data/15134735/openapi.do" target="_blank" rel="noopener">공공데이터포털 · 건축HUB 건축물대장정보 서비스 (전유부 · 전유공용면적)</a></li>
+          <li><a href="https://www.data.go.kr/data/15050419/fileData.do" target="_blank" rel="noopener">행정안전부 · 내비게이션용DB (건물 중심 · 출입구 좌표)</a> · <a href="https://api.ncloud-docs.com/docs/ai-naver-mapsreversegeocoding-gc" target="_blank" rel="noopener">네이버 클라우드 Reverse Geocoding (좌표계 코드)</a></li>
+          <li><a href="https://w3c.github.io/wcag/understanding/contrast-minimum.html" target="_blank" rel="noopener">W3C · Understanding SC 1.4.3 Contrast (Minimum)</a></li>
         </ol>
       </div>
     </section>

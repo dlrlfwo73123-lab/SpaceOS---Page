@@ -147,6 +147,7 @@ button{cursor:pointer}
 .ulist button.vac{border-color:#fdba74;color:#c2410c;background:var(--vac-soft)}
 .ulist button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .info{padding:12px}
+.info .where{margin:0 0 8px;font-size:11.5px;color:var(--text-2)}
 .cond{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .cond div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
 .cond small{display:block;font-size:10px;color:var(--text-3);font-weight:700}
@@ -294,43 +295,297 @@ button{cursor:pointer}
 </div>
 
 <script>
-// [데모 데이터] 건물 · 간판 · 점포 이력은 시안 확인용 가상값입니다. 거리뷰는 그림으로 대신했고, 평면은 건물 가로 · 세로로 만든 개략 배치입니다.
-// 실서비스: 네이버 지도 파노라마(거리뷰) + 건축물대장 층별개요 + 점포 이력 DB를 연결합니다.
+// [데모] 거리뷰는 그림으로 대신했습니다. 건물 · 층 · 호실 데이터와 평면 배치는 Case 2(3D 트윈)와 똑같은 블록(layoutFloor)을 씁니다.
+// 실서비스: 네이버 지도 파노라마(거리뷰) + 건축물대장 층별개요 · 전유부 + 점포 이력 DB를 연결합니다.
 const YEARS = [2019, 2022, 2024, 2026];
-const B = {
-  A: { name:'성수 아뜰리에빌딩', addr:'성동구 성수동2가 · 연무장길 대로변', road:'연무장길', W:16, D:12, ev:true, start:2,
-    shot:'연무장길 건너편 보도 · 북쪽 방향', facade:{2019:'#a46a52', 2022:'#e7e5e4'}, kind:'brick',
-    floors:[
-      {lv:-1,h:3.4,units:[{no:'B01',name:'와인바 셀러',a:118,st:'op'}],hist:{2019:'코인노래연습장',2022:'와인바 셀러'}},
-      {lv:1,h:4.4,units:[{no:'101',name:'베이커리카페',a:68,st:'op',w:.6},{no:'102',name:'편집숍',a:45,st:'op',w:.4}],hist:{2019:'○○철물 · 인쇄',2022:'베이커리카페 · 구제의류',2024:'베이커리카페 · 편집숍'}},
-      {lv:2,h:3.6,units:[{no:'201',name:'공실',a:84,st:'vac',w:.68,rent:380,dep:4000,fee:25,months:4,prev:'네일·속눈썹샵'},{no:'202',name:'사진 스튜디오',a:36,st:'op',w:.32}],hist:{2019:'○○세무회계',2022:'네일·속눈썹샵',2024:'네일·속눈썹샵 · 사진 스튜디오'}},
-      {lv:3,h:3.6,units:[{no:'301',name:'필라테스 스튜디오',a:126,st:'op'}],hist:{2019:'○○교회',2022:'필라테스 스튜디오'}},
-      {lv:4,h:3.6,units:[{no:'401',name:'디자인 스튜디오',a:126,st:'op'}],hist:{2019:'디자인 스튜디오'}},
-      {lv:5,h:3.4,units:[{no:'501',name:'공실',a:118,st:'vac',rent:230,dep:3000,fee:22,months:7,prev:'IT 스타트업 사무실'}],hist:{2019:'주거',2022:'IT 스타트업',2024:'IT 스타트업'}},
-    ]},
-  B: { name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 지식산업센터', road:'성수이로', W:34, D:22, ev:true, start:1,
-    shot:'성수이로 건너편 보도 · 동쪽 방향', facade:{2019:'#9fb4c9'}, kind:'glass',
-    floors:[
-      {lv:-1,h:3.6,units:[{no:'B1',name:'주차장 · 하역장',a:2400,st:'res'}],hist:{}},
-      {lv:1,h:5.2,units:[{no:'101',name:'편의점',a:58,st:'op',w:.22},{no:'102',name:'공실',a:72,st:'vac',w:.25,rent:420,dep:5000,fee:48,months:2,prev:'샐러드 카페'},{no:'103',name:'김밥 · 분식',a:52,st:'op',w:.22},{no:'104',name:'약국',a:80,st:'op',w:.31}],hist:{2019:'편의점 · 샌드위치 · 김밥 · 약국',2022:'편의점 · 커피 · 김밥 · 약국',2024:'편의점 · 샐러드 카페 · 김밥 · 약국'}},
-      {lv:2,h:4.2,units:[{no:'201',name:'치과',a:140,st:'op',w:.4},{no:'202',name:'공실',a:98,st:'vac',w:.28,rent:260,dep:3000,fee:35,months:5,prev:'안경원'},{no:'203',name:'스터디카페',a:110,st:'op',w:.32}],hist:{2019:'치과 · 안경원 · 공실',2022:'치과 · 안경원 · 스터디카페'}},
-      ...[3,4,5,6,7,8,9,10,11,12].map(lv => ({lv,h:4.0,units: lv === 9
-        ? [{no:'901',name:'공실 (전층)',a:1180,st:'vac',rent:1650,dep:24000,fee:320,months:8,prev:'커머스 기업 본사'}]
-        : [{no:`${lv}01`,name:['패션 브랜드','IT 개발사','디자인 에이전시','콘텐츠 스튜디오','공유오피스','바이오 스타트업','건축사무소','커머스 기업','광고 대행사','교육 스타트업'][lv-3],a:560,st:'op',w:.5},
-           lv === 11 ? {no:'1102',name:'공실',a:420,st:'vac',w:.5,rent:580,dep:9000,fee:110,months:6,prev:'IT 개발사'} : {no:`${lv}02`,name:'사무실',a:560,st:'op',w:.5}],
-        hist:{}})),
-    ]},
-  C: { name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 먹자골목 코너', road:'먹자골목길', W:11, D:9, ev:false, start:-1,
-    shot:'먹자골목길 건너편 · 서쪽 방향', facade:{2019:'#c2a383'}, kind:'brick',
-    floors:[
-      {lv:-1,h:3.2,units:[{no:'B01',name:'공실',a:95,st:'vac',rent:160,dep:2000,fee:15,months:9,prev:'이자카야'}],hist:{2019:'이자카야 ○○',2024:'이자카야 ○○'}},
-      {lv:1,h:3.8,units:[{no:'101',name:'코너 카페',a:55,st:'op'}],hist:{2019:'○○부동산',2022:'코너 카페'}},
-      {lv:2,h:3.2,units:[{no:'201',name:'네일샵',a:48,st:'op'}],hist:{2019:'○○공인중개',2022:'네일샵'}},
-      {lv:3,h:3.0,units:[{no:'301',name:'주거 (원룸)',a:72,st:'res'}],hist:{}},
-      {lv:4,h:3.0,units:[{no:'401',name:'주거 (원룸)',a:72,st:'res'}],hist:{}},
-    ]},
+// ── 공통 건물 블록 (Case 2 · Case 3에 똑같이 넣는다) ─────────────────────
+// [데모 데이터] 건물 · 호실 · 임대 조건은 시안 확인용 가상값입니다. 실제 건물이 아닙니다.
+// 좌표계(m): 건물 가운데가 원점, 앞면(+z)이 도로 쪽, 도로에서 건물을 바라볼 때 오른쪽이 +x.
+// face = 건물 앞면이 바라보는 방위(도, 북 0 · 동 90 · 남 180 · 서 270).
+// 호실 면적(a)은 전용면적이고, 3D · 평면의 호실 크기는 이 면적으로 계산합니다(layoutFloor).
+// hist(연도별 간판)는 그 층 units 순서(공용 포함)대로 ' · '로 이어 적는다. 토큰이 호실 수보다 적으면 층 전체 간판 하나로 본다.
+// 상태 st: op 영업 · 사용 중 / vac 공실(임대 가능) / unsold 미분양 공실 / dark 계약했지만 미입주
+//          com 공용(로비 · 복도 등, 공실률 계산에서 제외) / res 주거 / park 주차
+const ST = {
+  op:{ n:'영업 중', c:'#7fb2f0' }, vac:{ n:'공실', c:'#f97316' }, unsold:{ n:'미분양 공실', c:'#dc2626' },
+  dark:{ n:'계약 · 미입주', c:'#facc15' }, com:{ n:'공용', c:'#e2e8f0' }, res:{ n:'주거', c:'#d6dde6' }, park:{ n:'주차', c:'#c4ccd8' },
 };
-Object.entries(B).forEach(([k, b]) => b.key = k);
+const LEASABLE = ['op', 'vac', 'unsold', 'dark'];
+const isVacant = u => u.st === 'vac' || u.st === 'unsold';
+const u = (no, name, a, st, extra = {}) => ({ no, name, a, st, ...extra });
+const OFFICE = ['패션 브랜드 본사','IT 개발사','디자인 에이전시','콘텐츠 스튜디오','공유오피스','바이오 스타트업','건축사무소','커머스 기업','광고 대행사','교육 스타트업','세무회계사무소','게임 개발사'];
+const officeFac = (win) => ({ elec:'40kW (층별 분전반)', water:'공용 화장실 (층별 남녀 분리)', gas:'없음', duct:'없음', ceil:'2.8m', window:win, sign:'로비 안내판만 가능' });
+// 사무실 임대 조건: 전용 3.3㎡당 월 4.6만원 · 관리비 0.9만원 · 보증금 월세 12개월 (데모)
+const officeTerms = a => { const rent = Math.round(a / 3.3058 * 4.6); return { rent, fee:Math.round(a / 3.3058 * 0.9), dep:rent * 12 }; };
+
+const BUILDINGS = {
+  A: {
+    name:'성수 아뜰리에빌딩', addr:'성동구 성수동2가 · 연무장길 북측', zone:'연무장길 카페·팝업거리', road:'연무장길',
+    ll:[37.5427, 127.0560], face:180, W:16, D:12, core:{ w:3.8, d:3.6 }, corr:0, ev:true,
+    ledger:{ type:'일반건축물', gfa:1190 },
+    info:{ '규모':'지하 1층 · 지상 5층', '준공':'1994년 (2021 리모델링)', '용도':'제2종 근린생활시설', '엘리베이터':'1대 (8인승)', '주차':'자주식 3대' },
+    start:{ lv:2, no:'201' },
+    ai:'2층 201호는 연무장길 쪽(남향) 통창 앞줄 왼쪽 호실이라 <b style="display:inline">창가석 디저트 카페 · 뷰티 예약업</b>에 맞습니다. 1층 베이커리카페와 손님층이 겹쳐 연계 효과가 기대됩니다.',
+    shot:'연무장길 건너편 보도 · 북쪽 방향', facade:{ 2019:'#a46a52', 2022:'#e7e5e4' }, kind:'brick',
+    floors:[
+      { lv:-1, h:3.4, use:'근생', rest:'창고 · 공용', units:[u('B01','와인바 셀러',118,'op',{ ind:'주점', cat:'wine', since:'2022.03' })], hist:{ 2019:'코인노래연습장', 2022:'와인바 셀러' } },
+      { lv:1, h:4.4, use:'근생', rest:'건물 출입 · 공용', units:[u('101','베이커리카페',68,'op',{ ind:'베이커리', cat:'bakery', since:'2021.11' }), u('102','편집숍',45,'op',{ ind:'소매', cat:'select', since:'2023.05' })], hist:{ 2019:'○○철물 · 인쇄', 2022:'베이커리카페 · 구제의류', 2024:'베이커리카페 · 편집숍' } },
+      { lv:2, h:3.6, use:'근생', units:[
+        u('201','공실',84,'vac',{ prev:'네일·속눈썹샵 (2021.04~2026.06)', months:4, dep:4000, rent:380, fee:25,
+          fac:{ elec:'20kW (증설 가능)', water:'급배수 있음 · 내부 화장실', gas:'없음 (인덕션 권장)', duct:'없음', ceil:'3.3m', window:'남측 통창 · 연무장길 조망 (서측 벽 창 1개)', sign:'2층 돌출간판 1개 가능' },
+          fits:['디저트 카페 (창가석)','네일·속눈썹','1:1 PT · 필라테스','쇼룸형 편집숍'],
+          checks:['계단 입구에 입간판·벽면 사인 필수','엘리베이터로 장비 반입 가능','통창 창가석이 SNS 노출 포인트','84㎡라 다중이용업소(지상 100㎡ 이상) 대상은 아님 — 202호까지 합쳐 넓히면 재확인'] }),
+        u('202','사진 스튜디오',36,'op',{ ind:'서비스', cat:'studio', since:'2024.02' })], hist:{ 2019:'○○세무회계', 2022:'네일·속눈썹샵', 2024:'네일·속눈썹샵 · 사진 스튜디오' } },
+      { lv:3, h:3.6, use:'근생', units:[u('301','필라테스 스튜디오',126,'op',{ ind:'운동', cat:'pilates', since:'2022.08' })], hist:{ 2019:'○○교회', 2022:'필라테스 스튜디오' } },
+      { lv:4, h:3.6, use:'근생', units:[u('401','디자인 스튜디오',126,'op',{ ind:'사무소', cat:'office', since:'2020.01' })], hist:{ 2019:'디자인 스튜디오' } },
+      { lv:5, h:3.4, use:'근생', units:[u('501','공실',118,'vac',{ prev:'IT 스타트업 사무실 (2020.09~2026.03)', months:7, dep:3000, rent:230, fee:22,
+          fac:{ elec:'30kW', water:'공용 화장실', gas:'없음', duct:'없음', ceil:'2.9m', window:'남 · 서 2면 창 · 루프탑 출입', sign:'외벽 사인 불가' },
+          fits:['공방 · 작업실','소규모 사무실','예약제 쇼룸'],
+          checks:['루프탑 활용은 용도·안전 확인 필요','고층이라 목적형 방문 업종만 적합'] })], hist:{ 2019:'주거', 2022:'IT 스타트업', 2024:'IT 스타트업' } },
+    ]
+  },
+  B: {
+    name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 동측 지식산업센터', zone:'성수역 지식산업센터 오피스', road:'성수이로',
+    ll:[37.5466, 127.0567], face:270, W:48, D:26, core:{ w:12, d:8 }, corr:2.4, fd:11.8, ev:true,
+    ledger:{ type:'집합건물 (구분소유)', gfa:18420, rooms:34 },
+    info:{ '규모':'지하 2층 · 지상 12층', '준공':'2018년', '용도':'지식산업센터 · 근린생활시설', '엘리베이터':'승객 6대 · 화물 1대', '주차':'자주식 186대' },
+    start:{ lv:1, no:'102' },
+    ai:'1층 102호는 성수이로(서향) 앞줄, 로비 출입구 바로 옆이라 평일 점심 동선에 붙어 있습니다. <b style="display:inline">샐러드 · 도시락 테이크아웃</b>이 맞고, 주말 매출이 약하니 임대료 협상 때 참고하세요. 이 건물은 구분소유 집합건물이라 공실률을 셀 때 기준(호실 · 면적 · 미분양 포함 여부)에 따라 결과가 달라집니다.',
+    shot:'성수이로 건너편 보도 · 동쪽 방향', facade:{ 2019:'#9fb4c9' }, kind:'glass',
+    floors:(() => {
+      const f = [
+        { lv:-2, h:3.6, use:'주차', units:[u('P2','주차장',1037,'park',{ pos:'full' })], hist:{} },
+        { lv:-1, h:3.6, use:'주차', units:[u('P1','주차장 · 하역장',1037,'park',{ pos:'full' })], hist:{} },
+        { lv:1, h:5.2, use:'근생', rest:'공용', backRest:'로비 · 엘리베이터홀 · 관리실', units:[
+          u('101','편의점',58,'op',{ ind:'편의점', cat:'conv', since:'2018.11' }),
+          u('102','공실',72,'vac',{ prev:'샐러드 카페 (2023.01~2026.08)', months:2, dep:5000, rent:420, fee:48,
+            fac:{ elec:'30kW', water:'급배수 · 그리스트랩 있음', gas:'LNG 인입', duct:'주방 배기 덕트 (옥상까지)', ceil:'4.6m', window:'서측 전면 유리 · 성수이로 방향', sign:'1층 전면 파사드 사인' },
+            fits:['샐러드 · 포케','도시락 · 한식 테이크아웃','베이커리 카페','건강음료 · 스무디'],
+            checks:['평일 11~14시에 매출 몰림','주말 매출 비중 22%로 낮음','로비 출입구 바로 옆 — 로비 · 외부 양쪽 출입 가능','지식산업센터 지원시설 입점 업종은 관리단 · 구청 기준 확인'] }),
+          u('L1','로비 출입구',140,'com'),
+          u('103','김밥·분식',52,'op',{ ind:'분식', cat:'snack', since:'2019.03' }),
+          u('104','약국',80,'op',{ ind:'약국', cat:'pharmacy', since:'2018.11' }),
+          u('105','베이커리카페',120,'op',{ ind:'베이커리', cat:'bakery', since:'2020.05' })],
+          hist:{ 2019:'편의점 · 샌드위치 · 로비 · 김밥 · 약국 · 공실', 2022:'편의점 · 커피 · 로비 · 김밥 · 약국 · 베이커리카페', 2024:'편의점 · 샐러드 카페 · 로비 · 김밥 · 약국 · 베이커리카페' } },
+        { lv:2, h:4.2, use:'근생', rest:'휴게 · 공용', backRest:'화장실 · 공용', units:[
+          u('201','치과',140,'op',{ ind:'의원', cat:'clinic', since:'2019.07' }),
+          u('203','스터디카페',110,'op',{ ind:'교육', cat:'study', since:'2021.09' }),
+          u('204','한의원',160,'op',{ ind:'의원', cat:'clinic', since:'2020.03', rooms:2, roomsNote:'204 · 206호 두 개를 터서 사용' }),
+          u('207','네일·왁싱',64,'op',{ ind:'뷰티', cat:'nail', since:'2023.02' }),
+          u('202','공실',98,'vac',{ pos:'back', prev:'안경원 (2019.02~2026.05)', months:5, dep:3000, rent:260, fee:35,
+            fac:{ elec:'25kW', water:'급배수 있음', gas:'없음', duct:'없음', ceil:'3.8m', window:'동측 후면 창 · 복도 쪽 출입 (거리 노출 없음)', sign:'층별 안내판 · 복도 사인' },
+            fits:['의원 · 한의원','필라테스 · PT','스터디카페'],
+            checks:['2층 의원층 동선 → 의료·건강 업종 시너지','거리에서 안 보이는 뒷줄 호실 → 목적형 업종 권장'] }),
+          u('205','필라테스',240,'op',{ pos:'back', ind:'운동', cat:'pilates', since:'2022.04' })],
+          hist:{ 2019:'치과 · 공실 · 공실 · 공실 · 안경원 · 공실', 2022:'치과 · 스터디카페 · 한의원 · 공실 · 안경원 · 필라테스', 2024:'치과 · 스터디카페 · 한의원 · 네일·왁싱 · 안경원 · 필라테스' } },
+      ];
+      let k = 0;
+      for (let lv = 3; lv <= 12; lv++){
+        if (lv === 9){
+          const t = officeTerms(1037);
+          f.push({ lv, h:4.0, use:'업무', units:[u('901','공실 (전층)',1037,'vac',{ pos:'full', prev:'커머스 기업 본사 (2018.12~2026.02)', months:8, ...t, fac:officeFac('서 · 동 · 북 3면 커튼월'), fits:['기업 사옥 · 본사','공유오피스 운영사'], checks:['전층 임대 · 분할 임대 협의 가능','같은 층 복도 · 코어는 공용이라 전용면적에 넣지 않음'] })], hist:{} });
+          continue;
+        }
+        const three = lv % 3 === 0;
+        const spec = three ? [['01',300,'front'],['02',250,'front'],['03',450,'back']] : [['01',540,'front'],['02',450,'back']];
+        const units = spec.map(([s, a, pos]) => {
+          const no = `${lv}${s}`;
+          const win = pos === 'front' ? '서측 커튼월 · 성수이로 방향' : '동측 창';
+          if (no === '603') return u(no,'공실',a,'vac',{ pos, prev:'IT 개발사 (2019~2026)', months:3, ...officeTerms(a), fac:officeFac(win), fits:['IT · 콘텐츠 사무실','디자인 스튜디오'], checks:['지식산업센터 입주 가능 업종 확인 필요'] });
+          if (no === '1102') return u(no,'미분양 공실',a,'unsold',{ pos, prev:'준공 후 미분양 (시행사 보유)', months:24, ...officeTerms(a), fac:officeFac(win), fits:['IT · 콘텐츠 사무실','연구소'], checks:['분양 · 임대를 함께 진행 중인 시행사 보유 호실','분양률 통계에는 미분양, 공실률 통계에는 공실로 잡힘'] });
+          if (no === '702') return u(no, OFFICE[k++ % OFFICE.length] + ' (입주 예정)', a, 'dark', { pos, ind:'사무실', since:'2026.09 계약 · 2027.01 입주 예정' });
+          return u(no, OFFICE[k++ % OFFICE.length], a, 'op', { pos, ind:'사무실', cat:'office', since:`${2018 + (k % 7)}.0${1 + (k % 9)}` });
+        });
+        f.push({ lv, h:4.0, use:'업무', units, hist:{} });
+      }
+      return f;
+    })()
+  },
+  C: {
+    name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 먹자골목 코너', zone:'뚝섬역 먹자골목', road:'먹자골목길',
+    ll:[37.5462, 127.0485], face:90, W:14, D:11, core:{ w:3.5, d:3.2 }, corr:0, ev:false,
+    ledger:{ type:'일반건축물', gfa:798 },
+    info:{ '규모':'지하 1층 · 지상 4층', '준공':'1989년', '용도':'근린생활시설 + 다가구주택', '엘리베이터':'없음 (계단)', '주차':'없음' },
+    start:{ lv:-1, no:'B01' },
+    ai:'지하 1층 B01호는 이전 이자카야의 <b style="display:inline">배기 덕트 · 그리스트랩이 남아 있어</b> 주점 · 요리주점으로 들어가면 초기 공사비를 줄일 수 있습니다. 1층 오른쪽 끝 계단이 유일한 입구라 입구 노출이 관건입니다.',
+    shot:'먹자골목길 건너편 · 서쪽 방향', facade:{ 2019:'#c2a383' }, kind:'brick',
+    floors:[
+      { lv:-1, h:3.2, use:'근생', rest:'창고 · 공용', units:[u('B01','공실',95,'vac',{ prev:'이자카야 (2019.06~2026.01)', months:9, dep:2000, rent:160, fee:15,
+        fac:{ elec:'25kW', water:'급배수 · 그리스트랩 있음', gas:'LNG 인입', duct:'배기 덕트 남아 있음 (재사용 가능)', ceil:'3.0m', window:'창 없음 · 계단 채광', sign:'계단 입구 돌출간판 · 입간판' },
+        fits:['이자카야 · 요리주점','와인바 · LP 바','방탈출 · 취미 공간'],
+        checks:['지하 66㎡ 이상 음식점 → 다중이용업소: 안전시설등 완비증명서 · 화재배상책임보험 필요','주류 판매는 일반음식점 영업신고 (휴게음식점은 음주 불가)','우천 시 침수 이력 확인 (데모: 이력 없음)','계단 입구 조명·사인으로 노출 보완'] })], hist:{ 2019:'이자카야 ○○', 2024:'이자카야 ○○' } },
+      { lv:1, h:3.8, use:'근생', rest:'지하 계단 · 출입', units:[u('101','코너 카페',55,'op',{ ind:'카페', cat:'cafe', since:'2023.04' }), u('102','공인중개사',36,'op',{ ind:'부동산', cat:'realty', since:'2015.06' })], hist:{ 2019:'○○부동산 · 공인중개사', 2022:'코너 카페 · 공인중개사' } },
+      { lv:2, h:3.2, use:'근생', units:[u('201','네일샵',48,'op',{ ind:'뷰티', cat:'nail', since:'2022.10' }), u('202','세무사무소',40,'op',{ ind:'사무소', cat:'office', since:'2017.03' })], hist:{ 2019:'○○공인중개 · 세무사무소', 2022:'네일샵 · 세무사무소' } },
+      { lv:3, h:3.0, use:'주거', units:[u('301','주거 (원룸 3세대)',92,'res')], hist:{} },
+      { lv:4, h:3.0, use:'주거', units:[u('401','주거 (원룸 3세대)',92,'res')], hist:{} },
+    ]
+  }
+};
+Object.entries(BUILDINGS).forEach(([k, b]) => b.key = k);
+
+// ── 층 배치 계산: 전용면적으로 호실 크기를 정한다 ─────────────────────────
+// 앞줄(도로 쪽, 깊이 fd)은 왼쪽→오른쪽, 복도(corr) 뒤 뒷줄은 오른쪽→왼쪽으로 채운다.
+// 코어(계단 · EV · WC)는 뒤쪽 왼쪽 모서리. 남는 자리는 공용(com)으로 표시한다.
+function layoutFloor(b, f){
+  const W = b.W, D = b.D, X0 = -W / 2, X1 = W / 2, Z0 = -D / 2, Z1 = D / 2;
+  const cw = b.core.w, cd = b.core.d, corr = b.corr || 0;
+  const fd = b.fd || (D - cd);
+  const core = { kind:'core', label:'계단 · EV · WC', x0:X0, x1:X0 + cw, z0:Z0, z1:Z0 + cd };
+  const out = { pieces:[core], units:{}, overflow:[], plate:W * D };
+  const put = (un, kind, p, label) => {
+    const no = un ? un.no : null, lab = label || (un && un.name);
+    // 같은 호실(또는 같은 공용 칸)이 바로 옆에 이어지면 한 칸으로 합친다
+    const last = out.pieces[out.pieces.length - 1];
+    if (last && last.kind === kind && last.no === no && last.label === lab && Math.abs(last.z0 - p.z0) < 1e-6 && Math.abs(last.z1 - p.z1) < 1e-6
+        && (Math.abs(last.x1 - p.x0) < 1e-6 || Math.abs(last.x0 - p.x1) < 1e-6)){
+      last.x0 = Math.min(last.x0, p.x0); last.x1 = Math.max(last.x1, p.x1); return;
+    }
+    const pc = { kind, no, st:un ? un.st : 'com', label:lab, ...p };
+    out.pieces.push(pc);
+    if (un) (out.units[un.no] = out.units[un.no] || []).push(pc);
+  };
+  // 줄 하나 채우기: [z0,z1] 띠에서 코어와 겹치는 부분은 빼고, dir 방향으로 면적만큼 x를 잘라 준다
+  const fillRow = (list, z0, z1, dir, restLabel) => {
+    const coreCut = Math.max(0, Math.min(z1, Z0 + cd) - Math.max(z0, Z0));
+    const segs = [[X0, X0 + cw, coreCut], [X0 + cw, X1, 0]];   // [x0, x1, 빼는 깊이]
+    if (dir < 0) segs.reverse();
+    let si = 0, cur = dir > 0 ? X0 : X1;
+    const zr = cut => cut > 0 ? [Math.max(z0, Z0 + cd), z1] : [z0, z1];
+    const take = (need, un, kind, label) => {
+      while (need > 0.01 && si < segs.length){
+        const [sx0, sx1, cut] = segs[si];
+        const depth = (z1 - z0) - cut;
+        const end = dir > 0 ? sx1 : sx0;
+        const room = Math.abs(end - cur) * depth;
+        if (depth <= 0.01 || room <= 0.01){ si++; cur = dir > 0 ? (segs[si] || [])[0] : (segs[si] || [])[1]; continue; }
+        const used = Math.min(need, room), wdt = used / depth;
+        const nx = cur + dir * wdt;
+        const [a, b2] = zr(cut);
+        put(un, kind, { x0:Math.min(cur, nx), x1:Math.max(cur, nx), z0:a, z1:b2 }, label);
+        need -= used; cur = nx;
+        if (Math.abs(cur - end) < 1e-6){ si++; if (si < segs.length) cur = dir > 0 ? segs[si][0] : segs[si][1]; }
+      }
+      return need;
+    };
+    list.forEach(un => {
+      const left = take(un.a, un, un.st === 'com' ? 'com' : 'unit');
+      if (left > 0.5) out.overflow.push({ no:un.no, missing:Math.round(left) });
+    });
+    // 남는 자리 → 공용
+    let rest = 0;
+    segs.forEach(([sx0, sx1, cut], i) => {
+      if (i < si) return;
+      const from = i === si ? cur : (dir > 0 ? sx0 : sx1);
+      rest += Math.abs((dir > 0 ? sx1 : sx0) - from) * ((z1 - z0) - cut);
+    });
+    if (rest > 0.5) take(rest, null, 'com', restLabel);
+  };
+  const full = f.units.find(x => x.pos === 'full');
+  if (full){
+    fillRow([{ ...full, a: W * fd }], Z1 - fd, Z1, 1, '공용');
+    if (corr) put(null, 'hall', { x0:X0, x1:X1, z0:Z1 - fd - corr, z1:Z1 - fd }, '복도 (공용)');
+    fillRow([{ ...full, a: W * (D - fd - corr) - cw * cd }], Z0, Z1 - fd - corr, -1, '공용');
+    return out;
+  }
+  fillRow(f.units.filter(x => (x.pos || 'front') === 'front'), Z1 - fd, Z1, 1, f.rest || '공용');
+  if (corr) put(null, 'hall', { x0:X0, x1:X1, z0:Z1 - fd - corr, z1:Z1 - fd }, '복도 (공용)');
+  if (Z1 - fd - corr - Z0 > 0.3) fillRow(f.units.filter(x => x.pos === 'back'), Z0, Z1 - fd - corr, -1, f.backRest || (corr ? '공용' : '복도 · 화장실'));
+  return out;
+}
+const pieceArea = p => (p.x1 - p.x0) * (p.z1 - p.z0);
+
+// ── 공실 집계: 같은 건물도 기준에 따라 공실률이 달라진다 ──────────────────
+// 계약면적(분양면적) = 전용면적 + 그 층 공용(코어 · 복도 · 화장실)을 전용면적 비율로 나눈 몫
+//                    + 건물 공용(로비 · 관리실 · 주차장)을 건물 전체 전용면적 비율로 나눈 몫
+// 주거층(res)은 상가 공실 집계에서 뺀다.
+const BLDG_COMMON = /로비|관리실|주차/;
+function areaShares(b){
+  const floors = b.floors.map(f => {
+    const lay = layoutFloor(b, f);
+    const leas = f.units.filter(x => LEASABLE.includes(x.st));
+    const excl = leas.reduce((s, x) => s + x.a, 0);
+    let floorPool = 0, bldPool = 0;
+    if (!leas.length){
+      if (f.units.every(x => x.st === 'park')) bldPool = lay.plate;
+    } else {
+      lay.pieces.forEach(p => {
+        if (p.kind === 'unit') return;
+        if (BLDG_COMMON.test(p.label || '')) bldPool += pieceArea(p); else floorPool += pieceArea(p);
+      });
+    }
+    return { f, lay, excl, floorPool, bldPool };
+  });
+  const exclAll = floors.reduce((s, x) => s + x.excl, 0);
+  const bldPool = floors.reduce((s, x) => s + x.bldPool, 0);
+  const contractOf = (fx, a) => a + (fx.excl ? fx.floorPool * a / fx.excl : 0) + (exclAll ? bldPool * a / exclAll : 0);
+  return { floors, exclAll, bldPool, contractOf };
+}
+function contractArea(b, lv, un){
+  const sh = areaShares(b), fx = sh.floors.find(x => x.f.lv === lv);
+  return fx ? sh.contractOf(fx, un.a) : un.a;
+}
+function vacancyStats(b){
+  const sh = areaShares(b);
+  const rows = [];
+  sh.floors.forEach(fx => fx.f.units.forEach(x => {
+    if (LEASABLE.includes(x.st)) rows.push({ ...x, lv:fx.f.lv, use:fx.f.use, contract:sh.contractOf(fx, x.a) });
+  }));
+  const sum = (arr, k) => arr.reduce((s, x) => s + (typeof k === 'function' ? k(x) : x[k]), 0);
+  const rate = (v, n) => n ? v / n * 100 : 0;
+  const pack = (r, vf, k) => { const v = r.filter(vf); return { v:sum(v, k), n:sum(r, k), rate:rate(sum(v, k), sum(r, k)) }; };
+  const rooms = x => x.rooms || 1, one = () => 1;
+  const grp = pred => pack(rows.filter(pred), isVacant, 'a');
+  const out = {
+    rows,
+    rooms:pack(rows, isVacant, rooms),
+    stores:pack(rows, isVacant, one),
+    area:pack(rows, isVacant, 'a'),
+    contract:pack(rows, isVacant, 'contract'),
+    actual:pack(rows, x => isVacant(x) || x.st === 'dark', 'a'),
+    exUnsold:pack(rows.filter(x => x.st !== 'unsold'), isVacant, 'a'),
+    byUse:{ '근생':grp(x => x.use === '근생'), '업무':grp(x => x.use === '업무') },
+    byPos:{ '지하':grp(x => x.lv < 0), '1층':grp(x => x.lv === 1), '2층 이상':grp(x => x.lv >= 2) },
+    unsold:sum(rows.filter(x => x.st === 'unsold'), 'a'), dark:sum(rows.filter(x => x.st === 'dark'), 'a'),
+    merged:rows.filter(x => (x.rooms || 1) > 1),
+    exclAll:sh.exclAll, bldPool:sh.bldPool,
+    gfa3d:b.floors.length * b.W * b.D, gfaLedger:b.ledger.gfa,
+    roomsLedger:b.ledger.rooms || null,
+    overflow:sh.floors.flatMap(fx => fx.lay.overflow.map(o => ({ ...o, lv:fx.f.lv }))),
+  };
+  out.gfaDiff = (out.gfa3d - out.gfaLedger) / out.gfaLedger * 100;
+  const rs = [out.rooms.rate, out.stores.rate, out.area.rate, out.contract.rate, out.actual.rate, out.exUnsold.rate];
+  out.min = Math.min(...rs); out.max = Math.max(...rs);
+  return out;
+}
+
+// ── 방향 도우미 ────────────────────────────────────────────────────────
+const DIR8 = ['북','북동','동','남동','남','남서','서','북서'];
+const dirName = deg => DIR8[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+// 건물 좌표(x 오른쪽, z 앞쪽) → 지도상 동 · 북 거리(m)
+function localToEN(b, x, z){
+  const r = Math.PI / 180, bx = (b.face - 90) * r, bz = b.face * r;
+  return { e: x * Math.sin(bx) + z * Math.sin(bz), n: x * Math.cos(bx) + z * Math.cos(bz) };
+}
+// 호실이 건물 안 어디에 있는지 사람이 읽을 수 있는 말로
+function unitWhere(b, f, no){
+  const ps = layoutFloor(b, f).units[no]; if (!ps || !ps.length) return '';
+  const a = ps.reduce((s, p) => s + pieceArea(p), 0);
+  const cx = ps.reduce((s, p) => s + (p.x0 + p.x1) / 2 * pieceArea(p), 0) / a;
+  const cz = ps.reduce((s, p) => s + (p.z0 + p.z1) / 2 * pieceArea(p), 0) / a;
+  const side = cx < -b.W / 6 ? '왼쪽' : cx > b.W / 6 ? '오른쪽' : '가운데';
+  const row = cz > 0 ? `앞줄(${b.road} 쪽, ${dirName(b.face)}향)` : `뒷줄(${dirName(b.face + 180)}향)`;
+  return `${row} · 도로에서 보아 ${side}`;
+}
+// 과거 촬영 시점의 호실 이름 (간판 이력이 없을 때): 지금 공실이면 직전 업종, 그 뒤 입점했으면 '이전 입주사'
+function pastName(un, year){
+  if (un.st === 'unsold') return '임대 문의';
+  if (isVacant(un) && un.prev) return un.prev.split(' (')[0];
+  if (un.st === 'dark') return '이전 입주사';
+  if (un.since && +un.since.slice(0, 4) > year) return '이전 입주사';
+  return un.name;
+}
+// ── 공통 건물 블록 끝 ──
+const B = BUILDINGS;
 
 const flName = lv => lv < 0 ? `B${-lv}` : `${lv}F`;
 const won = v => v >= 10000 ? `${(v/10000).toFixed(v % 10000 ? 1 : 0)}억` : `${v.toLocaleString()}만`;
@@ -341,29 +596,42 @@ const params = new URLSearchParams(location.search);
 const state = { s: B[params.get('s')] ? params.get('s') : 'A', lv:null, no:null, year:2026, ar:true, eye:false, layout:'split' };
 const cur = () => B[state.s];
 const floorOf = lv => cur().floors.find(f => f.lv === lv);
-const isVac = f => f.units.some(u => u.st === 'vac');
+const isVac = f => f.units.some(isVacant);
+const shown = f => f.units.filter(x => x.st !== 'com');          // 공용(로비 등)은 목록에서 뺀다
+const noLease = f => !f.units.some(x => LEASABLE.includes(x.st));  // 주거 · 주차만 있는 층
 
 // 해당 연도의 간판 문구 (그 해 이전 가장 최근 기록, 없으면 현재 입점)
-function signAt(f, year){
-  if (year >= 2026) return f.units.map(u => u.st === 'vac' ? '임대 문의' : u.name).join(' · ');
+const nowName = x => isVacant(x) ? '임대 문의' : x.name;
+function histTokens(f, year){
   const ys = Object.keys(f.hist).map(Number).filter(y => y <= year).sort((a,b) => b - a);
-  return ys.length ? f.hist[ys[0]] : f.units.map(u => u.st === 'vac' ? '임대 문의' : u.name).join(' · ');
+  return ys.length ? f.hist[ys[0]].split(' · ') : null;
+}
+function signAt(f, year){
+  const t = year >= 2026 ? null : histTokens(f, year);
+  if (t) return t.filter(x => x !== '로비').join(' · ');
+  const ns = shown(f).map(x => year >= 2026 ? nowName(x) : pastName(x, year));
+  const n = ns.filter(x => x === '이전 입주사').length;   // 그 뒤 들어온 입주사는 묶어서 표시
+  return (n > 1 ? [...ns.filter(x => x !== '이전 입주사'), `이전 입주사 ${n}곳`] : ns).join(' · ');
 }
 function facadeAt(b, year){
   const ys = Object.keys(b.facade).map(Number).filter(y => y <= year).sort((a,c) => c - a);
   return b.facade[ys[0] ?? Object.keys(b.facade)[0]];
 }
-function visScore(b, f){
-  if (b.key === 'A' && f.lv === 2) return 72;
-  if (b.key === 'B' && f.lv === 1) return 92;
-  if (b.key === 'C' && f.lv === -1) return 31;
-  if (f.lv < 0) return 28;
-  if (f.lv === 1) return 94;
-  if (f.lv === 2) return 66;
-  if (f.lv === 3) return 50;
-  return Math.max(16, 40 - (f.lv - 4) * 4);
+function visScore(b, f, u){
+  let v;
+  if (b.key === 'A' && f.lv === 2) v = 72;
+  else if (b.key === 'B' && f.lv === 1) v = 92;
+  else if (b.key === 'C' && f.lv === -1) v = 31;
+  else if (f.lv < 0) v = 28;
+  else if (f.lv === 1) v = 94;
+  else if (f.lv === 2) v = 66;
+  else if (f.lv === 3) v = 50;
+  else v = Math.max(16, 40 - (f.lv - 4) * 4);
+  if (u && u.pos === 'back') v = Math.min(v, 12);   // 뒷줄 호실은 거리에서 안 보임
+  return v;
 }
-function visText(f){
+function visText(f, u){
+  if (u && u.pos === 'back') return `<b>뒷줄 호실</b>이라 ${esc(cur().road)}에서는 보이지 않습니다. 층별 안내판 · 복도 사인 · 지도 · SNS가 사실상 유일한 노출 수단이라 <b>목적형 업종</b>이 맞습니다.`;
   if (f.lv < 0) return '거리에서는 <b>계단 입구만</b> 보입니다. 입간판 · 계단 벽면 사인 · 조명으로 입구를 알려야 합니다.';
   if (f.lv === 1) return '보행자 눈높이에 바로 들어옵니다. <b>전면 간판 + 유리창 연출</b>만으로 충분히 노출됩니다.';
   if (f.lv === 2) return '건너편 보도에서는 잘 보이지만 바로 아래에서는 고개를 들어야 합니다. <b>돌출간판 · 창문 시트</b>를 추천합니다.';
@@ -437,65 +705,98 @@ function drawScene(){
   x = g.bx + g.bw + 14;
   while (x < SW + 200){ const w = 170 + rnd() * 170; const h = 160 + rnd() * 380; s += neighborSvg(x, w, h, rnd, g.sc); x += w + 10 + rnd() * 14; }
 
-  // 대상 건물
+  // 대상 건물 — 앞줄 호실 폭은 평면도 · 3D와 같은 layoutFloor 결과를 그대로 씁니다 (건물 x(m) → 화면 x)
   const fc = facadeAt(b, year);
+  const X = x => g.bx + (x + b.W / 2) * g.sc;
+  const past = year < 2026;
+  const fit = (t, w, fs) => { t = String(t); const n = Math.max(1, Math.floor(w / (fs * .95))); return t.length > n ? t.slice(0, Math.max(1, n - 1)) + '…' : t; };
+  const unitOf = (f, no) => f.units.find(x => x.no === no);
+  const frontOf = f => layoutFloor(b, f).pieces.filter(p => p.kind !== 'core' && p.kind !== 'hall' && p.z1 >= b.D / 2 - 1e-6).sort((p, q) => p.x0 - q.x0);
+  const nameAt = (f, p) => {
+    const un = p.no ? unitOf(f, p.no) : null;
+    if (!un) return p.label || '';
+    if (!past) return un.st === 'com' ? un.name : nowName(un);
+    const t = histTokens(f, year);
+    if (!t) return pastName(un, year);
+    return t[f.units.indexOf(un)] ?? t[t.length - 1];
+  };
+  // 그 시점에 비어 있던 호실인지 (지금은 상태값, 과거는 간판 이력의 '공실' · '임대 문의')
+  const vacAt = (f, p, un) => past ? /^(공실|임대 문의)$/.test(nameAt(f, p)) : isVacant(un);
+  let entry = null;   // 1층 공용 출입구 (위층 · 지하 계단)
   s += `<rect x="${g.bx - 6}" y="${g.top - 14}" width="${g.bw + 12}" height="14" fill="#64748b"/>`;
   s += `<rect x="${g.bx}" y="${g.top}" width="${g.bw}" height="${GY - g.top}" fill="${b.kind === 'glass' ? '#cbd5e1' : fc}"/>`;
   [...b.floors].filter(f => f.lv > 0).forEach(f => {
     const { y0, y1 } = g.fl[f.lv], fh = y1 - y0;
-    const sign = signAt(f, year);
-    const vacNow = year >= 2026 && isVac(f);
+    const fronts = frontOf(f);
     if (f.lv === 1){
-      // 1층 상가 전면
-      const us = f.units, tot = us.reduce((a,u) => a + (u.w || 1/us.length), 0);
-      const door = b.floors.some(q => q.lv < 0) && b.key !== 'B' ? 74 : 0;
-      let ux = g.bx + 4;
-      const names = year >= 2026 ? us.map(u => u.st === 'vac' ? '임대 문의' : u.name) : sign.split(' · ');
-      us.forEach((u, i) => {
-        const uw = (g.bw - 8 - door) * (u.w || 1/us.length) / tot;
-        const vac = year >= 2026 && u.st === 'vac';
+      // 1층 상가 전면: 호실마다 실제 폭으로 유리창 + 간판, 공용 칸은 출입구
+      fronts.forEach(p => {
+        const ux = X(p.x0), uw = (p.x1 - p.x0) * g.sc;
+        const un = p.no ? unitOf(f, p.no) : null;
+        if (!un || un.st === 'com'){
+          const lab = un ? un.name : p.label;
+          s += `<rect x="${ux+2}" y="${y0 + fh*.3}" width="${uw-4}" height="${fh*.7}" fill="#334155"/>`
+            + `<rect x="${ux + uw*.2}" y="${y0 + fh*.42}" width="${uw*.6}" height="${fh*.58}" fill="url(#glass)" opacity=".7" stroke="#0f172a" stroke-width="2"/>`
+            + `<text x="${ux + uw/2}" y="${y0 + fh*.24}" font-size="${Math.min(13, fh*.1)}" text-anchor="middle" fill="#334155" font-weight="800">${esc(fit(/로비/.test(lab) ? '로비 · 출입' : '출입구', uw, 13))}</text>`;
+          if (!entry || uw > entry.w) entry = { x:ux, w:uw };
+          return;
+        }
+        const vac = vacAt(f, p, un);
+        const fs = Math.min(18, fh*.13);
         s += `<rect x="${ux+3}" y="${y0 + fh*.32}" width="${uw-6}" height="${fh*.68}" fill="${vac ? '#e5e7eb' : 'url(#glass)'}" stroke="#334155" stroke-width="3"/>`
           + `<line x1="${ux+uw/2}" y1="${y0+fh*.32}" x2="${ux+uw/2}" y2="${y1}" stroke="#334155" stroke-width="3"/>`
           + `<rect x="${ux+3}" y="${y0 + fh*.06}" width="${uw-6}" height="${fh*.2}" rx="3" fill="${vac ? '#fff' : '#111827'}" stroke="${vac ? '#dc2626' : 'none'}" stroke-width="3"/>`
-          + `<text x="${ux+uw/2}" y="${y0 + fh*.2}" font-size="${Math.min(18, fh*.13)}" text-anchor="middle" fill="${vac ? '#dc2626' : '#fde68a'}" font-weight="800">${esc(names[i] || names[names.length-1] || '')}</text>`;
+          + `<text x="${ux+uw/2}" y="${y0 + fh*.2}" font-size="${fs}" text-anchor="middle" fill="${vac ? '#dc2626' : '#fde68a'}" font-weight="800">${esc(fit(vac ? '임대 문의' : nameAt(f, p), uw - 10, fs))}</text>`;
         if (vac) s += `<text x="${ux+uw/2}" y="${y0 + fh*.68}" font-size="${Math.min(15, fh*.11)}" text-anchor="middle" fill="#64748b" font-weight="700">FOR LEASE</text>`;
-        ux += uw;
       });
-    } else if (b.kind === 'glass'){
-      s += `<rect x="${g.bx+4}" y="${y0+3}" width="${g.bw-8}" height="${fh-6}" fill="url(#glass)"/>`;
-      for (let mx = g.bx + 4; mx < g.bx + g.bw - 4; mx += 26) s += `<line x1="${mx}" y1="${y0}" x2="${mx}" y2="${y1}" stroke="#64748b" stroke-width="1.5"/>`;
-      if (vacNow) s += `<rect x="${g.bx + g.bw*.62}" y="${y0 + fh*.18}" width="${g.bw*.3}" height="${fh*.64}" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${g.bx + g.bw*.77}" y="${y0 + fh*.62}" font-size="${Math.min(14, fh*.4)}" text-anchor="middle" fill="#dc2626" font-weight="800">임대</text>`;
     } else {
-      const n = Math.max(2, Math.round(g.bw / 70));
-      for (let i = 0; i < n; i++){
-        const cw = (g.bw - 16) / n;
-        s += `<rect x="${g.bx + 8 + i*cw + cw*.08}" y="${y0 + fh*.18}" width="${cw*.84}" height="${fh*.6}" fill="url(#glass)" stroke="#475569" stroke-width="2"/>`;
+      if (b.kind === 'glass'){
+        s += `<rect x="${g.bx+4}" y="${y0+3}" width="${g.bw-8}" height="${fh-6}" fill="url(#glass)"/>`;
+        for (let mx = g.bx + 4; mx < g.bx + g.bw - 4; mx += 26) s += `<line x1="${mx}" y1="${y0}" x2="${mx}" y2="${y1}" stroke="#64748b" stroke-width="1.5"/>`;
+      } else {
+        const n = Math.max(2, Math.round(g.bw / 70));
+        for (let i = 0; i < n; i++){
+          const cw = (g.bw - 16) / n;
+          s += `<rect x="${g.bx + 8 + i*cw + cw*.08}" y="${y0 + fh*.18}" width="${cw*.84}" height="${fh*.6}" fill="url(#glass)" stroke="#475569" stroke-width="2"/>`;
+        }
       }
-      if (vacNow){
-        s += `<rect x="${g.bx + g.bw*.14}" y="${y0 + fh*.26}" width="${g.bw*.72}" height="${fh*.44}" fill="#fff" stroke="#dc2626" stroke-width="3"/>`
-           + `<text x="${g.bx + g.bw/2}" y="${y0 + fh*.56}" font-size="${Math.min(20, fh*.24)}" text-anchor="middle" fill="#dc2626" font-weight="800">임 대 문 의 · 010-****-****</text>`;
-      } else if (!/주거/.test(sign)){
-        s += `<rect x="${g.bx + g.bw*.2}" y="${y0 + fh*.3}" width="${g.bw*.6}" height="${fh*.36}" rx="4" fill="rgba(255,255,255,.88)"/>`
-           + `<text x="${g.bx + g.bw/2}" y="${y0 + fh*.55}" font-size="${Math.min(17, fh*.22)}" text-anchor="middle" fill="#0f172a" font-weight="800">${esc(sign)}</text>`;
-      }
-      // 돌출간판
-      if (!vacNow && !/주거/.test(sign) && f.lv <= 3){
+      // 앞줄 호실별 간판 · 임대 현수막 (뒷줄 호실은 거리에서 안 보이므로 그리지 않음)
+      const t = past ? histTokens(f, year) : null;
+      const units = fronts.filter(p => p.no && !['res','park','com'].includes((unitOf(f, p.no) || {}).st));
+      if (past && t && t.length < f.units.length){
+        if (!/주거/.test(t[0])) s += `<rect x="${g.bx + g.bw*.2}" y="${y0 + fh*.3}" width="${g.bw*.6}" height="${fh*.36}" rx="4" fill="rgba(255,255,255,.88)"/><text x="${g.bx + g.bw/2}" y="${y0 + fh*.55}" font-size="${Math.min(17, fh*.22)}" text-anchor="middle" fill="#0f172a" font-weight="800">${esc(fit(t[0], g.bw*.6, 17))}</text>`;
+      } else units.forEach(p => {
+        const un = unitOf(f, p.no), ux = X(p.x0), uw = (p.x1 - p.x0) * g.sc;
+        const fs = Math.min(17, fh*.22);
+        if (vacAt(f, p, un)){
+          s += `<rect x="${ux + uw*.08}" y="${y0 + fh*.26}" width="${uw*.84}" height="${fh*.44}" fill="#fff" stroke="#dc2626" stroke-width="3"/>`
+             + `<text x="${ux + uw/2}" y="${y0 + fh*.56}" font-size="${Math.min(20, fh*.24)}" text-anchor="middle" fill="#dc2626" font-weight="800">${uw > 260 ? '임 대 문 의 · 010-****-****' : '임대 문의'}</text>`;
+        } else if (b.kind !== 'glass'){
+          const nm = nameAt(f, p);
+          if (nm && !/주거/.test(nm)) s += `<rect x="${ux + uw*.1}" y="${y0 + fh*.3}" width="${uw*.8}" height="${fh*.36}" rx="4" fill="rgba(255,255,255,.88)"/>`
+             + `<text x="${ux + uw/2}" y="${y0 + fh*.55}" font-size="${fs}" text-anchor="middle" fill="#0f172a" font-weight="800">${esc(fit(nm, uw*.8 - 8, fs))}</text>`;
+        }
+      });
+      // 돌출간판 (벽돌 건물 3층 이하, 영업 중인 앞줄 호실이 있을 때)
+      const opP = units.find(p => !vacAt(f, p, unitOf(f, p.no)));
+      if (b.kind !== 'glass' && f.lv <= 3 && opP && !/주거/.test(nameAt(f, opP))){
+        const nm = nameAt(f, opP);
         s += `<rect x="${g.bx + g.bw + 2}" y="${y0 + fh*.12}" width="22" height="${fh*.76}" rx="3" fill="#0f172a"/>`
-           + `<text x="${g.bx + g.bw + 13}" y="${y0 + fh*.5}" font-size="11" fill="#fde68a" text-anchor="middle" font-weight="800" writing-mode="tb">${esc(sign.slice(0,4))}</text>`;
+           + `<text x="${g.bx + g.bw + 13}" y="${y0 + fh*.5}" font-size="11" fill="#fde68a" text-anchor="middle" font-weight="800" writing-mode="tb">${esc(nm.slice(0,4))}</text>`;
       }
     }
     s += `<line x1="${g.bx}" y1="${y0}" x2="${g.bx+g.bw}" y2="${y0}" stroke="rgba(15,23,42,.35)" stroke-width="2"/>`;
   });
 
-  // 지하 출입구 (계단)
+  // 지하 상가 출입구: 1층 공용 출입구 칸(평면도와 같은 위치)에 계단 + 지하 간판
   const bf = b.floors.find(f => f.lv === -1);
-  if (bf && b.key !== 'B'){
-    const ex = g.bx + g.bw - 68;
+  if (bf && entry && !noLease(bf)){
+    const vacB = !past && isVac(bf);
     const bsign = signAt(bf, year);
-    const vacB = year >= 2026 && isVac(bf);
-    s += `<rect x="${ex}" y="${GY-70}" width="60" height="70" fill="#1f2937"/><path d="M${ex+6} ${GY} l10 -12 h40 v12z" fill="#374151"/>`
-       + `<rect x="${ex-4}" y="${GY-96}" width="68" height="24" rx="4" fill="${vacB ? '#fff' : '#7c2d12'}" stroke="${vacB ? '#dc2626' : 'none'}" stroke-width="2"/>`
-       + `<text x="${ex+30}" y="${GY-79}" font-size="12" fill="${vacB ? '#dc2626' : '#fed7aa'}" text-anchor="middle" font-weight="800">B1 ${esc(vacB ? '임대' : bsign.slice(0,6))}</text>`;
+    const ex = entry.x + 3, ew = Math.max(40, entry.w - 6);
+    s += `<rect x="${ex}" y="${GY-70}" width="${ew}" height="70" fill="#1f2937"/><path d="M${ex+4} ${GY} l8 -12 h${ew-16} v12z" fill="#374151"/>`
+       + `<rect x="${ex - 8}" y="${GY-96}" width="${ew + 16}" height="24" rx="4" fill="${vacB ? '#fff' : '#7c2d12'}" stroke="${vacB ? '#dc2626' : 'none'}" stroke-width="2"/>`
+       + `<text x="${ex + ew/2}" y="${GY-79}" font-size="12" fill="${vacB ? '#dc2626' : '#fed7aa'}" text-anchor="middle" font-weight="800">B1 ${esc(vacB ? '임대' : bsign.slice(0,5))}</text>`;
   }
 
   // 보도 · 도로
@@ -522,14 +823,14 @@ function drawScene(){
     const { y0, y1 } = g.fl[f.lv], fh = y1 - y0;
     const on = f.lv === state.lv;
     const vac = isVac(f);
-    const res = f.units.every(u => u.st === 'res');
+    const res = noLease(f);
     let band = `<rect class="band" x="${g.bx - 4}" y="${y0 + 1}" width="${g.bw + 8}" height="${fh - 2}" rx="4"/>`;
     if (f.lv < 0) band = `<rect x="${g.bx}" y="${y0}" width="${g.bw}" height="${fh}" fill="url(#xray)" stroke="${vac ? '#f97316' : '#94a3b8'}" stroke-width="2" stroke-dasharray="8 6" opacity="${state.ar || on ? 1 : 0}"/>` + band;
     let lab = '';
     if (state.ar || on){
       const past = state.year < 2026;
       const txt = past ? `${flName(f.lv)} · ${signAt(f, state.year)} (${state.year})`
-        : `${flName(f.lv)} · ${vac ? `공실 ${f.units.filter(u => u.st === 'vac').map(u => u.a).reduce((a,c) => a + c, 0).toLocaleString()}㎡` : res ? f.units[0].name : f.units.map(u => u.name).join(' · ')}`;
+        : `${flName(f.lv)} · ${vac ? (() => { const vs = f.units.filter(isVacant); return `공실 ${vs.reduce((a, x) => a + x.a, 0).toLocaleString()}㎡${vs.every(x => x.pos === 'back') ? ' (뒷줄 · 거리에서 안 보임)' : ''}`; })() : res ? f.units[0].name : shown(f).map(x => x.name).join(' · ')}`;
       const fs = Math.max(13, Math.min(17, fh * .42));
       const lw = Math.min(460, txt.length * fs * .82 + 26);
       const lx = g.bx + g.bw + 34, ly = (y0 + y1) / 2;
@@ -597,51 +898,73 @@ function drawMini(){
 }
 
 // ── 층별보기 패널 ─────────────────────────────────────────────
+// 평면도: Case 2 3D와 같은 layoutFloor 결과(전용면적 비례)를 위에서 본 그림. 아래쪽이 도로(전면).
 function planSvg(f){
-  const b = cur();
-  const VW = 420, VH = 300, pad = 34;
-  const ratio = b.W / b.D;
-  let w = VW - pad*2, h = w / ratio;
-  if (h > VH - pad*2){ h = VH - pad*2; w = h * ratio; }
-  const x0 = (VW - w) / 2, y0 = 18;
-  const core = h * .26;
-  let s = `<defs><pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#fff7ed"/><line x1="0" y1="0" x2="0" y2="9" stroke="#fdba74" stroke-width="3"/></pattern></defs>`;
+  const b = cur(), lay = layoutFloor(b, f);
+  const VW = 440, VH = 330, padX = 42, padTop = 22, padBot = 64;
+  let k = (VW - padX * 2) / b.W;
+  if (b.D * k > VH - padTop - padBot) k = (VH - padTop - padBot) / b.D;
+  const w = b.W * k, h = b.D * k, x0 = (VW - w) / 2, y0 = padTop;
+  const PX = x => x0 + (x + b.W / 2) * k, PY = z => y0 + (z + b.D / 2) * k;
+  const FILL = { op:'#eff6ff', vac:'url(#hatch)', unsold:'url(#hatchU)', dark:'#fefce8', res:'#f1f5f9', park:'#e2e8f0' };
+  let s = `<defs><pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="9" height="9" fill="#fff7ed"/><line x1="0" y1="0" x2="0" y2="9" stroke="#fdba74" stroke-width="3"/></pattern>`
+    + `<pattern id="hatchU" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width="9" height="9" fill="#fef2f2"/><line x1="0" y1="0" x2="0" y2="9" stroke="#fca5a5" stroke-width="3"/></pattern></defs>`;
   s += `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="#f8fafc" stroke="#0f172a" stroke-width="4"/>`;
-  // 코어 (뒤쪽)
-  const cw = w * .44;
-  const parts = b.ev ? [['계단', .38], ['EV', .27], ['WC', .35]] : [['계단', .55], ['WC', .45]];
-  let cx = x0;
-  parts.forEach(([n, r]) => {
-    const pw = cw * r;
-    s += `<rect x="${cx}" y="${y0}" width="${pw}" height="${core}" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>`;
-    if (n === '계단') for (let i = 1; i < 6; i++) s += `<line x1="${cx + pw*i/6}" y1="${y0+4}" x2="${cx + pw*i/6}" y2="${y0+core-4}" stroke="#94a3b8"/>`;
-    if (n === 'EV') s += `<line x1="${cx+4}" y1="${y0+4}" x2="${cx+pw-4}" y2="${y0+core-4}" stroke="#94a3b8"/><line x1="${cx+pw-4}" y1="${y0+4}" x2="${cx+4}" y2="${y0+core-4}" stroke="#94a3b8"/>`;
-    s += `<text x="${cx + pw/2}" y="${y0 + core/2 + 4}" font-size="11" text-anchor="middle" fill="#334155" font-weight="700">${n}</text>`;
-    cx += pw;
+  let comArea = 0;
+  lay.pieces.forEach(p => {
+    const rx = PX(p.x0), ry = PY(p.z0), rw = (p.x1 - p.x0) * k, rh = (p.z1 - p.z0) * k;
+    if (rw < .5 || rh < .5) return;
+    if (p.kind === 'core'){
+      comArea += pieceArea(p);
+      const parts = b.ev ? [['계단', .4], ['EV', .25], ['WC', .35]] : [['계단', .55], ['WC', .45]];
+      let cx = rx;
+      parts.forEach(([n, r]) => {
+        const pw = rw * r;
+        s += `<rect x="${cx}" y="${ry}" width="${pw}" height="${rh}" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>`;
+        if (n === '계단') for (let i = 1; i < 6; i++) s += `<line x1="${cx + pw*i/6}" y1="${ry+3}" x2="${cx + pw*i/6}" y2="${ry+rh-3}" stroke="#94a3b8"/>`;
+        if (n === 'EV') s += `<line x1="${cx+3}" y1="${ry+3}" x2="${cx+pw-3}" y2="${ry+rh-3}" stroke="#94a3b8"/><line x1="${cx+pw-3}" y1="${ry+3}" x2="${cx+3}" y2="${ry+rh-3}" stroke="#94a3b8"/>`;
+        s += `<text x="${cx + pw/2}" y="${ry + rh/2 + 4}" font-size="${pw < 26 ? 8.5 : 10.5}" text-anchor="middle" fill="#334155" font-weight="700">${n}</text>`;
+        cx += pw;
+      });
+      return;
+    }
+    if (p.kind === 'hall' || p.kind === 'com'){
+      comArea += pieceArea(p);
+      s += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${p.kind === 'hall' ? '#f1f5f9' : '#f8fafc'}" stroke="#94a3b8" stroke-dasharray="4 3"/>`;
+      const lab = p.kind === 'hall' ? '복도 (공용)' : p.label;
+      if (lab && rw > lab.length * 8 && rh > 14) s += `<text x="${rx + rw/2}" y="${ry + rh/2 + 4}" font-size="10" text-anchor="middle" fill="#94a3b8">${esc(lab)}</text>`;
+      return;
+    }
+    const on = p.no === state.no;
+    s += `<g class="u" data-no="${p.no}"><rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${FILL[p.st] || '#eff6ff'}" stroke="${on ? '#4f46e5' : '#0f172a'}" stroke-width="${on ? 4 : 2}"/></g>`;
   });
-  s += `<rect x="${cx}" y="${y0}" width="${x0 + w - cx}" height="${core}" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4 3"/><text x="${(cx + x0 + w)/2}" y="${y0 + core/2 + 4}" font-size="11" text-anchor="middle" fill="#94a3b8">${f.lv === 1 ? '후면 서비스 공간' : '공용 복도'}</text>`;
-  // 호실
-  const us = f.units, tot = us.reduce((a,u) => a + (u.w || 1/us.length), 0);
-  let ux = x0;
-  us.forEach(u => {
-    const uw = w * (u.w || 1/us.length) / tot;
-    const on = u.no === state.no;
-    const fill = u.st === 'vac' ? 'url(#hatch)' : u.st === 'res' ? '#f1f5f9' : '#eff6ff';
-    s += `<g class="u" data-no="${u.no}"><rect x="${ux}" y="${y0 + core}" width="${uw}" height="${h - core}" fill="${fill}" stroke="${on ? '#4f46e5' : '#0f172a'}" stroke-width="${on ? 4 : 2}"/>`
-       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 - 6}" font-size="${uw < 70 ? 11 : 13}" text-anchor="middle" fill="${u.st === 'vac' ? '#c2410c' : '#0f172a'}" font-weight="800">${u.no}호</text>`
-       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 + 10}" font-size="${uw < 70 ? 9.5 : 11}" text-anchor="middle" fill="#475569">${esc(u.st === 'vac' ? '공실' : u.name.length > 8 && uw < 90 ? u.name.slice(0,6) + '…' : u.name)}</text>`
-       + `<text x="${ux + uw/2}" y="${y0 + core + (h-core)/2 + 24}" font-size="10" text-anchor="middle" fill="#94a3b8">${u.a.toLocaleString()}㎡</text>`
-       // 복도 쪽 문
-       + `<path d="M${ux + uw/2 - 9} ${y0 + core} a14 14 0 0 1 14 14" fill="none" stroke="#64748b" stroke-width="1.2"/><line x1="${ux + uw/2 - 9}" y1="${y0+core}" x2="${ux + uw/2 + 7}" y2="${y0+core}" stroke="#f8fafc" stroke-width="4"/></g>`;
-    ux += uw;
+  // 호실 라벨 + 문 (호실마다 가장 큰 조각에 한 번)
+  shown(f).forEach(un => {
+    const ps = lay.units[un.no]; if (!ps) return;
+    const p = ps.reduce((a, c) => pieceArea(c) > pieceArea(a) ? c : a);
+    const rx = PX(p.x0), ry = PY(p.z0), rw = (p.x1 - p.x0) * k, rh = (p.z1 - p.z0) * k, cx = rx + rw / 2, cy = ry + rh / 2;
+    const vac = isVacant(un), small = rw < 52;
+    const front = p.z1 >= b.D / 2 - 1e-6;
+    const doorY = front && f.lv !== 1 ? ry : ry + rh;               // 위층 앞줄은 뒤(복도)쪽, 1층 · 뒷줄은 앞쪽에 문
+    const dir = doorY === ry ? 1 : -1;
+    s += `<g class="u" data-no="${un.no}">`
+       + `<path d="M${cx - 8} ${doorY} a12 12 0 0 ${dir > 0 ? 0 : 1} 12 ${12 * dir}" fill="none" stroke="#64748b" stroke-width="1.2"/>`
+       + `<text x="${cx}" y="${cy - (small ? 0 : 6)}" font-size="${small ? 10 : 12.5}" text-anchor="middle" fill="${vac ? (un.st === 'unsold' ? '#b91c1c' : '#c2410c') : '#0f172a'}" font-weight="800">${un.no}</text>`
+       + (small ? '' : `<text x="${cx}" y="${cy + 9}" font-size="10.5" text-anchor="middle" fill="#475569">${esc(vac ? ST[un.st].n : un.name.length > 7 && rw < 100 ? un.name.slice(0,6) + '…' : un.name)}</text>`
+       + `<text x="${cx}" y="${cy + 22}" font-size="9.5" text-anchor="middle" fill="#94a3b8">전용 ${un.a.toLocaleString()}㎡</text>`)
+       + `</g>`;
   });
   // 전면 (도로 쪽)
-  if (f.lv > 0) s += `<line x1="${x0 + 8}" y1="${y0 + h}" x2="${x0 + w - 8}" y2="${y0 + h}" stroke="#38bdf8" stroke-width="5"/>`;
-  const entry = f.lv === 1 ? `▲ ${b.road}에서 바로 진입` : f.lv < 0 ? `▲ ${b.road} 쪽 외부 계단으로 진입` : `계단${b.ev ? ' · 엘리베이터' : ''}로 진입`;
-  s += `<text x="${x0 + w/2}" y="${y0 + h + 20}" font-size="11.5" text-anchor="middle" fill="#0369a1" font-weight="700">${esc(b.road)} (전면 · ${f.lv > 0 ? '유리창' : '창 없음'}) — ${entry}</text>`;
-  // 치수
-  s += `<text x="${x0 - 8}" y="${y0 + h/2}" font-size="10" text-anchor="end" fill="#94a3b8">${b.D}m</text><text x="${x0 + w + 8}" y="${y0 + 12}" font-size="10" fill="#94a3b8">${b.W}m</text>`;
-  s += `<g transform="translate(${VW - 18} ${VH - 30})"><path d="M0 -12 L5 4 L0 1 L-5 4 Z" fill="#0f172a"/><text y="16" font-size="9" text-anchor="middle" fill="#0f172a">N</text></g>`;
+  if (f.lv > 0) s += `<line x1="${x0 + 6}" y1="${y0 + h}" x2="${x0 + w - 6}" y2="${y0 + h}" stroke="#38bdf8" stroke-width="5"/>`;
+  const entry = f.lv === 1 ? `▲ ${b.road}에서 바로 진입` : f.lv < 0 ? `▲ 1층 출입구 계단으로 진입` : `계단${b.ev ? ' · 엘리베이터' : ''}로 진입`;
+  s += `<text x="${x0 + w/2}" y="${y0 + h + 18}" font-size="11.5" text-anchor="middle" fill="#0369a1" font-weight="700">${esc(b.road)} (전면 · ${dirName(b.face)}향${f.lv > 0 ? ' · 유리창' : ' · 창 없음'}) — ${entry}</text>`;
+  // 치수 · 축척 · 방위 (앞면 방위 face로 북쪽 화살표를 돌림)
+  s += `<text x="${x0 - 6}" y="${y0 + h/2}" font-size="10" text-anchor="end" fill="#94a3b8">${b.D}m</text><text x="${x0 + w}" y="${y0 - 6}" font-size="10" text-anchor="end" fill="#94a3b8">${b.W}m</text>`;
+  const bar = 5 * k;
+  s += `<g transform="translate(${x0} ${y0 + h + 34})"><line x1="0" y1="0" x2="${bar}" y2="0" stroke="#334155" stroke-width="2"/><line x1="0" y1="-4" x2="0" y2="4" stroke="#334155" stroke-width="2"/><line x1="${bar}" y1="-4" x2="${bar}" y2="4" stroke="#334155" stroke-width="2"/><text x="${bar + 6}" y="4" font-size="10" fill="#334155">5m</text></g>`;
+  s += `<g transform="translate(${VW - 22} ${y0 + h + 34}) rotate(${180 - b.face})"><circle r="13" fill="#fff" stroke="#cbd5e1"/><path d="M0 -10 L4 3 L0 1 L-4 3 Z" fill="#dc2626"/><text y="-14" font-size="9" text-anchor="middle" fill="#0f172a" transform="rotate(${-(180 - b.face)} 0 -17)">N</text></g>`;
+  const excl = shown(f).reduce((a, x) => a + x.a, 0);
+  s += `<text x="${x0 + bar + 34}" y="${y0 + h + 38}" font-size="10" fill="#64748b">호실 전용 ${excl.toLocaleString()}㎡ + 공용 ${Math.round(comArea).toLocaleString()}㎡ = 바닥 ${(b.W * b.D).toLocaleString()}㎡</text>`;
   return `<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="${flName(f.lv)} 평면도">${s}</svg>`;
 }
 
@@ -652,39 +975,40 @@ function gaugeSvg(v){
 
 function renderPanel(){
   const b = cur(), f = floorOf(state.lv);
-  const u = f.units.find(x => x.no === state.no) || f.units[0];
+  const u = shown(f).find(x => x.no === state.no) || shown(f)[0];
   const fs = [...b.floors].sort((a,c) => c.lv - a.lv);
   const hist = YEARS.map(y => ({ y, t: signAt(f, y) }));
   $('#fpIn').innerHTML = `
     <div class="dir">
       <div class="dt"><span>층별 안내 · ${esc(b.name)}</span><span>FLOOR GUIDE</span></div>
       ${fs.map(x => {
-        const vac = isVac(x), res = x.units.every(q => q.st === 'res');
-        return `<button class="${x.lv === state.lv ? 'on' : ''}" data-lv="${x.lv}"><b>${flName(x.lv)}</b><span>${esc(x.units.map(q => q.st === 'vac' ? `${q.no} 공실` : q.name).join(' · '))}</span><em class="${vac ? 'vac' : res ? 'res' : 'op'}">${vac ? '공실' : res ? '비임대' : '영업'}</em></button>`;
+        const vac = isVac(x), res = noLease(x);
+        return `<button class="${x.lv === state.lv ? 'on' : ''}" data-lv="${x.lv}"><b>${flName(x.lv)}</b><span>${esc(shown(x).map(q => isVacant(q) ? `${q.no} ${ST[q.st].n}` : q.name).join(' · '))}</span><em class="${vac ? 'vac' : res ? 'res' : 'op'}">${vac ? '공실' : res ? '비임대' : '영업'}</em></button>`;
       }).join('')}
     </div>
     <div class="card plan">
-      <div class="ch"><h3>${flName(f.lv)} 개략 배치도</h3><small>층고 ${f.h}m · 실측 도면 아님 · 호실을 누르면 정보가 바뀝니다</small></div>
+      <div class="ch"><h3>${flName(f.lv)} 개략 배치도</h3><small>층고 ${f.h}m · 호실 크기는 전용면적 비례 · 실측 도면 아님</small></div>
       ${planSvg(f)}
-      <div class="ulist">${f.units.map(q => `<button class="${q.st === 'vac' ? 'vac' : ''} ${q.no === u.no ? 'on' : ''}" data-no="${q.no}">${q.no}${q.st === 'vac' ? ' 공실' : ''}</button>`).join('')}</div>
+      <div class="ulist">${shown(f).map(q => `<button class="${isVacant(q) ? 'vac' : ''} ${q.no === u.no ? 'on' : ''}" data-no="${q.no}">${q.no}${isVacant(q) ? ` ${ST[q.st].n}` : ''}</button>`).join('')}</div>
     </div>
     <div class="card info">
-      <div class="ch"><h3>${flName(f.lv)} ${u.no}호 · ${u.st === 'vac' ? '공실' : esc(u.name)}</h3><small>${u.a.toLocaleString()}㎡ (${pyeong(u.a)}평)</small></div>
-      ${u.st === 'vac' ? `<div class="cond">
+      <div class="ch"><h3>${flName(f.lv)} ${u.no}호 · ${isVacant(u) ? ST[u.st].n : esc(u.name)}</h3><small>전용 ${u.a.toLocaleString()}㎡ (${pyeong(u.a)}평)</small></div>
+      <p class="where">📍 ${esc(unitWhere(b, f, u.no))}</p>
+      ${isVacant(u) ? `<div class="cond">
         <div><small>보증금</small><b>${won(u.dep)}</b></div>
         <div class="hl"><small>월세</small><b>${won(u.rent)}</b></div>
         <div><small>관리비</small><b>${won(u.fee)}</b></div>
-        <div><small>공실 기간</small><b>${u.months}개월</b></div>
-      </div><p style="margin:8px 0 0;font-size:12px;color:var(--text-2)">직전 업종 · <b>${esc(u.prev)}</b></p>`
-      : `<p class="muted" style="margin:0;font-size:12px">${u.st === 'res' ? '임대 대상이 아닌 공간입니다.' : '영업 중인 호실입니다. 같은 층 공실과 비교해 보세요.'}</p>`}
+        <div><small>${u.st === 'unsold' ? '미분양' : '공실'} 기간</small><b>${u.months}개월</b></div>
+      </div><p style="margin:8px 0 0;font-size:12px;color:var(--text-2)">직전 업종 · <b>${esc(u.prev)}</b> · 계약면적(추정) ${Math.round(contractArea(b, f.lv, u)).toLocaleString()}㎡</p>`
+      : `<p class="muted" style="margin:0;font-size:12px">${noLease(f) ? '임대 대상이 아닌 공간입니다.' : u.st === 'dark' ? '계약은 끝났지만 아직 영업 전인 호실입니다 (거리에서는 빈 점포로 보임).' : '영업 중인 호실입니다. 같은 층 공실과 비교해 보세요.'}</p>`}
     </div>
     <div class="card info">
       <div class="ch"><h3>간판 노출도</h3><small>거리뷰 시야 분석 · 100점 만점</small></div>
-      <div class="vis"><div class="gauge">${gaugeSvg(visScore(b, f))}</div><p>${visText(f)}</p></div>
+      <div class="vis"><div class="gauge">${gaugeSvg(visScore(b, f, u))}</div><p>${visText(f, u)}</p></div>
     </div>
     <div class="card info">
       <div class="ch"><h3>${flName(f.lv)} 간판 변화 (점포 이력)</h3><small>촬영 시점을 누르면 거리뷰가 바뀝니다</small></div>
-      <ul class="tl">${hist.map(h => `<li class="${h.y === state.year ? 'now' : ''} ${/임대/.test(h.t) ? 'vac' : ''}"><b>${h.y}</b>${esc(h.t)}</li>`).join('')}</ul>
+      <ul class="tl">${hist.map(h => `<li class="${h.y === state.year ? 'now' : ''} ${/임대|공실/.test(h.t) ? 'vac' : ''}"><b>${h.y}</b>${esc(h.t)}</li>`).join('')}</ul>
     </div>
     <div class="cta">
       <a class="btn" href="case2-3d-floor-twin.html?s=${state.s}&f=${f.lv}">🏢 3D 트윈으로 보기</a>
@@ -697,7 +1021,7 @@ function renderPanel(){
 function selectFloor(lv, no){
   const f = floorOf(lv); if (!f) return;
   state.lv = lv;
-  state.no = no || (f.units.find(u => u.st === 'vac') || f.units[0]).no;
+  state.no = no || (f.units.find(isVacant) || shown(f)[0]).no;
   drawScene(); renderPanel(); focusFloor(lv);
 }
 
@@ -753,7 +1077,7 @@ function openViewer(){
   $('#vTitle').textContent = `거리뷰 · 층별보기 — ${b.name}`;
   $('#vAddr').textContent = b.addr;
   view.cx = 1200; view.cy = 450; view.w = 9999;
-  requestAnimationFrame(() => { applyView(); selectFloor(state.lv ?? b.start); });
+  requestAnimationFrame(() => { applyView(); state.lv === null ? selectFloor(b.start.lv, b.start.no) : selectFloor(state.lv); });
   $('#closeBtn').focus();
 }
 function closeViewer(){ $('#viewer').classList.remove('show'); document.body.classList.remove('lock'); $('#openBtn').focus(); }
@@ -765,11 +1089,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#viewer
 function loadScenario(s){
   state.s = s; state.lv = null;
   document.querySelectorAll('#scSeg button').forEach(x => x.classList.toggle('on', x.dataset.s === s));
-  const b = cur(), f = floorOf(b.start), u = f.units.find(x => x.st === 'vac');
+  const b = cur(), f = floorOf(b.start.lv), u = f.units.find(x => x.no === b.start.no);
   $('#vcTitle').textContent = `${b.name} ${flName(f.lv).replace('F','층').replace(/^B(\d)/,'지하 $1층')} ${u.no}호`;
   $('#vcSub').textContent = `${b.addr.split(' · ')[0]} · 데모 데이터`;
   $('#mapRoad').textContent = b.road;
-  $('#vcGrid').innerHTML = `<div><small>층</small><b>${flName(f.lv)}</b></div><div><small>면적</small><b>${u.a}㎡ (${pyeong(u.a)}평)</b></div><div><small>월세</small><b style="color:var(--bad)">${won(u.rent)}원</b></div><div><small>공실 기간</small><b>${u.months}개월</b></div><div style="grid-column:1/-1"><small>전 업종</small><b>${esc(u.prev)}</b></div>`;
+  $('#vcGrid').innerHTML = `<div><small>층</small><b>${flName(f.lv)}</b></div><div><small>전용면적</small><b>${u.a}㎡ (${pyeong(u.a)}평)</b></div><div><small>월세</small><b style="color:var(--bad)">${won(u.rent)}원</b></div><div><small>공실 기간</small><b>${u.months}개월</b></div><div style="grid-column:1/-1"><small>전 업종</small><b>${esc(u.prev)}</b></div>`;
   const url = new URL(location.href); url.searchParams.set('s', s); history.replaceState(null, '', url);
 }
 $('#scSeg').addEventListener('click', e => { const bt = e.target.closest('button'); if (bt) loadScenario(bt.dataset.s); });

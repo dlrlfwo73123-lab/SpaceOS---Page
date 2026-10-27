@@ -171,13 +171,58 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
 .mood span{font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 11px;background:#fff;border:1px solid var(--line)}
 .mood span em{font-style:normal;font-weight:600;color:var(--text-3);margin-left:4px;font-size:11px}
 .concepts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.cc{overflow:hidden;display:flex;flex-direction:column}
-.board{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:72px 72px;gap:4px;padding:4px;background:#f8fafc}
-.board div{border-radius:8px;position:relative;overflow:hidden}
-.board div:first-child{grid-row:1 / 3}
-.board div span{position:absolute;left:6px;bottom:5px;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.pal{display:flex;height:16px}
-.pal i{flex:1}
+.ihead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0 2px 8px}
+.ihead h3{margin:0;font-size:14px}
+.ihead small{font-size:11.5px;color:var(--text-3)}
+.cc{overflow:hidden;display:flex;flex-direction:column;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.cc:hover{border-color:#c7d2fe}
+.cc.sel{border-color:var(--brand-2)!important;box-shadow:0 0 0 3px rgba(99,102,241,.25),var(--sh)!important}
+.cc .pic{aspect-ratio:16/10;overflow:hidden;background:#e2e8f0}
+.cc .pic svg,.ipic svg{display:block;width:100%;height:100%}
+.pal{display:flex;height:14px}
+.pal i{display:block}
+.cc .meta{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--text-3);margin-top:auto}
+.idetail{margin-top:12px;padding:16px;display:grid;gap:14px}
+.idh{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.idh small{font-size:11px;color:var(--text-3)}
+.idh h3{margin:2px 0 0;font-size:17px}
+.idh h3 em{font-style:normal;color:var(--ok);font-size:13px;margin-left:6px}
+.ictl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.seg.sm button{padding:5px 9px;font-size:11.5px}
+.btn.sm{padding:6px 10px;font-size:11.5px}
+.igrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.ipic{margin:0;border-radius:12px;overflow:hidden;background:#e2e8f0;aspect-ratio:16/10;position:relative}
+.ipic figcaption{position:absolute;left:8px;bottom:8px;right:8px;font-size:10.5px;color:#fff;background:rgba(15,23,42,.6);border-radius:6px;padding:3px 7px}
+.idetail h4{margin:0 0 8px;font-size:13px}
+.fitb{display:grid;gap:6px}
+.fitb > div{display:grid;grid-template-columns:96px 1fr 30px;gap:8px;align-items:center;font-size:12px}
+.fitb small{color:var(--text-3);font-size:10.5px}
+.fitb .bar{height:8px;background:#eef2f7;border-radius:999px;overflow:hidden}
+.fitb .bar i{display:block;height:100%;background:var(--brand-2);border-radius:999px}
+.fitb b{text-align:right}
+.fnotes{margin:10px 0 0;padding-left:16px;font-size:12px;color:var(--text-2)}
+.fnotes li{margin:3px 0}
+.g3i{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ptab{width:100%;border-collapse:collapse;font-size:12px}
+.ptab td{padding:4px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ptab td:first-child i{display:block;width:20px;height:20px;border-radius:5px;border:1px solid rgba(15,23,42,.15)}
+.ptab code{font-size:11px}
+.ptab .muted{font-size:11px}
+.kchip{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px;border:1px solid rgba(15,23,42,.15)}
+.signs{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sgn{display:inline-block;font-weight:800;font-size:15px;padding:8px 14px;border-radius:8px;border:1px solid rgba(15,23,42,.12)}
+.signs .arr{color:var(--text-3)}
+.cr{margin:8px 0 0;font-size:12.5px}
+.cr.ok b{color:var(--ok)}.cr.warn b{color:var(--warn)}.cr.bad b{color:var(--bad)}
+.iprompt{border-top:1px dashed var(--line);padding-top:12px}
+.iprompt .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.iprompt .ph h4{margin:0}
+.pcols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcols > div,.neg{display:grid;gap:4px}
+.pcols small,.neg small{font-size:11px;color:var(--text-3);font-weight:700}
+.iprompt textarea{width:100%;font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical}
+.pcols .btn,.neg .btn{justify-self:start}
+.neg{margin-top:10px}
 .cc .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .cc h4{margin:0;font-size:15px;display:flex;justify-content:space-between;gap:8px}
 .cc h4 em{font-style:normal;color:var(--ok);font-size:13px;white-space:nowrap}
@@ -201,6 +246,7 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
   .g2{grid-template-columns:1fr}
   .concepts{grid-template-columns:1fr 1fr}
   .g3{grid-template-columns:1fr 1fr}
+  .igrid,.g3i{grid-template-columns:1fr}
 }
 @media (max-width:760px){
   .gnb{padding:0 12px;gap:10px}
@@ -211,6 +257,8 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
   .kpis{grid-template-columns:1fr 1fr}
   .kpi .v{font-size:18px}
   .concepts,.g3{grid-template-columns:1fr}
+  .pcols{grid-template-columns:1fr}
+  .idetail{padding:12px}
   .row3{grid-template-columns:1fr 1fr}
   .addrow{grid-template-columns:1fr 1fr}
   .addrow .memo{grid-column:1 / -1}
@@ -362,7 +410,9 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
       <div class="bh"><h3>상권 무드 분석</h3><small id="moodSub">주변 매장 리뷰 · SNS 사진 키워드 (데모)</small></div>
       <div class="mood" id="mood"></div>
     </div>
+    <div class="ihead"><h3>상권 맞춤 인테리어 콘셉트</h3><small id="iSub"></small></div>
     <div class="concepts" id="concepts"></div>
+    <div class="card idetail" id="idetail"></div>
     <div class="g3" style="margin-top:12px">
       <div class="card box"><div class="bh"><h3>예산 계산</h3><small>평당 단가 × 면적</small></div>
         <div class="field"><label for="grade">마감 수준</label><select class="inp" id="grade"><option value="0">기본 (셀프 · 부분 시공)</option><option value="1" selected>중급 (일반 업체)</option><option value="2">고급 (설계 + 시공)</option></select></div>
@@ -463,50 +513,409 @@ const EVENTS = [
 const TY = { off:'오프라인 행사', on:'온라인 프로모션', sup:'지원사업' };
 const TY_COL = { off:'#0ea5e9', on:'#8b5cf6', sup:'#10b981' };
 
+// 상권별 무드(주변 매장 리뷰 · SNS 사진 키워드, 데모) · 공간 조건(Case 2 · 3 호실 데이터와 같은 값)
+// mood: [키워드, 비율(%), 콘셉트 태그]
 const INTERIOR = {
-  A:{ mood:[['노출 콘크리트',42],['포토존',35],['창가 자리',31],['우드톤',24],['갤러리',18],['빈티지 조명',14]], floorTip:'2층 · 남측 통창',
-      concepts:[
-        {name:'인더스트리얼 웨어하우스',fit:92,desc:'성수 창고 카페 문법을 따르되, 2층 통창 창가석을 주인공으로.',pal:['#6b7280','#d6d3d1','#27272a','#b45309','#f5f5f4'],
-         tiles:[['노출 콘크리트','repeating-radial-gradient(circle at 30% 40%,#9ca3af 0 2px,#a8a29e 2px 5px,#8b8f96 5px 7px)'],['블랙 철재','linear-gradient(135deg,#27272a,#3f3f46)'],['에디슨 전구','radial-gradient(circle at 50% 40%,#fde68a 0 12%,#b45309 30%,#292524 70%)'],['오크 상판','repeating-linear-gradient(90deg,#b07a4a 0 6px,#a16a3c 6px 9px,#c08a58 9px 14px)'],['테라조 바닥','radial-gradient(circle at 20% 30%,#f87171 0 3px,transparent 4px),radial-gradient(circle at 70% 60%,#78716c 0 3px,transparent 4px),radial-gradient(circle at 40% 80%,#a8a29e 0 2px,transparent 3px),#e7e5e4']],
-         els:{'바닥':'에폭시 · 테라조','벽':'노출 콘크리트 + 블랙 프레임','조명':'2700K 에디슨 펜던트','가구':'오크 상판 + 철제 다리','사인':'창문 레터링 · 계단 네온'},photo:'통창 앞 1인 바 테이블 — 연무장길이 배경으로 찍히는 자리',unit:[110,160,230]},
-        {name:'미니멀 갤러리',fit:88,desc:'흰 벽과 간접조명으로 디저트를 작품처럼. 팝업 · 전시 협업에 유리.',pal:['#fafaf9','#e7e5e4','#d6c7b0','#a8a29e','#1c1917'],
-         tiles:[['화이트 도장','linear-gradient(135deg,#ffffff,#f1f0ee)'],['라이트 우드','repeating-linear-gradient(90deg,#e3cfa9 0 7px,#d8c098 7px 10px,#ead9b8 10px 15px)'],['간접조명','linear-gradient(180deg,#fefce8,#fde68a 50%,#fafaf9)'],['석재 진열대','linear-gradient(135deg,#d6d3d1,#e7e5e4 40%,#c7c2bd)'],['린넨','repeating-linear-gradient(45deg,#ede6da 0 2px,#e4dccd 2px 4px)']],
-         els:{'바닥':'밝은 마이크로토핑','벽':'화이트 + 전시 레일','조명':'3000K 라인 간접조명','가구':'라이트 우드 · 석재 쇼케이스','사인':'미니멀 각인 사인'},photo:'석재 쇼케이스 위 디저트 정면 컷 + 흰 벽 배경',unit:[100,150,220]},
-        {name:'빈티지 레트로',fit:71,desc:'테라코타와 체리우드로 따뜻하게. 동네 단골에는 좋지만 성수 외부 방문객 선호와는 차이.',pal:['#b45309','#c2410c','#7c2d12','#fde68a','#f5f5f4'],
-         tiles:[['테라코타 타일','repeating-linear-gradient(0deg,#c2410c 0 18px,#f5f5f4 18px 20px),#c2410c'],['체리우드','repeating-linear-gradient(90deg,#7c2d12 0 6px,#8b3a1c 6px 9px,#6b2410 9px 14px)'],['패브릭 소파','repeating-linear-gradient(45deg,#d97706 0 3px,#b45309 3px 6px)'],['황동','linear-gradient(135deg,#fbbf24,#b45309 60%,#fde68a)'],['레이스 커튼','radial-gradient(circle,#fff 0 2px,transparent 3px) 0 0/8px 8px,#f5f5f4']],
-         els:{'바닥':'체크 타일','벽':'우드 웨인스코팅','조명':'2400K 패브릭 스탠드','가구':'체리우드 · 벨벳 소파','사인':'황동 각인 간판'},photo:'벨벳 소파 + 레트로 조명 코너',unit:[100,145,210]},
-      ],
+  A:{ mood:[['노출 콘크리트',42,'industrial'],['포토존',35,'photo'],['창가 자리',31,'window'],['우드톤',24,'wood'],['갤러리',18,'minimal'],['빈티지 조명',14,'vintage']],
+      space:{ place:'성수동 연무장길', placeEn:'Seongsu-dong (Yeonmujang-gil)', floorKo:'2층', floorEn:'second floor', window:'남측 통창', windowEn:'south-facing floor-to-ceiling windows', dir:'남향', ceil:3.3 },
+      floorTip:'2층 · 남측 통창 · 천장고 3.3m',
       tips:[['🪟','통창 쪽에 1인 바 테이블을 길게 — 거리에서 보이는 “앉아 있는 손님”이 2층 간판 역할'],['🪜','계단 입구 첫 3칸에 브랜드 컬러 · 메뉴 사진 (거리뷰 노출도 72점 보완)'],['🍰','쇼케이스는 계단에서 올라오자마자 정면에 — 입장 3초 안에 상품이 보이게']],
       checks:['옥외광고물 표시 허가 · 신고 (돌출간판 규격은 성동구 조례 확인)','휴게음식점 영업신고 · 위생교육 (매장에서 구운 빵 · 과자가 중심이면 제과점영업 검토)','2층 피난 동선 · 소화기 위치','건물주 원상복구 범위 · 인테리어 공사 기간 무상 협의'] },
-  B:{ mood:[['깔끔함',46],['빠른 픽업',41],['초록 식물',28],['밝은 조명',26],['1인석',22],['친환경',17]], floorTip:'1층 · 성수이로 전면 유리',
-      concepts:[
-        {name:'클린 그린',fit:90,desc:'흰 타일 · 식물 · 오크로 “건강하다”는 인상을 가장 빨리 전달.',pal:['#ffffff','#d1fae5','#10b981','#b07a4a','#0f172a'],
-         tiles:[['화이트 타일','repeating-linear-gradient(0deg,#fff 0 16px,#e5e7eb 16px 17px),repeating-linear-gradient(90deg,#fff 0 16px,#e5e7eb 16px 17px)'],['플랜테리어','radial-gradient(circle at 30% 60%,#16a34a 0 18%,transparent 19%),radial-gradient(circle at 70% 40%,#22c55e 0 22%,transparent 23%),#d1fae5'],['오크','repeating-linear-gradient(90deg,#c08a58 0 6px,#b07a4a 6px 9px)'],['주광색 조명','linear-gradient(180deg,#f8fafc,#e0f2fe)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)']],
-         els:{'바닥':'밝은 타일','벽':'화이트 타일 + 식물 벽','조명':'4000K 주광색','가구':'오크 1인 바 · 스툴','사인':'초록 원형 로고 사인'},photo:'식물 벽 앞 볼(bowl) 탑뷰',unit:[100,140,200]},
-        {name:'그랩앤고 모던',fit:86,desc:'점심 피크 회전을 위한 픽업 동선 중심. 매장보다 포장 · 배달 비중이 클 때.',pal:['#0f172a','#e5e7eb','#f59e0b','#ffffff','#9ca3af'],
-         tiles:[['픽업 선반','repeating-linear-gradient(0deg,#e5e7eb 0 10px,#9ca3af 10px 12px)'],['메뉴보드','linear-gradient(135deg,#0f172a,#1e293b)'],['포인트 컬러','linear-gradient(135deg,#f59e0b,#fbbf24)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)'],['키오스크','linear-gradient(180deg,#334155,#0f172a)']],
-         els:{'바닥':'논슬립 타일','벽':'메뉴보드 월','조명':'4000K 트랙','가구':'픽업 선반 · 키오스크','사인':'전면 라이트박스'},photo:'사전주문 픽업 선반 (이름표 컵)',unit:[90,130,180]},
-        {name:'웜 캐주얼',fit:68,desc:'베이지 · 라탄으로 편안하게. 오피스 상권의 빠른 회전과는 거리가 있음.',pal:['#f5f0e6','#d6c7b0','#a16207','#78716c','#ffffff'],
-         tiles:[['베이지 도장','linear-gradient(135deg,#f5f0e6,#ebe2d0)'],['라탄','repeating-linear-gradient(45deg,#d6b98c 0 3px,#b8925e 3px 5px),repeating-linear-gradient(-45deg,#d6b98c 0 3px,#b8925e 3px 5px)'],['리넨','repeating-linear-gradient(45deg,#ede6da 0 2px,#e4dccd 2px 4px)'],['우드','repeating-linear-gradient(90deg,#a16207 0 6px,#92400e 6px 9px)'],['웜 조명','radial-gradient(circle,#fde68a,#f5f0e6 70%)']],
-         els:{'바닥':'우드 패턴','벽':'베이지 도장','조명':'3000K','가구':'라탄 의자','사인':'원목 간판'},photo:'라탄 의자 창가석',unit:[95,135,190]},
-      ],
+  B:{ mood:[['깔끔함',46,'clean'],['빠른 픽업',41,'fast'],['초록 식물',28,'green'],['밝은 조명',26,'bright'],['1인석',22,'solo'],['친환경',17,'natural']],
+      space:{ place:'성수역 지식산업센터 1층', placeEn:'the Seongsu Station office district (Seongsu-iro)', floorKo:'1층 가로변', floorEn:'street-level ground floor', window:'서측 전면 유리', windowEn:'a west-facing glass storefront', dir:'서향', ceil:4.6 },
+      floorTip:'1층 · 성수이로 서측 전면 유리 · 천장고 4.6m',
       tips:[['🚶','로비 쪽 출입구에 픽업 선반 — 매장 안까지 안 들어와도 되게'],['🧾','키오스크 + 사전주문으로 11:30~12:30 줄 분산'],['🪟','전면 유리에 “오늘의 메뉴” 대형 사진 (거리뷰 노출도 92점 활용)']],
       checks:['휴게 · 일반음식점 영업신고 (조리 범위 확인)','지식산업센터 관리규약 · 입점 업종 제한','배기 덕트 · 그리스트랩 기존 설비 인수 확인','전면 간판 관리단 디자인 가이드'] },
-  C:{ mood:[['어두운 조명',44],['노렌 · 종이등',33],['바 좌석',29],['숯불',25],['레트로',21],['숨은 가게',19]], floorTip:'지하 1층 · 창 없음',
-      concepts:[
-        {name:'이자카야 노렌',fit:91,desc:'짙은 우드와 종이등, 입구 노렌으로 “지하에 숨은 술집” 경험을 강점으로.',pal:['#3f2a1d','#7c2d12','#fef3c7','#1c1917','#dc2626'],
-         tiles:[['짙은 우드','repeating-linear-gradient(90deg,#3f2a1d 0 6px,#4a3222 6px 9px,#2f1f15 9px 14px)'],['종이등','radial-gradient(circle at 50% 50%,#fef3c7 0 30%,#f59e0b 55%,#1c1917 75%)'],['노렌','repeating-linear-gradient(90deg,#1e3a8a 0 22px,#1e40af 22px 24px)'],['붉은 포인트','linear-gradient(135deg,#dc2626,#991b1b)'],['다다미','repeating-linear-gradient(0deg,#d9c58c 0 3px,#c9b37a 3px 5px)']],
-         els:{'바닥':'짙은 우드 데크','벽':'목재 루버 + 메뉴 목패','조명':'2200K 종이등','가구':'바 카운터 + 소규모 룸','사인':'계단 입구 노렌 · 등불 간판'},photo:'계단 내려오는 길 노렌 + 붉은 등',unit:[130,180,250]},
-        {name:'다크 무드 바',fit:84,desc:'블랙과 네온 포인트로 2차 손님을 위한 하이볼 바 분위기.',pal:['#0a0a0a','#27272a','#a855f7','#22d3ee','#fafafa'],
-         tiles:[['블랙 도장','linear-gradient(135deg,#0a0a0a,#27272a)'],['네온','linear-gradient(90deg,#a855f7,#22d3ee)'],['메탈 바','linear-gradient(135deg,#52525b,#18181b 50%,#71717a)'],['스모크 유리','linear-gradient(135deg,rgba(63,63,70,.9),rgba(24,24,27,.95))'],['가죽 스툴','radial-gradient(circle,#7c2d12,#431407)']],
-         els:{'바닥':'블랙 에폭시','벽':'블랙 + 네온 라인','조명':'포인트 스폿 + 네온','가구':'긴 바 테이블','사인':'계단 네온 사인'},photo:'네온 문구 벽 앞 하이볼 잔',unit:[120,170,240]},
-        {name:'레트로 포차',fit:77,desc:'타일 · 형광 간판 · 스테인리스로 가성비 노포 느낌. 객단가는 낮아질 수 있음.',pal:['#16a34a','#f8fafc','#dc2626','#facc15','#9ca3af'],
-         tiles:[['녹색 타일','repeating-linear-gradient(0deg,#16a34a 0 14px,#f8fafc 14px 15px),repeating-linear-gradient(90deg,#16a34a 0 14px,#f8fafc 14px 15px)'],['스테인리스','linear-gradient(135deg,#e5e7eb,#9ca3af 50%,#f3f4f6)'],['형광 간판','linear-gradient(135deg,#facc15,#fde047)'],['빨간 의자','radial-gradient(circle,#ef4444,#991b1b)'],['방수 장판','repeating-linear-gradient(45deg,#a3a3a3 0 4px,#8a8a8a 4px 8px)']],
-         els:{'바닥':'방수 타일','벽':'녹색 타일','조명':'5000K 형광','가구':'스테인리스 원형 테이블','사인':'노란 형광 간판'},photo:'녹색 타일 벽 + 소주잔',unit:[100,140,190]},
-      ],
+  C:{ mood:[['어두운 조명',44,'dark'],['노렌 · 종이등',33,'japanese'],['바 좌석',29,'bar'],['숯불',25,'grill'],['레트로',21,'retro'],['숨은 가게',19,'hidden']],
+      space:{ place:'뚝섬역 먹자골목', placeEn:'the Ttukseom food alley', floorKo:'지하 1층', floorEn:'basement level reached by a stairway', window:null, windowEn:null, dir:null, ceil:3.0 },
+      floorTip:'지하 1층 · 창 없음 · 천장고 3.0m',
       tips:[['💡','계단 입구 조명을 거리에서 보이게 — 거리뷰 노출도 31점이라 입구 연출이 매출을 좌우'],['🌀','배기 덕트 재사용 + 숯불 사용 시 환기 용량 재점검'],['🪑','바 좌석 위주로 1~2인 2차 손님 회전 높이기']],
       checks:['일반음식점 영업신고 (주류 판매 — 휴게음식점은 음주 불가)','지하 95㎡ ≥ 66㎡ → 다중이용업소: 안전시설등 완비증명서 · 화재배상책임보험 의무가입','숯불 사용 시 환기 · 화재 안전 점검','침수 대비 (역류 방지 · 배수 펌프) 확인','계단 입구 돌출간판 · 입간판 도로점용 여부'] },
 };
+
+// ── 4. 인테리어: 콘셉트 라이브러리 · 상권 적합도 계산 · 공간 이미지 생성 · AI 프롬프트 ─────────
+// [데모] 색 · 자재 · 단가는 시안용 예시입니다. HEX는 화면 색이라 실제 도료 · 자재는 실물 칩(샘플)으로 맞춰 보세요.
+// 팔레트 항목: [역할, 이름, HEX, 비율(%), 추천 마감, 영문 이름]  ← 60 · 30 · 10 원칙(베이스 · 서브 · 포인트)으로 비율을 적습니다.
+// scene 색은 팔레트 번호(0~4) 또는 HEX. features는 벽 장식 후보로, '다른 배치'를 누를 때마다 바뀝니다.
+const CONCEPTS = [
+  { id:'gallery', name:'미니멀 갤러리', en:'minimal gallery', desc:'흰 벽과 라인 간접조명으로 상품을 작품처럼. 팝업 · 전시 협업에 유리.',
+    tags:['minimal','photo','bright','window'], primary:'minimal', needsDay:true,
+    ind:{ cafe:84, dessert:92, salad:70, izakaya:30, bar:40, pub:25, beauty:90 },
+    pal:[['베이스','오프화이트','#F7F5F0',55,'벽 · 천장 무광 수성 도장','off-white'],['서브','그레이지','#E4DED4',20,'마이크로토핑 바닥','greige'],['가구','라이트 오크','#D8C3A0',12,'오크 무늬목 진열대','light oak'],['소재','트래버틴','#CBBFA9',8,'석재 쇼케이스 상판','travertine'],['포인트','잉크 블랙','#1C1917',5,'프레임 · 사인','ink black']],
+    light:{ k:3000, cri:95, lux:'300~500 (쇼케이스 750)', fx:'라인 간접조명 + 쇼케이스 스폿', fxEn:'recessed linear cove lighting and spotlights on the display case' },
+    mat:{ '바닥':['밝은 마이크로토핑','pale microtopping floor'], '벽':['화이트 도장 + 전시 레일','white painted walls with a picture rail'], '천장':['평천장 · 라인 조명','flat ceiling with linear lights'], '가구':['라이트 오크 · 석재 쇼케이스','light oak tables and a travertine display case'], '사인':['음각 각인 미니멀 사인','minimal engraved sign'] },
+    scene:{ wall:0, side:0, floor:1, floorP:'micro', ceil:'#FBFAF7', ceilP:'flat', furn:2, metal:4, accent:3, fixture:'line', furnP:'tables', plants:false, features:['frames','showcase'] },
+    sign:{ bg:'#F7F5F0', fg:'#1C1917', type:'무광 각인 플레이트' }, unit:[100,150,220], photo:'석재 쇼케이스 위 대표 상품 정면 컷 + 흰 벽' },
+  { id:'industrial', name:'인더스트리얼 웨어하우스', en:'industrial warehouse', desc:'성수 창고 카페 문법. 노출 천장과 철재, 오크 상판으로 무게감을 줍니다.',
+    tags:['industrial','wood','photo','window'], primary:'industrial', highCeil:true,
+    ind:{ cafe:90, dessert:78, salad:55, izakaya:50, bar:70, pub:62, beauty:55 },
+    pal:[['베이스','콘크리트 그레이','#8E8C87',45,'노출 콘크리트 · 무광 코팅','concrete grey'],['서브','웜 화이트','#EFECE6',25,'무광 수성 도장','warm white'],['가구','오크','#B07A4A',15,'오크 무늬목 · 오일 마감','oak'],['금속','블랙 스틸','#2B2B2D',10,'분체도장 철재','black steel'],['포인트','브릭 오렌지','#C2581F',5,'포인트 타일 · 사인','brick orange']],
+    light:{ k:2700, cri:90, lux:'300~500', fx:'에디슨 펜던트 + 레일 스폿', fxEn:'Edison bulb pendants and track spots' },
+    mat:{ '바닥':['폴리싱 콘크리트','polished concrete floor'], '벽':['노출 콘크리트 + 블랙 프레임','exposed concrete walls with black steel frames'], '천장':['노출 천장 · 덕트','exposed ceiling with ducts'], '가구':['오크 상판 + 철제 다리','oak tabletops on black steel legs'], '사인':['창문 레터링 · 소형 네온','window lettering and a small neon sign'] },
+    scene:{ wall:0, side:1, floor:'#9A968F', floorP:'concrete', ceil:'#3A3A3C', ceilP:'exposed', furn:2, metal:3, accent:4, fixture:'pendant', furnP:'bar', plants:false, features:['shelves','frames'] },
+    sign:{ bg:'#2B2B2D', fg:'#F3D9B1', type:'블랙 철판 + 웜 LED 채널' }, unit:[110,160,230], photo:'통창 앞 1인 바 테이블 — 거리가 배경으로 찍히는 자리' },
+  { id:'pastel', name:'파스텔 포토 카페', en:'pastel photo cafe', desc:'버터 · 피치 톤과 아치 포토월. 20대 방문객 SNS 인증에 강합니다.',
+    tags:['pastel','photo','bright','cute','window'], primary:'pastel', needsDay:true,
+    ind:{ cafe:84, dessert:90, salad:60, izakaya:10, bar:15, pub:5, beauty:86 },
+    pal:[['베이스','버터','#FFF4D6',40,'무광 도장','butter yellow'],['서브','피치','#FFD1BA',22,'아치 포토월 도장','peach'],['식물','세이지','#C9D8C5',15,'패브릭 · 화분','sage'],['소재','화이트','#FFFFFF',15,'테라조 · 상판','white'],['포인트','코코아','#6B4F3A',8,'사인 · 소품','cocoa']],
+    light:{ k:3500, cri:90, lux:'300~500', fx:'오팔 글로브 펜던트', fxEn:'opal globe pendants' },
+    mat:{ '바닥':['화이트 테라조','white terrazzo floor'], '벽':['버터 도장 + 피치 아치','butter-yellow walls with a peach arch niche'], '천장':['평천장','flat ceiling'], '가구':['둥근 화이트 테이블 · 패브릭 의자','round white tables with fabric chairs'], '사인':['라운드 아크릴 사인','rounded acrylic sign'] },
+    scene:{ wall:0, side:1, floor:'#F4EDE4', floorP:'terrazzo', ceil:'#FFFDF7', ceilP:'flat', furn:3, metal:4, accent:1, fixture:'globe', furnP:'tables', plants:true, features:['arch','frames'] },
+    sign:{ bg:'#FFD1BA', fg:'#6B4F3A', type:'라운드 아크릴 + 측면 조명' }, unit:[105,150,215], photo:'피치 아치 앞 디저트 플레이트 + 사람 반신' },
+  { id:'japandi', name:'재팬디 우드', en:'japandi wood', desc:'애쉬우드 · 한지 · 세이지로 차분하게. 체류 시간이 긴 손님에게 맞습니다.',
+    tags:['wood','natural','calm','japanese','warm'], primary:'wood',
+    ind:{ cafe:82, dessert:80, salad:72, izakaya:74, bar:55, pub:40, beauty:75 },
+    pal:[['베이스','라이스페이퍼','#EFE8DC',45,'한지 질감 도장','rice paper'],['서브','애쉬우드','#C8A97E',28,'애쉬 루버 · 바닥','ash wood'],['식물','세이지','#A3AE91',12,'패브릭 · 식물','sage green'],['금속','차콜','#3A3631',10,'철물 · 프레임','charcoal'],['포인트','먹색','#24221F',5,'사인 · 소품','sumi black']],
+    light:{ k:2700, cri:90, lux:'200~400', fx:'한지 펜던트 + 간접조명', fxEn:'washi paper pendants and indirect lighting' },
+    mat:{ '바닥':['애쉬 원목 마루','ash wood flooring'], '벽':['한지 질감 도장 + 우드 루버','rice-paper textured walls with wood louvers'], '천장':['우드 슬랫 천장','wood slat ceiling'], '가구':['애쉬 원목 테이블 · 벤치','ash wood tables and benches'], '사인':['원목 각인 사인','engraved wooden sign'] },
+    scene:{ wall:0, side:0, floor:1, floorP:'wood', ceil:1, ceilP:'slat', furn:1, metal:3, accent:2, fixture:'paper', furnP:'tables', plants:true, features:['shelves','plank'] },
+    sign:{ bg:'#EFE8DC', fg:'#3A3631', type:'원목 각인 + 상부 스폿' }, unit:[105,155,225], photo:'우드 루버 앞 트레이 세팅 탑뷰' },
+  { id:'warm', name:'웜 캐주얼', en:'warm casual', desc:'베이지 · 라탄 · 원목으로 편안하게. 동네 단골 · 가족 손님에게 무난합니다.',
+    tags:['warm','natural','comfort','wood','window'], primary:'warm',
+    ind:{ cafe:78, dessert:74, salad:70, izakaya:40, bar:35, pub:30, beauty:68 },
+    pal:[['베이스','베이지','#F5F0E6',42,'무광 도장','beige'],['서브','라탄','#D6B98C',22,'라탄 의자 · 조명','rattan'],['가구','우드','#A16207',15,'원목 상판','warm wood'],['소재','그레이지','#8A817A',13,'패브릭 · 타일','greige'],['포인트','화이트','#FFFFFF',8,'상판 · 소품','white']],
+    light:{ k:3000, cri:90, lux:'300~400', fx:'라탄 펜던트', fxEn:'rattan pendant lamps' },
+    mat:{ '바닥':['원목 패턴 마루','warm oak plank floor'], '벽':['베이지 도장','beige painted walls'], '천장':['평천장','flat ceiling'], '가구':['라탄 의자 · 원목 테이블','rattan chairs and solid wood tables'], '사인':['원목 간판','solid wood signboard'] },
+    scene:{ wall:0, side:0, floor:'#C9A57A', floorP:'wood', ceil:'#FAF7F0', ceilP:'flat', furn:2, metal:3, accent:1, fixture:'rattan', furnP:'tables', plants:true, features:['shelves'] },
+    sign:{ bg:'#A16207', fg:'#FFFFFF', type:'원목 판재 + 화이트 레터' }, unit:[95,135,190], photo:'라탄 의자 창가석' },
+  { id:'retro', name:'빈티지 레트로', en:'vintage retro', desc:'테라코타 · 체리우드 · 벨벳으로 따뜻하게. 개성은 강하지만 호불호가 있습니다.',
+    tags:['retro','warm','comfort','vintage'], primary:'retro',
+    ind:{ cafe:72, dessert:74, salad:35, izakaya:55, bar:66, pub:64, beauty:50 },
+    pal:[['베이스','크림','#F5ECD7',40,'무광 도장','cream'],['서브','테라코타','#C2410C',20,'체크 타일','terracotta'],['가구','체리우드','#7C2D12',20,'웨인스코팅 · 가구','cherry wood'],['포인트','머스타드','#D9A21B',15,'벨벳 소파','mustard'],['금속','브라스','#B8860B',5,'조명 · 손잡이','brass']],
+    light:{ k:2400, cri:90, lux:'150~300', fx:'패브릭 펜던트 + 스탠드', fxEn:'fabric pendants and floor lamps' },
+    mat:{ '바닥':['테라코타 체크 타일','terracotta and cream checkerboard tiles'], '벽':['크림 도장 + 우드 웨인스코팅','cream walls with cherry wood wainscoting'], '천장':['평천장','flat ceiling'], '가구':['벨벳 소파 · 체리우드 테이블','velvet sofas and cherry wood tables'], '사인':['황동 각인 간판','brass engraved sign'] },
+    scene:{ wall:0, side:0, floor:1, floorP:'check', ceil:'#F2E6CC', ceilP:'flat', furn:2, metal:4, accent:3, fixture:'pendant', furnP:'sofa', plants:false, features:['frames','shelves'] },
+    sign:{ bg:'#7C2D12', fg:'#F5ECD7', type:'체리우드 판 + 황동 레터' }, unit:[100,145,210], photo:'벨벳 소파 + 레트로 조명 코너' },
+  { id:'green', name:'클린 그린', en:'clean green', desc:'흰 타일 · 식물 · 오크로 “건강하다”는 인상을 가장 빨리 전달합니다.',
+    tags:['clean','green','bright','fresh','natural','window'], primary:'clean', needsDay:true,
+    ind:{ cafe:70, dessert:62, salad:94, izakaya:20, bar:15, pub:15, beauty:70 },
+    pal:[['베이스','화이트 타일','#FFFFFF',45,'유광 화이트 타일','white tile'],['서브','민트','#DDF5E8',20,'포인트 벽 도장','mint'],['가구','오크','#B07A4A',15,'1인 바 상판','oak'],['포인트','리프 그린','#10B981',12,'사인 · 식물 벽','leaf green'],['금속','네이비','#0F172A',8,'메뉴보드 · 철물','navy']],
+    light:{ k:4000, cri:90, lux:'500~750', fx:'라인 조명 (주백색)', fxEn:'neutral-white linear lights' },
+    mat:{ '바닥':['밝은 논슬립 타일','light non-slip tiles'], '벽':['화이트 타일 + 식물 벽','white tiles and a living plant wall'], '천장':['평천장 · 라인 조명','flat ceiling with linear lights'], '가구':['오크 1인 바 · 스툴','oak counter seating with stools'], '사인':['그린 원형 로고 사인','round green logo sign'] },
+    scene:{ wall:0, side:1, floor:'#EEF2F1', floorP:'tile', ceil:'#FFFFFF', ceilP:'flat', furn:2, metal:4, accent:3, fixture:'line', furnP:'bar', plants:true, features:['plants','menu'] },
+    sign:{ bg:'#10B981', fg:'#FFFFFF', type:'원형 아크릴 + 백라이트' }, unit:[100,140,200], photo:'식물 벽 앞 볼(bowl) 탑뷰' },
+  { id:'grab', name:'그랩앤고 모던', en:'grab-and-go modern', desc:'점심 피크 회전을 위한 픽업 동선 중심. 포장 · 배달 비중이 클 때.',
+    tags:['fast','clean','bright','solo'], primary:'fast',
+    ind:{ cafe:74, dessert:55, salad:88, izakaya:15, bar:10, pub:20, beauty:30 },
+    pal:[['베이스','라이트 그레이','#E5E7EB',40,'무광 도장','light grey'],['서브','화이트','#FFFFFF',25,'타일 · 상판','white'],['금속','차콜','#1F2937',18,'메뉴보드 · 키오스크','charcoal'],['포인트','앰버','#F59E0B',10,'사인 · 픽업 선반','amber'],['소재','스테인리스','#A1A1AA',7,'선반 · 카운터','stainless steel']],
+    light:{ k:4000, cri:80, lux:'500~750', fx:'트랙 조명', fxEn:'track lighting' },
+    mat:{ '바닥':['논슬립 타일','non-slip tiles'], '벽':['메뉴보드 월','a large menu board wall'], '천장':['평천장 · 트랙','flat ceiling with track lights'], '가구':['픽업 선반 · 키오스크','pickup shelves and ordering kiosks'], '사인':['전면 라이트박스','front lightbox sign'] },
+    scene:{ wall:0, side:1, floor:'#D9DCE1', floorP:'tile', ceil:'#F3F4F6', ceilP:'flat', furn:4, metal:2, accent:3, fixture:'track', furnP:'pickup', plants:false, features:['menu','pickup'] },
+    sign:{ bg:'#1F2937', fg:'#F59E0B', type:'라이트박스' }, unit:[90,130,180], photo:'사전주문 픽업 선반 (이름표 컵)' },
+  { id:'noren', name:'이자카야 노렌', en:'izakaya with noren', desc:'짙은 월넛과 종이등, 입구 노렌으로 “숨은 술집” 경험을 강점으로.',
+    tags:['dark','japanese','wood','bar','hidden','grill'], primary:'japanese', dark:true,
+    ind:{ cafe:30, dessert:25, salad:15, izakaya:95, bar:70, pub:72, beauty:10 },
+    pal:[['베이스','월넛','#3F2A1D',40,'목재 루버 · 바 카운터','walnut'],['서브','먹색','#1C1917',22,'벽 · 천장 도장','sumi black'],['소재','한지','#F6E7C1',18,'종이등 · 메뉴 목패','washi paper'],['포인트','인디고','#1E3A8A',12,'노렌 · 쿠션','indigo'],['포인트','주홍','#C2410C',8,'등불 · 사인','vermilion']],
+    light:{ k:2200, cri:90, lux:'100~200 (카운터 300)', fx:'종이등 + 카운터 다운라이트', fxEn:'paper lanterns and downlights over the counter' },
+    mat:{ '바닥':['짙은 우드 데크','dark wood deck floor'], '벽':['목재 루버 + 메뉴 목패','wood louvers with wooden menu plaques'], '천장':['짙은 우드 슬랫','dark wood slat ceiling'], '가구':['바 카운터 + 소규모 룸','a long bar counter and small private booths'], '사인':['계단 입구 노렌 · 등불 간판','noren curtain and a lantern sign at the stair entrance'] },
+    scene:{ wall:1, side:0, floor:'#2F2118', floorP:'deck', ceil:0, ceilP:'slat', furn:0, metal:1, accent:3, fixture:'lantern', furnP:'counter', plants:false, features:['noren','plank'] },
+    sign:{ bg:'#1E3A8A', fg:'#F6E7C1', type:'노렌(천) + 등불' }, unit:[130,180,250], photo:'계단 내려오는 길 노렌 + 붉은 등' },
+  { id:'darkbar', name:'다크 무드 바', en:'dark mood bar', desc:'블랙과 네온 포인트로 2차 손님을 위한 하이볼 바 분위기.',
+    tags:['dark','neon','bar','night'], primary:'neon', dark:true,
+    ind:{ cafe:25, dessert:15, salad:5, izakaya:72, bar:92, pub:70, beauty:20 },
+    pal:[['베이스','블랙','#0B0B0C',45,'무광 블랙 도장','matte black'],['서브','건메탈','#2A2A2E',22,'메탈 바 · 선반','gunmetal'],['소재','웜 화이트','#F4F1EA',13,'바 상판 조명면','warm white'],['포인트','바이올렛 네온','#A855F7',12,'네온 사인','violet neon'],['포인트','시안 네온','#22D3EE',8,'라인 조명','cyan neon']],
+    light:{ k:2200, cri:85, lux:'50~150 (바 상판 200)', fx:'네온 + 핀 스폿', fxEn:'neon signs and pin spotlights' },
+    mat:{ '바닥':['블랙 에폭시','black epoxy floor'], '벽':['블랙 + 네온 라인','black walls with neon lines'], '천장':['블랙 노출 천장','black exposed ceiling'], '가구':['긴 바 테이블 · 가죽 스툴','a long bar with leather stools'], '사인':['계단 네온 사인','neon sign at the stairway'] },
+    scene:{ wall:0, side:0, floor:'#141416', floorP:'epoxy', ceil:'#0B0B0C', ceilP:'dark', furn:1, metal:1, accent:3, fixture:'neon', furnP:'counter', plants:false, features:['bottles','neon'] },
+    sign:{ bg:'#0B0B0C', fg:'#C084FC', type:'네온 플렉스' }, unit:[120,170,240], photo:'네온 문구 벽 앞 하이볼 잔' },
+  { id:'cellar', name:'와인 셀러 브릭', en:'brick wine cellar', desc:'붉은 벽돌 · 월넛 · 버건디로 차분한 와인바. 객단가를 올리기 좋습니다.',
+    tags:['warm','dark','wine','vintage','bar'], primary:'wine', dark:true,
+    ind:{ cafe:45, dessert:50, salad:15, izakaya:60, bar:86, pub:58, beauty:20 },
+    pal:[['베이스','레드 브릭','#9A4A32',35,'고벽돌 타일','red brick'],['서브','월넛','#4A3426',22,'바닥 · 와인 랙','walnut'],['소재','크림','#F3E9D2',18,'아치 · 천장','cream'],['포인트','버건디','#5B1A26',15,'가죽 · 패브릭','burgundy'],['금속','브라스','#B8860B',10,'조명 · 레일','brass']],
+    light:{ k:2400, cri:95, lux:'100~250', fx:'브라스 펜던트 + 와인랙 간접조명', fxEn:'brass pendants and backlit wine racks' },
+    mat:{ '바닥':['짙은 원목 마루','dark walnut floor'], '벽':['고벽돌 + 와인 랙','reclaimed brick walls with wine racks'], '천장':['짙은 평천장','dark flat ceiling'], '가구':['월넛 테이블 · 버건디 가죽 의자','walnut tables with burgundy leather chairs'], '사인':['버건디 판 + 황동 레터','burgundy panel with brass letters'] },
+    scene:{ wall:0, side:0, floor:1, floorP:'wood', ceil:'#2B1D16', ceilP:'dark', furn:1, metal:4, accent:3, fixture:'pendant', furnP:'tables', plants:false, features:['wine','frames'] },
+    sign:{ bg:'#5B1A26', fg:'#F3E9D2', type:'버건디 판 + 황동 레터' }, unit:[125,175,245], photo:'와인 랙 앞 글라스 2잔' },
+  { id:'pocha', name:'레트로 포차', en:'retro pocha', desc:'녹색 타일 · 형광 간판 · 스테인리스로 노포 느낌. 객단가는 낮아질 수 있음.',
+    tags:['retro','kitsch','bright','grill','value'], primary:'kitsch',
+    ind:{ cafe:20, dessert:15, salad:25, izakaya:74, bar:50, pub:90, beauty:5 },
+    pal:[['베이스','그린 타일','#15803D',30,'유광 녹색 타일','green tile'],['서브','화이트','#F8FAFC',30,'줄눈 · 벽','white'],['포인트','레드','#DC2626',15,'플라스틱 의자','red'],['포인트','옐로','#FACC15',12,'형광 간판','yellow'],['금속','스테인리스','#A3A3A3',13,'원형 테이블','stainless steel']],
+    light:{ k:5000, cri:80, lux:'300~500', fx:'주광색 형광등', fxEn:'bare daylight fluorescent tubes' },
+    mat:{ '바닥':['방수 타일','waterproof grey tiles'], '벽':['녹색 타일','glossy green tiled walls'], '천장':['평천장 · 형광등','flat ceiling with fluorescent tubes'], '가구':['스테인리스 원형 테이블 · 빨간 의자','round stainless tables with red plastic stools'], '사인':['노란 형광 간판','yellow lightbox sign'] },
+    scene:{ wall:1, side:0, floor:'#8A8A8A', floorP:'tile', ceil:'#E5E7EB', ceilP:'flat', furn:4, metal:4, accent:2, fixture:'tube', furnP:'round', plants:false, features:['tilewall','menu'] },
+    sign:{ bg:'#FACC15', fg:'#DC2626', type:'형광 라이트박스' }, unit:[100,140,190], photo:'녹색 타일 벽 + 소주잔' },
+];
+// 업종 키 (가게 정보의 업종 글자로 판단 — 바꾸면 적합도도 바뀝니다)
+const IND_KEY = [[/이자카야|요리주점|사케/, 'izakaya'], [/와인|하이볼|칵테일|바$|바 /, 'bar'], [/포차|술집|호프|주점/, 'pub'], [/샐러드|포케|도시락|건강/, 'salad'], [/디저트|베이커리|빵|케이크|과자/, 'dessert'], [/네일|뷰티|헤어|속눈썹|피부/, 'beauty'], [/카페|커피/, 'cafe']];
+const indKeyOf = s => (IND_KEY.find(([re]) => re.test(s || '')) || [0, 'cafe'])[1];
+const IND_EN = { cafe:'specialty coffee shop', dessert:'dessert cafe', salad:'salad and poke bowl shop', izakaya:'izakaya (Japanese-style pub)', bar:'highball and wine bar', pub:'Korean pocha-style pub', beauty:'nail and beauty studio' };
+const IND_KO = { cafe:'카페', dessert:'디저트 카페', salad:'샐러드 · 포케', izakaya:'이자카야', bar:'바', pub:'포차 · 주점', beauty:'뷰티' };
+// 타깃 손님이 좋아하는 분위기 태그 (데모 가정)
+const TARGET_PREF = { '20대 여성':['photo','pastel','minimal','cute'], '20대 남성':['industrial','dark','neon','kitsch'], '30대 직장인':['clean','fast','solo','bar','calm'], '40대 이상':['warm','wood','comfort','calm'], '가족 단위':['bright','warm','comfort'], '관광 · 외부 방문객':['photo','japanese','retro','kitsch','industrial'], '반려동물 동반':['natural','green'], '동네 주민':['warm','comfort','value'] };
+const FIT_W = { ind:.35, mood:.25, space:.2, target:.12, diff:.08 };
+const FIT_N = { ind:'업종', mood:'상권 무드', space:'공간 조건', target:'타깃 손님', diff:'차별화' };
+
+// 색 도구
+const hex2rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const rgb2hex = rgb => '#' + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+function rgb2hsl([r, g, b]){ r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0; const l = (mx + mn) / 2; if (mx !== mn){ const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; } return [h * 360, s * 100, l * 100]; }
+function hsl2rgb([h, s, l]){ h /= 360; s /= 100; l /= 100; if (!s) return [l, l, l].map(v => v * 255); const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; const f = t => { t = (t + 1) % 1; return t < 1/6 ? p + (q - p) * 6 * t : t < 1/2 ? q : t < 2/3 ? p + (q - p) * (2/3 - t) * 6 : p; }; return [f(h + 1/3), f(h), f(h - 1/3)].map(v => v * 255); }
+const adjHex = (h, dl = 0, ds = 0) => { const [H, S, L] = rgb2hsl(hex2rgb(h)); return rgb2hex(hsl2rgb([H, Math.max(0, Math.min(100, S + ds)), Math.max(0, Math.min(100, L + dl))])); };
+const mixHex = (a, b, t) => { const x = hex2rgb(a), y = hex2rgb(b); return rgb2hex(x.map((v, i) => v + (y[i] - v) * t)); };
+const lum = h => { const [r, g, b] = hex2rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * r + .7152 * g + .0722 * b; };
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+// 4.5:1을 넘기는 가장 작은 수정: 바탕을 바꾸는 것과 글자를 바꾸는 것 중 덜 바뀌는 쪽
+function fixContrast(bg, fg, target = 4.5){
+  const step = (a, b) => { const dir = lum(b) > lum(a) ? -1 : 1; for (let i = 1; i <= 40; i++){ const c = adjHex(a, dir * i * 1.5); if (contrast(c, b) >= target) return [i, c]; } return [99, dir < 0 ? '#000000' : '#FFFFFF']; };
+  const [ib, cb] = step(bg, fg), [iff, cf] = step(fg, bg);
+  return ib <= iff ? { part:'바탕', from:bg, to:cb } : { part:'글자', from:fg, to:cf };
+}
+// 색온도(K) → 빛 색 (Tanner Helland 근사)
+function kelvinHex(K){
+  const t = K / 100;
+  const r = t <= 66 ? 255 : 329.698727446 * Math.pow(t - 60, -.1332047592);
+  const g = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * Math.pow(t - 60, -.0755148492);
+  const b = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+  return rgb2hex([r, g, b]);
+}
+const VARIANTS = [['base','기본'], ['light','밝게'], ['calm','차분하게']];
+// 팔레트 변형: 밝게 = 베이스 · 서브 명도 +10 (창 없는 공간 보정), 차분하게 = 채도 −25 · 명도 −4
+function paletteOf(c, v){
+  return c.pal.map(([role, name, hex, pct, fin, en], i) => {
+    let h = hex;
+    if (v === 'light' && i < 2) h = adjHex(hex, 10);
+    if (v === 'calm') h = adjHex(hex, -4, -25);
+    return { role, name, hex:h, pct, fin, en };
+  });
+}
+
+// 이 자리 조건으로 적합도 계산 (가중합) — 근거 문장도 같이 돌려줍니다
+function fitOf(c, it, profile){
+  const ik = indKeyOf(profile.ind), sp = it.space, notes = [];
+  const pctOf = tag => (it.mood.find(m => m[2] === tag) || [0, 0])[1];
+  const ind = c.ind[ik] ?? 50;
+  const moodHit = c.tags.filter(t => pctOf(t) > 0);
+  const mood = Math.min(100, 25 + moodHit.reduce((s, t) => s + pctOf(t), 0) * .7);
+  if (moodHit.length) notes.push(`상권 무드 일치: ${moodHit.map(t => '#' + it.mood.find(m => m[2] === t)[0]).join(' ')}`);
+  let space = 80;
+  if (c.needsDay && !sp.window){ space -= 25; notes.push('창 없는 공간 — 밝은 콘셉트는 조명을 30% 이상 보강해야 같은 느낌'); }
+  if (c.needsDay && sp.dir === '남향'){ space += 8; notes.push('남향 통창 채광을 그대로 활용'); }
+  if (c.needsDay && sp.dir === '서향'){ space -= 4; notes.push('서향 유리 — 오후 눈부심 대비 롤스크린 필요'); }
+  if (c.dark && sp.window){ space -= 8; notes.push('낮에는 창으로 빛이 들어와 어두운 콘셉트 효과가 약함 (필름 · 블라인드)'); }
+  if (c.dark && !sp.window){ space += 12; notes.push('창 없는 지하라 오히려 몰입감이 큼'); }
+  if (c.highCeil && sp.ceil < 3.2){ space -= 10; notes.push(`천장고 ${sp.ceil}m — 노출 천장 · 펜던트는 답답해 보일 수 있음`); }
+  if (sp.ceil >= 4 && (c.scene.ceilP === 'exposed' || c.scene.fixture === 'pendant')){ space += 10; notes.push(`천장고 ${sp.ceil}m — 펜던트 · 노출 천장에 유리`); }
+  space = Math.max(0, Math.min(100, space));
+  const tHit = profile.targets.filter(t => (TARGET_PREF[t] || []).some(x => c.tags.includes(x)));
+  const target = Math.max(0, Math.min(100, 50 + tHit.length * 15 - (profile.targets.length - tHit.length) * 3));
+  if (tHit.length) notes.push(`타깃 선호와 맞음: ${tHit.join(' · ')}`);
+  const sat = pctOf(c.primary);
+  const diff = Math.max(20, 100 - sat * 1.5);
+  if (sat >= 30) notes.push(`주변 매장 ${sat}%가 이미 같은 스타일 — 차별화 포인트 필요`);
+  const parts = { ind, mood, space, target, diff };
+  const total = Math.round(Object.entries(FIT_W).reduce((s, [k, w]) => s + parts[k] * w, 0));
+  return { total, parts, notes, ik };
+}
+
+// ── 공간 이미지 생성 (SVG, 1점 투시) ────────────────────────────────
+// 방 좌표: u = 좌(-1)~우(+1), v = 바닥(0)~천장(1), d = 안쪽 벽(0)~화면 앞(1). 화면 앞은 안쪽 벽의 2.4배 크기.
+const RW = 480, RH = 300;
+function prj(u, v, d, M = 1){ const s = 1 / (1 - .5833 * d); return [+(240 + M * u * 100 * s).toFixed(1), +(150 + (62.5 - v * 125) * s).toFixed(1)]; }
+const pts = a => a.map(p => p.join(',')).join(' ');
+function irng(seed){ let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const hashStr = s => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+function roomSvg(c, ctx, o){
+  const P = paletteOf(c, o.variant), sc = c.scene, M = o.view ? -1 : 1;
+  const col = x => typeof x === 'number' ? P[x].hex : x;
+  const wall = col(sc.wall), side = col(sc.side), floor = typeof sc.floor === 'number' ? P[sc.floor].hex : (o.variant === 'light' ? adjHex(sc.floor, 6) : o.variant === 'calm' ? adjHex(sc.floor, -3, -20) : sc.floor);
+  const ceil = col(sc.ceil), furn = col(sc.furn), metal = col(sc.metal), acc = col(sc.accent);
+  const lc = kelvinHex(c.light.k), rnd = irng(hashStr(c.id) + o.seed * 7919);
+  const p = (u, v, d) => prj(u, v, d, M);
+  const uid = `${c.id}${o.seed}${o.view}${o.night ? 'n' : 'd'}${o.variant}${o.tag || ''}`;
+  let s = `<defs>
+    <linearGradient id="fl${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${adjHex(floor, -6)}"/><stop offset="1" stop-color="${adjHex(floor, 6)}"/></linearGradient>
+    <linearGradient id="sky${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.night ? '#0f172a' : '#cfe6fb'}"/><stop offset="1" stop-color="${o.night ? '#1e293b' : '#f1f8ff'}"/></linearGradient>
+    <radialGradient id="gl${uid}"><stop offset="0" stop-color="${lc}" stop-opacity=".95"/><stop offset=".35" stop-color="${lc}" stop-opacity=".35"/><stop offset="1" stop-color="${lc}" stop-opacity="0"/></radialGradient>
+    <filter id="nb${uid}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>
+  </defs>`;
+  // 면: 천장 · 좌벽 · 우벽 · 안쪽 벽 · 바닥
+  s += `<polygon points="${pts([p(-1,1,1), p(1,1,1), p(1,1,0), p(-1,1,0)])}" fill="${ceil}"/>`;
+  s += `<polygon points="${pts([p(-1,1,1), p(-1,1,0), p(-1,0,0), p(-1,0,1)])}" fill="${adjHex(wall, -7)}"/>`;
+  s += `<polygon points="${pts([p(1,1,1), p(1,1,0), p(1,0,0), p(1,0,1)])}" fill="${adjHex(side, -3)}"/>`;
+  s += `<polygon points="${pts([p(-1,1,0), p(1,1,0), p(1,0,0), p(-1,0,0)])}" fill="${wall}"/>`;
+  s += `<polygon points="${pts([p(-1,0,0), p(1,0,0), p(1,0,1), p(-1,0,1)])}" fill="url(#fl${uid})"/>`;
+  // 바닥 무늬
+  const line = (a, b, st, w = 1, op = 1) => `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${st}" stroke-width="${w}" opacity="${op}"/>`;
+  const fp = sc.floorP, fl2 = adjHex(floor, -14);
+  if (fp === 'wood' || fp === 'deck'){
+    const n = fp === 'deck' ? 9 : 14;
+    for (let i = 1; i < n; i++){ const u = -1 + 2 * i / n; s += line(p(u,0,0), p(u,0,1), fl2, 1, .7); }
+    for (let i = 0; i < 26; i++){ const k = Math.floor(rnd() * n), d = rnd(); const u0 = -1 + 2 * k / n, u1 = -1 + 2 * (k + 1) / n; s += line(p(u0,0,d), p(u1,0,d), fl2, .8, .6); }
+  } else if (fp === 'tile' || fp === 'check'){
+    const n = 8, m = 9;
+    if (fp === 'check'){
+      const c2 = P[0].hex;
+      for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) if ((i + j) % 2) s += `<polygon points="${pts([p(-1+2*i/n,0,j/m), p(-1+2*(i+1)/n,0,j/m), p(-1+2*(i+1)/n,0,(j+1)/m), p(-1+2*i/n,0,(j+1)/m)])}" fill="${c2}"/>`;
+    } else {
+      for (let i = 1; i < n; i++){ const u = -1 + 2 * i / n; s += line(p(u,0,0), p(u,0,1), fl2, .8, .55); }
+      for (let j = 1; j < m; j++) s += line(p(-1,0,j/m), p(1,0,j/m), fl2, .8, .55);
+    }
+  } else if (fp === 'terrazzo'){
+    const dots = [acc, P[2].hex, adjHex(floor, -25), P[4].hex];
+    for (let i = 0; i < 140; i++){ const u = rnd() * 2 - 1, d = rnd(); const [x, y] = p(u, 0, d); s += `<circle cx="${x}" cy="${y}" r="${(.6 + rnd() * 1.4) * (1 / (1 - .5833 * d))}" fill="${dots[i % 4]}" opacity=".7"/>`; }
+  } else if (fp === 'concrete' || fp === 'micro'){
+    for (let i = 0; i < 70; i++){ const u = rnd() * 2 - 1, d = rnd(); const [x, y] = p(u, 0, d); s += `<circle cx="${x}" cy="${y}" r="${.7 + rnd()}" fill="${fl2}" opacity=".35"/>`; }
+    if (fp === 'concrete') [.3, .62].forEach(d => { s += line(p(-1,0,d), p(1,0,d), fl2, 1, .5); });
+  } else if (fp === 'epoxy'){
+    s += `<polygon points="${pts([p(-.5,0,.15), p(.5,0,.15), p(.8,0,.9), p(-.8,0,.9)])}" fill="#ffffff" opacity=".05"/>`;
+  }
+  // 천장 무늬
+  if (sc.ceilP === 'exposed'){
+    [-.45, .35].forEach((u, i) => {
+      const r = .07;
+      s += `<polygon points="${pts([p(u - r, .93, 0), p(u + r, .93, 0), p(u + r, .93, 1), p(u - r, .93, 1)])}" fill="${adjHex(ceil, 22)}"/>`;
+      s += line(p(u - r, .93, 0), p(u - r, .93, 1), adjHex(ceil, 35), 1, .8);
+    });
+    for (let d = .1; d < 1; d += .22) s += line(p(-1, .98, d), p(1, .98, d), adjHex(ceil, -10), 3, .8);
+  } else if (sc.ceilP === 'slat'){
+    for (let i = 1; i < 18; i++){ const u = -1 + 2 * i / 18; s += line(p(u,1,0), p(u,1,1), adjHex(ceil, -14), 1.2, .8); }
+  }
+  // 창 (조건에 창이 있으면 왼쪽 벽, 시점 2면 오른쪽 벽)
+  if (ctx.window){
+    const d0 = .12, d1 = .88;
+    s += `<polygon points="${pts([p(-1,.86,d0), p(-1,.86,d1), p(-1,.06,d1), p(-1,.06,d0)])}" fill="url(#sky${uid})" stroke="${metal}" stroke-width="2"/>`;
+    for (let k = 1; k < 4; k++){ const d = d0 + (d1 - d0) * k / 4; s += line(p(-1,.86,d), p(-1,.06,d), metal, 2); }
+    if (!o.night){
+      s += `<polygon points="${pts([p(-1,0,d0+.05), p(-1,0,d1), p(-.25,0,d1-.02), p(-.35,0,d0+.12)])}" fill="#ffffff" opacity=".22"/>`;
+    } else {
+      for (let k = 0; k < 5; k++){ const [x, y] = p(-1, .3 + rnd() * .4, d0 + rnd() * (d1 - d0)); s += `<circle cx="${x}" cy="${y}" r="${1 + rnd() * 2}" fill="#fde68a" opacity=".6"/>`; }
+    }
+  }
+  // 벽 장식 (seed에 따라 후보 중 하나)
+  const feat = sc.features[o.seed % sc.features.length];
+  const onLeft = !ctx.window;   // 창이 없으면 왼쪽 벽에도 장식
+  const wallFeat = (u, kind) => {
+    let t = '';
+    if (kind === 'frames'){ [[.2,.32],[.42,.55],[.62,.72]].forEach(([d0, d1], i) => { t += `<polygon points="${pts([p(u,.72,d0), p(u,.72,d1), p(u,.42 + i * .03,d1), p(u,.42 + i * .03,d0)])}" fill="${i % 2 ? acc : P[1].hex}" stroke="${metal}" stroke-width="2"/>`; }); }
+    if (kind === 'shelves'){ [.38,.56,.74].forEach(v => { t += line(p(u,v,.15), p(u,v,.7), furn, 3); for (let i = 0; i < 5; i++){ const d = .18 + rnd() * .5; const [x, y] = p(u, v, d); t += `<rect x="${x - 2}" y="${y - 9 * (1 / (1 - .5833 * d))}" width="${5 * (1 / (1 - .5833 * d))}" height="${9 * (1 / (1 - .5833 * d))}" fill="${[acc, P[1].hex, metal][i % 3]}" opacity=".85"/>`; } }); }
+    if (kind === 'menu'){ t += `<polygon points="${pts([p(u,.82,.18), p(u,.82,.6), p(u,.5,.6), p(u,.5,.18)])}" fill="${metal}"/>`; for (let i = 1; i < 5; i++) t += line(p(u,.82 - i * .06,.22), p(u,.82 - i * .06,.5), '#e5e7eb', 1.2, .8); }
+    if (kind === 'plants'){ t += `<polygon points="${pts([p(u,.85,.1), p(u,.85,.65), p(u,.25,.65), p(u,.25,.1)])}" fill="#166534" opacity=".85"/>`; for (let i = 0; i < 40; i++){ const [x, y] = p(u, .27 + rnd() * .56, .12 + rnd() * .5); t += `<circle cx="${x}" cy="${y}" r="${2 + rnd() * 3}" fill="${rnd() < .5 ? '#22c55e' : '#15803d'}"/>`; } }
+    if (kind === 'plank'){ for (let i = 0; i < 6; i++){ const d = .15 + i * .085; t += `<polygon points="${pts([p(u,.8,d), p(u,.8,d + .06), p(u,.52,d + .06), p(u,.52,d)])}" fill="${P.find(x => /한지|라이스|크림|웜 화이트/.test(x.name))?.hex || '#F6E7C1'}" stroke="${furn}" stroke-width="1"/>`; } }
+    if (kind === 'noren'){ for (let i = 0; i < 4; i++){ const d = .25 + i * .07; t += `<polygon points="${pts([p(u,.86,d), p(u,.86,d + .065), p(u,.55,d + .065), p(u,.55,d)])}" fill="${acc}" opacity=".95"/>`; } }
+    if (kind === 'tilewall'){ for (let i = 0; i < 9; i++) t += line(p(u, .1 + i * .09, 0), p(u, .1 + i * .09, 1), '#ffffff', 1, .6); }
+    if (kind === 'wine' || kind === 'bottles'){ t += `<polygon points="${pts([p(u,.85,.12), p(u,.85,.62), p(u,.2,.62), p(u,.2,.12)])}" fill="${adjHex(furn, -8)}"/>`; for (let i = 0; i < 6; i++) for (let j = 0; j < 7; j++){ const [x, y] = p(u, .26 + i * .1, .15 + j * .065); t += `<circle cx="${x}" cy="${y}" r="${2.2 * (1 / (1 - .5833 * (.15 + j * .065)))}" fill="${kind === 'wine' ? '#5B1A26' : ['#22d3ee','#a855f7','#fde68a'][(i + j) % 3]}" opacity=".85"/>`; } }
+    if (kind === 'arch'){ const [x0, y0] = p(u, .05, .3), [x1, y1] = p(u, .05, .55), [xt, yt] = p(u, .82, .425); t += `<path d="M${x0} ${y0} L${x0} ${yt + 20} Q${xt} ${yt - 18} ${x1} ${yt + 20} L${x1} ${y1} Z" fill="${acc}"/>`; }
+    if (kind === 'showcase'){ /* 안쪽 벽 쇼케이스는 카운터에서 그림 */ t += wallFeat(u, 'frames'); }
+    if (kind === 'pickup'){ [.3,.45,.6].forEach(v => { t += line(p(u,v,.2), p(u,v,.75), metal, 3); for (let i = 0; i < 6; i++){ const d = .24 + i * .085; const [x, y] = p(u, v, d); const k2 = 1 / (1 - .5833 * d); t += `<rect x="${x - 3 * k2}" y="${y - 8 * k2}" width="${5 * k2}" height="${8 * k2}" rx="1" fill="#ffffff" stroke="${acc}" stroke-width="1"/>`; } }); }
+    if (kind === 'neon'){ const a = p(u,.7,.2), b = p(u,.62,.45), c2 = p(u,.72,.62); t += `<path d="M${a[0]} ${a[1]} Q${b[0]} ${b[1] - 30} ${c2[0]} ${c2[1]}" fill="none" stroke="${acc}" stroke-width="4" filter="url(#nb${uid})"/><path d="M${a[0]} ${a[1]} Q${b[0]} ${b[1] - 30} ${c2[0]} ${c2[1]}" fill="none" stroke="#fff" stroke-width="1.2"/>`; }
+    return t;
+  };
+  s += wallFeat(1, feat);
+  if (onLeft) s += wallFeat(-1, sc.features[(o.seed + 1) % sc.features.length]);
+  // 안쪽 벽: 주방 출입 · 카운터 · 간판
+  s += `<polygon points="${pts([p(.58,.62,0), p(.92,.62,0), p(.92,0,0), p(.58,0,0)])}" fill="${adjHex(wall, -30)}" opacity=".85"/>`;
+  const box = (u0, u1, d0, d1, v0, v1, fill) => {
+    let t = '';
+    const top = [p(u0,v1,d0), p(u1,v1,d0), p(u1,v1,d1), p(u0,v1,d1)];
+    const front = [p(u0,v1,d1), p(u1,v1,d1), p(u1,v0,d1), p(u0,v0,d1)];
+    const uS = (M > 0 ? (u1 < 0 ? u1 : u0 > 0 ? u0 : null) : (u1 < 0 ? u1 : u0 > 0 ? u0 : null));
+    if (uS !== null) t += `<polygon points="${pts([p(uS,v1,d0), p(uS,v1,d1), p(uS,v0,d1), p(uS,v0,d0)])}" fill="${adjHex(fill, -14)}"/>`;
+    t += `<polygon points="${pts(front)}" fill="${adjHex(fill, -6)}"/>`;
+    if (v1 < .5) t += `<polygon points="${pts(top)}" fill="${adjHex(fill, 8)}"/>`;
+    return t;
+  };
+  s += box(-.75, .5, 0, .14, 0, .33, furn);
+  if (feat === 'showcase' || c.id === 'gallery') s += box(-.6, .2, .14, .22, .2, .36, P[3].hex) + `<polygon points="${pts([p(-.6,.36,.18), p(.2,.36,.18), p(.2,.5,.18), p(-.6,.5,.18)])}" fill="#e0f2fe" opacity=".35" stroke="${metal}" stroke-width="1"/>`;
+  // 간판 (글자는 뒤집지 않도록 투영 좌표에 따로 씀)
+  const sg = [p(-.42,.8,0), p(.42,.8,0), p(.42,.63,0), p(-.42,.63,0)];
+  s += `<polygon points="${pts(sg)}" fill="${c.sign.bg}" stroke="${adjHex(c.sign.bg, -20)}" stroke-width="1"/>`;
+  s += `<text x="240" y="${((sg[0][1] + sg[2][1]) / 2 + 5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="800" fill="${c.sign.fg}" font-family="Noto Sans KR, sans-serif">${String(ctx.brand).replace(/[<&]/g, '')}</text>`;
+  // 가구 (안쪽 → 앞쪽 순서)
+  const items = [];
+  const stool = (u, d, cc) => items.push([d, box(u - .035, u + .035, d - .02, d + .02, 0, .2, cc)]);
+  const table = (u, d, w, cc, h = .28) => items.push([d, box(u - w, u + w, d - w * .5, d + w * .5, h - .03, h, cc) + box(u - .01, u + .01, d - .01, d + .01, 0, h - .03, metal)]);
+  const nT = 2 + Math.floor(rnd() * 2);
+  if (sc.furnP === 'bar'){
+    items.push([.55, box(-.95, -.78, .2, .85, .38, .42, furn)]);
+    for (let i = 0; i < 5; i++) stool(-.7, .26 + i * .13, metal);
+    for (let i = 0; i < nT - 1; i++) table(.15 + i * .35, .35 + rnd() * .3, .09, furn);
+  } else if (sc.furnP === 'tables'){
+    for (let i = 0; i < nT + 1; i++){ const u = -.55 + i * (1.1 / nT) + (rnd() - .5) * .1, d = .3 + rnd() * .45; table(u, d, .1, furn); stool(u - .14, d, adjHex(acc, 0)); stool(u + .14, d, adjHex(acc, 0)); }
+  } else if (sc.furnP === 'sofa'){
+    items.push([.5, box(.72, .95, .25, .8, 0, .22, acc) + box(.9, .97, .25, .8, .22, .38, acc)]);
+    for (let i = 0; i < nT; i++) table(.55, .32 + i * .2, .08, furn);
+    for (let i = 0; i < nT; i++) table(-.35 + i * .3, .45 + rnd() * .25, .09, furn);
+  } else if (sc.furnP === 'counter'){
+    items.push([.3, box(-.95, .2, .22, .32, 0, .36, furn)]);
+    for (let i = 0; i < 6; i++) stool(-.85 + i * .19, .38, metal);
+    if (rnd() < .6) items.push([.6, box(.45, .95, .45, .8, 0, .3, adjHex(furn, -10))]);
+  } else if (sc.furnP === 'round'){
+    for (let i = 0; i < nT + 1; i++){ const u = -.6 + i * .5 + (rnd() - .5) * .15, d = .35 + rnd() * .4; table(u, d, .11, metal, .26); stool(u - .17, d, acc); stool(u + .17, d, acc); }
+  } else if (sc.furnP === 'pickup'){
+    items.push([.3, box(.62, .95, .2, .3, 0, .55, '#334155')]);
+    items.push([.45, box(-.95, -.8, .3, .75, .38, .42, furn)]);
+    for (let i = 0; i < 4; i++) stool(-.72, .34 + i * .12, metal);
+  }
+  if (sc.plants) [[.88, .9], [-.9, .92]].forEach(([u, d]) => { if (ctx.window && u < 0 && M > 0) return; const [x, y] = p(u, 0, d); const k = 1 / (1 - .5833 * d); items.push([d, `<rect x="${x - 7 * k}" y="${y - 12 * k}" width="${14 * k}" height="${12 * k}" fill="${adjHex(furn, -10)}"/><circle cx="${x}" cy="${y - 22 * k}" r="${13 * k}" fill="#15803d"/><circle cx="${x - 6 * k}" cy="${y - 30 * k}" r="${8 * k}" fill="#22c55e"/>`]); });
+  items.sort((a, b) => a[0] - b[0]).forEach(([, t]) => { s += t; });
+  // 조명
+  const glows = [];
+  const fx = sc.fixture;
+  if (fx === 'pendant' || fx === 'globe' || fx === 'paper' || fx === 'rattan' || fx === 'lantern'){
+    const n = 3 + (o.seed % 2);
+    for (let i = 0; i < n; i++){
+      const u = -.55 + i * (1.1 / (n - 1)), d = .25 + (i % 2) * .25;
+      const [cx, cy] = p(u, 1, d), [bx, by] = p(u, d > .4 ? .6 : .74, d), k = 1 / (1 - .5833 * d);   // 앞쪽 등은 낮게 — 간판을 가리지 않게
+      s += line([cx, cy], [bx, by - 6 * k], metal, 1);
+      if (fx === 'pendant') s += `<path d="M${bx - 7 * k} ${by} L${bx - 3 * k} ${by - 7 * k} L${bx + 3 * k} ${by - 7 * k} L${bx + 7 * k} ${by} Z" fill="${metal}"/><circle cx="${bx}" cy="${by + 1.5 * k}" r="${2.4 * k}" fill="${lc}"/>`;
+      if (fx === 'globe') s += `<circle cx="${bx}" cy="${by}" r="${6 * k}" fill="#fffdf5" stroke="${adjHex(lc, -10)}" stroke-width=".8"/>`;
+      if (fx === 'paper') s += `<ellipse cx="${bx}" cy="${by}" rx="${7 * k}" ry="${6 * k}" fill="#fbf7ee"/><line x1="${bx - 7 * k}" y1="${by}" x2="${bx + 7 * k}" y2="${by}" stroke="#e7dccb" stroke-width=".8"/>`;
+      if (fx === 'rattan') s += `<path d="M${bx - 8 * k} ${by + 3 * k} Q${bx} ${by - 10 * k} ${bx + 8 * k} ${by + 3 * k} Z" fill="${P[1].hex}" stroke="${adjHex(P[1].hex, -20)}" stroke-width=".8"/>`;
+      if (fx === 'lantern') s += `<ellipse cx="${bx}" cy="${by + 2 * k}" rx="${5 * k}" ry="${8 * k}" fill="${i % 2 ? '#dc2626' : '#fef3c7'}"/><line x1="${bx - 5 * k}" y1="${by + 2 * k}" x2="${bx + 5 * k}" y2="${by + 2 * k}" stroke="#7c2d12" stroke-width=".7"/>`;
+      glows.push([bx, by + 4 * k, 36 * k]);
+    }
+  } else if (fx === 'line'){
+    [-.4, .4].forEach(u => { s += `<polygon points="${pts([p(u - .012,1,0), p(u + .012,1,0), p(u + .012,1,.95), p(u - .012,1,.95)])}" fill="${mixHex('#FFFFFF', lc, .3)}"/>`; [.15,.5,.85].forEach(d => { const [x, y] = p(u, .98, d); glows.push([x, y + 10, 30 / (1 - .5833 * d)]); }); });
+  } else if (fx === 'track'){
+    [-.35, .35].forEach(u => { s += line(p(u,1,.05), p(u,1,.95), metal, 2.5);
+      [.2,.45,.7].forEach(d => { const [x, y] = p(u, 1, d), k = 1 / (1 - .5833 * d); s += `<rect x="${x - 3 * k}" y="${y}" width="${6 * k}" height="${7 * k}" fill="${metal}"/>`; glows.push([x, y + 10 * k, 26 * k]); }); });
+  } else if (fx === 'tube'){
+    [.2,.45,.75].forEach(d => { s += `<polygon points="${pts([p(-.6,.995,d), p(.6,.995,d), p(.6,.995,d + .02), p(-.6,.995,d + .02)])}" fill="${lc}"/>`; const [x, y] = p(0, .99, d); glows.push([x, y + 8, 50 / (1 - .5833 * d)]); });
+  } else if (fx === 'neon'){
+    const a = p(-.35,.55,0), b = p(.35,.55,0);
+    s += `<path d="M${a[0]} ${a[1]} q20 -18 40 0 t40 0 t40 0" fill="none" stroke="${P[3].hex}" stroke-width="4" filter="url(#nb${uid})"/><path d="M${a[0]} ${a[1]} q20 -18 40 0 t40 0 t40 0" fill="none" stroke="#fff" stroke-width="1"/>`;
+    s += `<path d="M${a[0]} ${a[1] + 12} L${b[0]} ${b[1] + 12}" stroke="${P[4].hex}" stroke-width="3" filter="url(#nb${uid})"/>`;
+    [-.5, 0, .5].forEach(u => { const [x, y] = p(u, .95, .3); s += `<circle cx="${x}" cy="${y}" r="2" fill="${lc}"/>`; glows.push([x, y + 30, 26]); });
+    glows.push([(a[0] + b[0]) / 2, a[1], 60]);
+  }
+  // 낮 / 밤: 밤에는 전체를 어둡게 하고 조명 빛 번짐을 더함
+  if (o.night) s += `<rect width="${RW}" height="${RH}" fill="#0b1022" opacity="${c.dark ? .42 : .5}"/>`;
+  else s += `<rect width="${RW}" height="${RH}" fill="${lc}" opacity=".05"/>`;
+  glows.forEach(([x, y, r]) => { s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r * (o.night ? 1.25 : .8)).toFixed(1)}" fill="url(#gl${uid})" opacity="${o.night ? .9 : .35}" style="mix-blend-mode:screen"/>`; });
+  return `<svg viewBox="0 0 ${RW} ${RH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.name} 공간 예시 (${o.night ? '밤' : '낮'})" preserveAspectRatio="xMidYMid slice">${s}</svg>`;
+}
+
+// 이미지 생성 AI용 프롬프트 (같은 콘셉트로 컷마다 일관되게)
+const SHOTS = [
+  { id:'entry', ko:'입구에서 본 전경', en:'wide shot from the entrance' },
+  { id:'seat', ko:'대표 좌석', en:'medium shot of the signature seating' },
+  { id:'counter', ko:'카운터 · 쇼케이스', en:'three-quarter view of the counter and display' },
+  { id:'photo', ko:'포토존 디테일', en:'close-up of the photo spot with signature props' },
+  { id:'sign', ko:'간판 · 입구 (야간)', en:'the entrance and signage at night' },
+];
+const NEG = { ko:'간판 외 글자, 실제 브랜드 로고, 워터마크, 어안 왜곡, 기울어진 수직선, 과포화 색, 어수선한 소품, 사람 얼굴 클로즈업, 비현실적인 크기', en:'extra text, misspelled signage, real brand logos, watermark, fisheye distortion, tilted verticals, oversaturated colors, cluttered props, close-up faces, unrealistic scale' };
+function promptOf(c, ctx, o, lang){
+  const P = paletteOf(c, o.variant), sh = SHOTS.find(x => x.id === o.shot) || SHOTS[0];
+  const night = o.night || sh.id === 'sign';
+  if (lang === 'en') return [
+    `Photorealistic interior photograph of a ${ctx.area} m² ${IND_EN[ctx.ik]} in ${ctx.placeEn}, Seoul — ${ctx.floorEn}${ctx.windowEn ? `, ${ctx.windowEn}` : ', no windows'}, ceiling height ${ctx.ceil} m.`,
+    `Style: ${c.en}. ${sh.en}.`,
+    `Color palette (60-30-10): ${P.map(x => `${x.en} ${x.hex} ${x.pct}%`).join(', ')}.`,
+    `Materials: ${Object.values(c.mat).map(m => m[1]).join(', ')}.`,
+    `Lighting: ${c.light.k}K, CRI ${c.light.cri}+, ${c.light.fxEn}; ${night ? 'evening, warm interior glow' : ctx.windowEn ? 'daytime, soft daylight through the windows' : 'artificial light only'}.`,
+    `Camera: eye level 1.5 m, 24 mm lens, straight verticals, realistic proportions, few people with faces not visible.`,
+    `Keep the sign panel blank (lettering for "${ctx.brand}" will be added later); no other text.`,
+  ].join('\n');
+  return [
+    `${ctx.place}에 있는 ${ctx.area}㎡ ${IND_KO[ctx.ik]} 실내 사진 (실사) — ${ctx.floorKo}${ctx.window ? ` · ${ctx.window}` : ' · 창 없음'}, 천장고 ${ctx.ceil}m.`,
+    `스타일: ${c.name}. 구도: ${sh.ko}.`,
+    `색 (60 · 30 · 10): ${P.map(x => `${x.name} ${x.hex} ${x.pct}%`).join(', ')}.`,
+    `자재: ${Object.entries(c.mat).map(([k, m]) => `${k} ${m[0]}`).join(', ')}.`,
+    `조명: ${c.light.k}K · CRI ${c.light.cri} 이상 · ${c.light.fx} · ${night ? '저녁, 실내 조명만' : ctx.window ? '낮, 창으로 들어오는 자연광' : '인공 조명만'}.`,
+    `카메라: 눈높이 1.5m · 24mm · 수직선 똑바로 · 실제 비율 · 사람은 얼굴이 안 보이게 소수만.`,
+    `간판 판은 비워 두기 ("${ctx.brand}" 글자는 나중에 합성) · 다른 글자 없음.`,
+  ].join('\n');
+}
 
 // ── 상태 ──────────────────────────────────────────────
 const params = new URLSearchParams(location.search);
@@ -764,27 +1173,98 @@ function adjFit(e){
 }
 
 // ── 4. 인테리어 ──────────────────────────────────────
+const ctxOf = () => { const p = S.profile; return { ...INTERIOR[key].space, area:p.area, ik:indKeyOf(p.ind), brand:(p.name || '').replace(/\s*\(가상\)\s*/, '').trim() || '가게 이름' }; };
+let ranked = [];
+function iState(){
+  const st = Object.assign({ id:null, night:false, view:0, seed:0, variant:'base', shot:'entry' }, S.interior || {});
+  if (!ranked.some(r => r.c.id === st.id)) st.id = ranked[0].c.id;
+  return (S.interior = st);
+}
 function renderInterior(){
   const it = INTERIOR[key], p = S.profile;
-  const py = p.area / 3.3058;
+  const py = p.area / 3.3058, grade = +$('#grade').value;
   $('#mood').innerHTML = it.mood.map(([k, v]) => `<span>#${esc(k)}<em>${v}%</em></span>`).join('');
   $('#moodSub').textContent = `${SC[key].zone} 주변 매장 리뷰 · SNS 사진 키워드 (데모)`;
-  const grade = +$('#grade').value;
-  $('#concepts').innerHTML = it.concepts.map((c, i) => `<div class="card cc ${i === 0 ? 'best' : ''}">
-      <div class="board">${c.tiles.map(([n, bg]) => `<div style="background:${bg}"><span>${esc(n)}</span></div>`).join('')}</div>
-      <div class="pal">${c.pal.map(x => `<i style="background:${x}" title="${x}"></i>`).join('')}</div>
+  // 콘셉트 12개를 이 자리 · 이 가게 조건으로 점수 매겨 상위 6개
+  ranked = CONCEPTS.map(c => ({ c, f:fitOf(c, it, p) })).sort((a, b) => b.f.total - a.f.total).slice(0, 6);
+  const st = iState(), ctx = ctxOf();
+  $('#iSub').textContent = `${IND_KO[ranked[0].f.ik]} · ${it.floorTip} · 콘셉트 ${CONCEPTS.length}개 중 상위 6개`;
+  $('#concepts').innerHTML = ranked.map(({ c, f }, i) => `<button type="button" class="card cc ${i === 0 ? 'best' : ''} ${c.id === st.id ? 'sel' : ''}" data-id="${c.id}">
+      <div class="pic">${roomSvg(c, ctx, { night:false, view:0, seed:0, variant:'base', tag:'t' })}</div>
+      <div class="pal">${paletteOf(c, 'base').map(x => `<i style="flex:${x.pct};background:${x.hex}" title="${esc(`${x.role} · ${x.name} ${x.hex} ${x.pct}%`)}"></i>`).join('')}</div>
       <div class="body">
-        <h4><span>${esc(c.name)}${i === 0 ? '<span class="bestTag">추천</span>' : ''}</span><em>상권 매칭 ${c.fit}%</em></h4>
+        <h4><span>${i + 1}. ${esc(c.name)}${i === 0 ? '<span class="bestTag">추천</span>' : ''}</span><em>적합 ${f.total}</em></h4>
         <p>${esc(c.desc)}</p>
-        <dl class="els">${Object.entries(c.els).map(([k,v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}<dt>포토존</dt><dd>${esc(c.photo)}</dd></dl>
-        <div class="cost"><span>평당 ${c.unit[grade]}만원 × ${py.toFixed(1)}평</span><b>${man(c.unit[grade] * py)}원</b></div>
-      </div></div>`).join('');
-  const best = it.concepts[0];
-  const body = best.unit[grade] * py, sign = [180, 300, 520][grade], furn = Math.round(p.seats * [18, 28, 45][grade]);
-  $('#budget').innerHTML = `<span>인테리어 (${esc(best.name)})</span><b>${man(body)}</b><span>간판 · 사인물</span><b>${man(sign)}</b><span>가구 · 집기 (${p.seats}석)</span><b>${man(furn)}</b><span class="tot">합계 (설비 · 주방기기 제외)</span><b class="tot">${man(body + sign + furn)}원</b>`;
+        <div class="meta"><span>💡 ${c.light.k}K · CRI ${c.light.cri}</span><span>평당 ${c.unit[grade]}만원</span></div>
+      </div></button>`).join('');
+  renderIDetail();
+  const sel = ranked.find(r => r.c.id === st.id).c;
+  const body = sel.unit[grade] * py, sign = [180, 300, 520][grade], furn = Math.round(p.seats * [18, 28, 45][grade]);
+  $('#budget').innerHTML = `<span>인테리어 (${esc(sel.name)})</span><b>${man(body)}</b><span>간판 · 사인물</span><b>${man(sign)}</b><span>가구 · 집기 (${p.seats}석)</span><b>${man(furn)}</b><span class="tot">합계 (설비 · 주방기기 제외)</span><b class="tot">${man(body + sign + furn)}원</b>`;
   $('#tipSub').textContent = it.floorTip;
   $('#tips').innerHTML = it.tips.map(([i, t]) => `<div><i>${i}</i><span>${esc(t)}</span></div>`).join('');
   $('#checks').innerHTML = it.checks.map(t => `<li>${esc(t)}</li>`).join('');
+}
+function renderIDetail(){
+  const st = S.interior, r = ranked.find(x => x.c.id === st.id), c = r.c, f = r.f, ctx = ctxOf();
+  const P = paletteOf(c, st.variant);
+  const cr = contrast(c.sign.bg, c.sign.fg), fx = cr < 4.5 ? fixContrast(c.sign.bg, c.sign.fg) : null;
+  const verdict = cr >= 4.5 ? ['ok', '통과 (4.5:1 이상)'] : cr >= 3 ? ['warn', '큰 글씨만 가능 (3~4.5:1)'] : ['bad', '보완 필요 (3:1 미만)'];
+  const fixed = fx ? (fx.part === '바탕' ? [fx.to, c.sign.fg] : [c.sign.bg, fx.to]) : null;
+  const seg = (id, items, cur) => `<div class="seg sm" id="${id}">${items.map(([v, n]) => `<button type="button" data-v="${v}" class="${String(cur) === String(v) ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  $('#idetail').innerHTML = `
+    <div class="idh">
+      <div><small>선택한 콘셉트 · 카드를 누르면 바뀝니다</small><h3>${esc(c.name)} <em>적합 ${f.total}</em></h3></div>
+      <div class="ictl">${seg('iDay', [[0, '☀ 낮'], [1, '🌙 밤']], st.night ? 1 : 0)}${seg('iView', [[0, '시점 1'], [1, '시점 2']], st.view)}${seg('iVar', VARIANTS, st.variant)}<button type="button" class="btn sm" id="iSeed">🎲 다른 배치</button></div>
+    </div>
+    <div class="igrid">
+      <figure class="ipic">${roomSvg(c, ctx, st)}<figcaption>생성 예시 · ${st.night ? '밤' : '낮'} · 배치 #${st.seed + 1} · 팔레트 ${VARIANTS.find(v => v[0] === st.variant)[1]} — 분위기 확인용 그림이며 실제 도면이 아닙니다</figcaption></figure>
+      <div class="iinfo">
+        <h4>적합도 ${f.total}점 근거</h4>
+        <div class="fitb">${Object.entries(FIT_W).map(([k, w]) => `<div><span>${FIT_N[k]} <small>×${Math.round(w * 100)}%</small></span><div class="bar"><i style="width:${f.parts[k]}%"></i></div><b>${Math.round(f.parts[k])}</b></div>`).join('')}</div>
+        <ul class="fnotes">${f.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="g3i">
+      <div><h4>색 배합 (60 · 30 · 10)</h4>
+        <table class="ptab">${P.map(x => `<tr><td><i style="background:${x.hex}"></i></td><td><b>${x.role}</b> ${esc(x.name)}</td><td><code>${x.hex}</code></td><td>${x.pct}%</td><td class="muted">${esc(x.fin)}</td></tr>`).join('')}</table>
+        <p class="note">HEX는 화면 색입니다. 도료 · 타일은 실물 칩을 같은 조명(${c.light.k}K) 아래에서 비교해 고르세요.</p></div>
+      <div><h4>조명 · 자재</h4>
+        <dl class="els"><dt>색온도</dt><dd><i class="kchip" style="background:${kelvinHex(c.light.k)}"></i>${c.light.k}K</dd><dt>연색성</dt><dd>CRI ${c.light.cri} 이상 (음식 · 상품 색 재현)</dd><dt>밝기</dt><dd>${c.light.lux} lx (일반 가이드)</dd><dt>기구</dt><dd>${esc(c.light.fx)}</dd>${Object.entries(c.mat).map(([k, m]) => `<dt>${k}</dt><dd>${esc(m[0])}</dd>`).join('')}<dt>포토존</dt><dd>${esc(c.photo)}</dd></dl></div>
+      <div><h4>간판 대비 검사</h4>
+        <div class="signs"><span class="sgn" style="background:${c.sign.bg};color:${c.sign.fg}">${esc(ctx.brand)}</span>${fixed ? `<span class="arr">→</span><span class="sgn" style="background:${fixed[0]};color:${fixed[1]}">${esc(ctx.brand)}</span>` : ''}</div>
+        <p class="cr ${verdict[0]}">명암비 <b>${cr.toFixed(2)}:1</b> · ${verdict[1]}</p>
+        ${fx ? `<p class="note">${fx.part}색을 <code>${fx.from}</code> → <code>${fx.to}</code>로 바꾸면 ${(fx.part === '바탕' ? contrast(fx.to, c.sign.fg) : contrast(c.sign.bg, fx.to)).toFixed(2)}:1. 브랜드 색을 지키려면 글자를 키우거나 테두리를 넣으세요.</p>` : ''}
+        <p class="note">${esc(c.sign.type)} · 기준은 웹 접근성(WCAG) 글자 명암비를 빌려 쓴 것으로, 야간 조명 · 시선 거리에 따라 실제 가독성은 달라집니다.${ctx.window ? '' : ' 지하는 계단 입구 간판 · 조명이 첫인상입니다.'}</p></div>
+    </div>
+    <div class="iprompt">
+      <div class="ph"><h4>이미지 생성 AI 프롬프트</h4>${seg('iShot', SHOTS.map(x => [x.id, x.ko]), st.shot)}</div>
+      <div class="pcols">
+        <div><small>한국어</small><textarea readonly id="pKo" rows="9">${esc(promptOf(c, ctx, st, 'ko'))}</textarea><button type="button" class="btn sm" data-copy="pKo">복사</button></div>
+        <div><small>English</small><textarea readonly id="pEn" rows="9">${esc(promptOf(c, ctx, st, 'en'))}</textarea><button type="button" class="btn sm" data-copy="pEn">복사</button></div>
+      </div>
+      <div class="neg"><small>제외할 것 (negative)</small><textarea readonly id="pNeg" rows="2">${esc(NEG.ko + '\n' + NEG.en)}</textarea><button type="button" class="btn sm" data-copy="pNeg">복사</button></div>
+      <p class="note">같은 콘셉트로 컷 5장을 만들 땐 seed(무작위 값)를 고정하고 구도만 바꾸세요. AI 이미지 속 한글은 잘 깨져서 간판은 비워 두고 나중에 합성하는 편이 안전합니다. 생성 이미지는 분위기 참고용이며 시공 도면 · 견적을 대신하지 않습니다.</p>
+    </div>`;
+}
+function bindInterior(){
+  $('#concepts').addEventListener('click', e => { const b = e.target.closest('.cc'); if (!b) return; S.interior.id = b.dataset.id; save(); renderInterior(); });
+  $('#idetail').addEventListener('click', e => {
+    const st = S.interior, b = e.target.closest('button'); if (!b) return;
+    const g = b.closest('.seg');
+    if (g && g.id === 'iDay') st.night = b.dataset.v === '1';
+    else if (g && g.id === 'iView') st.view = +b.dataset.v;
+    else if (g && g.id === 'iVar') st.variant = b.dataset.v;
+    else if (g && g.id === 'iShot') st.shot = b.dataset.v;
+    else if (b.id === 'iSeed') st.seed = (st.seed + 1) % 12;
+    else if (b.dataset.copy){
+      const ta = $('#' + b.dataset.copy);
+      const done = () => toast('복사했어요');
+      try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); document.execCommand('copy'); done(); }); } catch (err) { ta.select(); try { document.execCommand('copy'); done(); } catch (e2) {} }
+      return;
+    } else return;
+    save(); renderIDetail();
+  });
 }
 
 // ── 공통 ─────────────────────────────────────────────
@@ -808,7 +1288,7 @@ function loadScenario(k){
   const u = new URL(location.href); u.searchParams.set('s', k); history.replaceState(null, '', u);
 }
 $('#scSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) loadScenario(b.dataset.s); });
-bindProfile(); bindLedger();
+bindProfile(); bindLedger(); bindInterior();
 loadScenario(key);
 if (params.get('tab')) setTab(params.get('tab'));
 </script>
