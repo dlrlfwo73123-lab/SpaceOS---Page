@@ -5,8 +5,9 @@
 //   ① 스크립트 오류(pageerror) ② 콘솔 오류 ③ 모바일 가로 넘침 ④ 핵심 요소 존재 ⑤ 기본 클릭 동작을 확인합니다.
 //   ⑥ 데이터 검사: 호실 면적 합 = 3D · 평면 칸 면적, 층 바닥 합 = 가로×깊이, Case 2 · 3 공통 건물 블록이 똑같은지, 시나리오 좌표가 화면마다 같은지,
 //      Case 5 공실 치수 · Case 4 출입구 · 같은 건물 입점이 공통 건물 블록과 맞는지, 인테리어 배치안이 겹치거나 벽 밖으로 나가지 않는지.
-//   ⑦ 실사 참고 사진: 사진 묶음(interior-photos.js) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
-//      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지.
+//   ⑦ 실사 참고 사진: Case 5 안 사진 묶음(PHOTOLIB) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
+//      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지,
+//      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내).
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
 const fs = require('fs');
@@ -30,7 +31,7 @@ const PAGES = [
         return !l.overflow.length && Math.abs(tot - b.W * b.D) < .5 && f.units.every(u => Math.abs((l.units[u.no] || []).reduce((s, p) => s + pieceArea(p), 0) - u.a) < 1); }))`, '호실 면적과 배치 칸 면적이 맞지 않음']] },
   { file: 'case4-nearby-competitors.html', must: ['.leaflet-container', '.poi', '.tiles'],
     act: [['click', '#scSeg button[data-s=C]'], ['click', '.qbtn[data-r="50"]'], ['click', '.fchip[data-k=chain]'], ['click', '#mSeg button[data-m=line]'], ['click', '#mSeg button[data-m=real]']] },
-  { file: 'case5-customer-ledger.html', must: ['#ledBody tr', '.kpi', '#kwset .kwr', '#vdesign svg', '#rphotos'],
+  { file: 'case5-customer-ledger.html', must: ['#ledBody tr', '.kpi', '#kwset .kwr', '#vdesign svg', '#rphotos', '#aigen #aiGo'],
     act: [['click', '#tabs button[data-t=events]'], ['click', '#tabs button[data-t=interior]'], ['click', '#concepts .cc:nth-child(2)'], ['click', '#iDay button[data-v="1"]'], ['click', '#iSeed'],
       ['visible', '#idetail .ipic svg'], ['click', '.kwr .lv button[data-lv="3"]'], ['click', '#dScope button[data-v=part]'], ['visible', '#vdesign svg'],
       // 기본 키워드 설정이면 적합도가 설정 없이 계산한 값과 같아야 함
@@ -55,6 +56,15 @@ const PAGES = [
           && top.every((x, i) => i === 0 || top[i - 1].raw >= x.raw - 1e-9) && rk.total === PHOTO.L.photos.length; })`, '실사 사진 추천 규칙(다른 장소 3장 · 점수 순 · 0~100점)이 틀림'],
       ['visible', '#phGrid figure.rph'], ['fill', '#phNote', '노트북 손님 많음, 강아지 동반 불가'],
       ['eval', `new Promise(r => setTimeout(() => r(/빼고 봄/.test((document.querySelector('#phSum') || {}).textContent) && /반려동물 없음/.test((document.querySelector('#phGrid') || {}).textContent)), 400))`, '특이사항 입력이 사진 고르기에 반영되지 않음'],
+      // 업종 실시간 사진: 위키미디어 커먼즈 응답 해석 — 비상업(NC) · 겉모습 · 작은 사진 · 상표 제한은 빼고, 글에서 태그를 뽑는지
+      ['eval', `(() => { const m = (lic, desc, x) => ({ Artist:{ value:'<b>Kim</b>' }, LicenseShortName:{ value:lic }, LicenseUrl:{ value:'https://creativecommons.org/licenses/by/4.0' }, ImageDescription:{ value:desc }, Categories:{ value:'Izakaya interiors' }, ...(x ? { Restrictions:{ value:'trademarked' } } : {}) });
+        const pg = (id, t, lic, desc, w = 2000, x) => ({ pageid:id, title:'File:' + t, imageinfo:[{ width:w, mime:'image/jpeg', thumburl:'https://upload.wikimedia.org/a/' + id + '.jpg', thumbwidth:500, thumbheight:375, descriptionurl:'https://commons.wikimedia.org/wiki/File:' + t, extmetadata:m(lic, desc, x) }] });
+        const r = PHOTO.live.parse({ query:{ pages:[pg(1, 'Izakaya 1.jpg', 'CC BY 4.0', 'Interior with a wooden counter and paper lanterns'), pg(2, 'Izakaya 2.jpg', 'CC BY-NC-SA 2.0', 'Izakaya interior'),
+          pg(3, 'Izakaya 3.jpg', 'CC0', 'Exterior facade and signboard'), pg(4, 'Izakaya 4.jpg', 'CC0', 'Izakaya interior', 400), pg(5, 'Izakaya 5.jpg', 'CC0', 'Izakaya interior', 2000, true)] } }, 'izakaya');
+        return r.length === 1 && r[0].industry === 'izakaya' && r[0].materials.includes('원목') && r[0].features.includes('노렌 · 종이등') && r[0].src.creator === 'Kim' && PHOTO.indFit(r[0], 'izakaya') === 1 && PHOTO.indFit(r[0], 'bar') === .5 && PHOTO.indFit(PHOTO.L.photos[0], 'izakaya') === 0; })()`, '업종 실시간 사진 해석(라이선스 거르기 · 태그 · 업종)이 틀림'],
+      // AI 이미지 생성: 무료 서비스용 짧은 프롬프트 길이, 오류 안내 문구
+      ['eval', `(() => { const cu = cur(), short = aiPrompt(cu, phLast, true), long = aiPrompt(cu, phLast); return short.length <= 900 && /^Photorealistic/.test(short) && long.length > short.length && /Avoid:/.test(long)
+        && /^API 키가 맞지 않습니다/.test(aiErr(400, 'API key not valid. Please pass a valid API key.').message) && /^사용 한도/.test(aiErr(429, '').message); })()`, 'AI 이미지 생성 프롬프트 · 오류 안내가 틀림'],
       ['click', '#phMore'], ['click', '#iImg button[data-v=photo]'], ['visible', '#idetail [data-v=mainphoto] img'],
       ['eval', `(async () => { const im = [...document.querySelectorAll('#phGrid img, #idetail [data-v=mainphoto] img')]; for (const i of im){ i.scrollIntoView(); await i.decode().catch(() => {}); } return im.length === 4 && im.every(i => i.naturalWidth > 0); })()`, '실사 사진이 그려지지 않음'],
       ['click', '#tabs button[data-t=profile]'], ['click', '#scSeg button[data-s=C]']] },
@@ -100,15 +110,17 @@ function crossChecks(){
   } catch (e) { errs.push('공통 블록 실행 검사 실패: ' + e.message); }
   // 실사 참고 사진 묶음: 사진마다 이미지 · 저작자 · 라이선스 · 원본 링크 · 태그가 어휘 안에 있는지
   try {
-    const pctx = { window:{} }; vm.createContext(pctx); vm.runInContext(read('interior-photos.js'), pctx);
+    const c5 = read('case5-customer-ledger.html'), a = c5.indexOf('// ── 실사 참고 사진 묶음 (window.PHOTOLIB) 시작'), b = c5.indexOf('// ── 실사 참고 사진 묶음 끝 ──');
+    if (a < 0 || b < a) throw new Error('Case 5 안에 사진 묶음 표시(시작 · 끝 주석)가 없음');
+    const pctx = { window:{} }; vm.createContext(pctx); vm.runInContext(c5.slice(a, b), pctx);
     const L = pctx.window.PHOTOLIB, V = L.vocab, inV = (g, x) => (Array.isArray(V[g]) ? V[g] : Object.keys(V[g])).includes(x);
-    if (!/<script src="interior-photos\.js"><\/script>/.test(read('case5-customer-ledger.html'))) errs.push('Case 5가 interior-photos.js 를 불러오지 않음');
+    if (L.photos.length !== 60) errs.push(`사진 묶음이 60장이 아님 (${L.photos.length}장)`);
     L.photos.forEach(p => {
       if (!/^data:image\/jpeg;base64,/.test(p.img) || !p.src.creator || !p.src.license || !/^https:\/\/commons\.wikimedia\.org\//.test(p.src.page)) errs.push(`사진 ${p.id}: 이미지 · 저작자 · 라이선스 · 원본 링크 누락`);
       if (!['styles', 'materials', 'light_types', 'layout', 'features'].every(g => p[g].every(x => inV(g, x))) || !inV('light_temp', p.light_temp) || !inV('size_class', p.size_class)) errs.push(`사진 ${p.id}: 어휘에 없는 태그`);
     });
     if (new Set(L.photos.map(p => p.id)).size !== L.photos.length) errs.push('사진 id 중복');
-  } catch (e) { errs.push('interior-photos.js 검사 실패: ' + e.message); }
+  } catch (e) { errs.push('사진 묶음 검사 실패: ' + e.message); }
   if (c1.length !== 3 || c2.length !== 3 || c4.length !== 3) errs.push(`시나리오 좌표를 다 찾지 못함 (Case1 ${c1.length} · Case2/3 ${c2.length} · Case4 ${c4.length})`);
   else if (norm(c1) !== norm(c2) || norm(c2) !== norm(c4)) errs.push(`시나리오 건물 좌표가 화면마다 다름: Case1 ${norm(c1)} / Case2·3 ${norm(c2)} / Case4 ${norm(c4)}`);
   return errs;
