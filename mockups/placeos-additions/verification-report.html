@@ -11,9 +11,9 @@
 *{box-sizing:border-box}
 :root{
   --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
-  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --text:#0f172a;--text-2:#475569;--text-3:#5b6779;
   --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
-  --ok:#059669;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --ok:#047857;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#b91c1c;--bad-soft:#fef2f2;
   --head:#0f172a;--r:14px;
   --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
 }
@@ -160,6 +160,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
 <div class="wrap">
   <aside class="toc" aria-label="목차">
     <b>목차</b>
+    <a href="#final">0. 전체 검증 (최종)</a>
     <a href="#summary">1. 결론 요약</a>
     <a href="#method">2. 검증 방법</a>
     <a href="#files">3. 파일별 정확성 · 신뢰도</a>
@@ -178,16 +179,96 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
 
   <main>
     <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
-    <h1>시안 5개를 검증한 결과와 차별점, 추가할 정보</h1>
-    <p class="lead">앞서 만든 HTML 시안 5개(상권 구역 지도 · 층별 3D 트윈 · 거리뷰 층별보기 · 반경 업종 분석 · 손님 모으기)를 코드 · 화면 · 수치 · 법규 · 외부 서비스 기준으로 점검했습니다. 바로 고칠 수 있는 문제는 시안에 반영했고, 실데이터가 있어야 풀리는 문제는 남은 과제로 정리했습니다.</p>
-    <div class="meta"><span>검증일 2026-10-26 · 추가 점검 2026-10-27 (9장) · 남은 과제 처리 (10장) · 실사 참고 사진 · 2차 처리 (11장) · 업종 실사 사진 · AI 이미지 생성 (12장) · 내려받기 수정 · 한 파일 (13장)</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 76개 링크</span></div>
+    <h1>PlaceOS 추가사항 시안 — 전체 검증 리포트</h1>
+    <p class="lead">Case 1~5 화면, 실사 참고 사진 · 업종 실사 사진 · AI 실사 이미지 만들기 · 미리보기, 한 파일 묶음(PlaceOS 참고)까지 지금까지 만든 모든 결과를 코드 · 화면 · 수치 · 법규 · 접근성 · 보안 · 장애 상황 기준으로 검증했습니다. 0장에 최종 결과를, 1~14장에 요청별 상세 기록을 담았습니다. 바로 고칠 수 있는 문제는 고쳤고, 실데이터 · 외부 서비스가 있어야 하는 부분은 확인하지 못한 것과 다음 할 일로 정리했습니다.</p>
+    <div class="meta"><span>최초 검증 2026-10-26 · 전체 재검증 2026-10-27 (0장) · 요청별 기록 9~13장</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 82개 링크</span></div>
 
     <div class="stats">
-      <div class="card stat"><div class="l">이번에 고친 문제</div><div class="v">15건</div><div class="d">지도 깨짐 · 수치 보정 · 법규 누락 등</div></div>
-      <div class="card stat"><div class="l">남은 과제</div><div class="v">13건</div><div class="d">대부분 실데이터 연동이 필요</div></div>
-      <div class="card stat"><div class="l">화면 테스트</div><div class="v">0건</div><div class="d">콘솔 오류 · 모바일 가로 넘침 (7개 화면)</div></div>
+      <div class="card stat"><div class="l">검증한 화면</div><div class="v">9개</div><div class="d">Case 1~5 · 목차 · 리포트 · PlaceOS 참고 · 종합본</div></div>
+      <div class="card stat"><div class="l">자동 점검</div><div class="v">17/17</div><div class="d">데스크톱 · 모바일 · 데이터 교차 검사</div></div>
+      <div class="card stat"><div class="l">확인 못 한 것</div><div class="v">실서비스</div><div class="d">외부 서비스 실제 응답 · 다른 브라우저</div></div>
       <div class="card stat"><div class="l">시안 수치의 성격</div><div class="v">데모</div><div class="d">일부 기준치만 공개 자료로 보정</div></div>
     </div>
+
+    <!-- 0 -->
+    <section id="final">
+      <h2><span class="n">0</span>전체 검증 (최종 · 2026-10-27)</h2>
+      <p class="sub">지금까지 만든 모든 화면(Case 1~5 · 목차 · 검증 리포트 · PlaceOS 참고 · SpaceOS 종합본)을 한 번에 다시 검증했습니다. 기존 자동 점검에 <b>HTML 문법 · 접근성(WCAG) · 링크 · 보안 · 성능 · 장애 상황 · 외부 서비스 모의 시험</b>을 더했고, 검증 중 찾은 문제는 고친 뒤 다시 돌렸습니다. 아래 1~14장은 요청별 상세 기록입니다.</p>
+      <div class="stats">
+        <div class="card stat"><div class="l">자동 점검</div><div class="v">17 / 17</div><div class="d">파일 간 데이터 일치 + 8개 화면 × 데스크톱 · 모바일</div></div>
+        <div class="card stat"><div class="l">접근성 위반 (axe)</div><div class="v">939 → 25</div><div class="d">남은 것: 제목 단계 8 · 반경 밖 흐린 표시 17</div></div>
+        <div class="card stat"><div class="l">HTML 문법 오류</div><div class="v">0</div><div class="d">html-validate · 9개 파일</div></div>
+        <div class="card stat"><div class="l">보안 · 링크</div><div class="v">0건</div><div class="d">스크립트 주입 · 키 노출 · 깨진 링크 (고친 뒤)</div></div>
+      </div>
+
+      <h3>검증 항목과 결과</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>항목</th><th>어떻게</th><th>결과</th><th>메모</th></tr></thead>
+          <tbody>
+            <tr><td>자동 점검 (check-pages.cjs)</td><td>8개 화면을 데스크톱 1440 · 모바일 390으로 열어 스크립트 오류 · 가로 넘침 · 핵심 요소 · 클릭 동작, 데이터 검사(호실 면적 = 3D 칸, 공통 건물 블록 · 좌표 · 공실 치수 · 출입구 일치, 배치안 겹침, CIEDE2000 시험값 10쌍, 사진 추천 규칙, 실시간 사진 해석 · 위험 주소 거르기, AI 오류 재시도 규칙, 빠른 미리보기 · 미리보기 창, 묶음 파일 최신 여부 · 화면 이동)</td><td><span class="pill p-ok">17/17 통과</span></td><td>이 작업 환경은 CDN이 막혀 있어 같은 버전(Leaflet 1.9.4 · MapLibre 5.6 · three.js 0.160)의 로컬 사본으로 돌렸습니다. 점검 중 Case 3에서 변수 이름 충돌(제가 넣은 접근성 수정)로 생긴 오류를 잡아 고침</td></tr>
+            <tr><td>HTML 문법</td><td>html-validate 9 (recommended 규칙, 스타일 취향 규칙 제외)</td><td><span class="pill p-ok">오류 0</span></td><td>고친 것: 역할 없는 요소의 aria-label 10곳, type 없는 입력칸 4곳, src 없는 img 1곳, 종합본 id 중복 2곳</td></tr>
+            <tr><td>접근성 (WCAG 2.1 AA)</td><td>axe-core 4.14로 10개 화면 · 상태(탭 · 열린 창) 검사</td><td><span class="pill p-ok">939곳 → 25곳</span></td><td>고친 것: 작은 회색 글자 대비(2.6:1 → 5.7:1, 대부분), 초록 · 빨강 · 주황 · 하늘 · 보라 글자 · 배지 대비, 잘못된 탭 역할(tablist) 2곳, 라벨 없는 입력 4곳, 빈 표 머리 4곳, 랜드마크(main · region) · 사이드 패널 이름, 지도 핀 안 링크 중첩, 목록 안 버튼 구조, 보이는 글과 다른 이름. 남은 것: 제목 단계 건너뜀(보통) 8곳, Case 4 반경 밖 점포를 일부러 흐리게 그린 표시 17곳</td></tr>
+            <tr><td>링크</td><td>14개 화면 상태를 열어 그려진 링크 전부 수집 — 같은 폴더 파일 · #앵커 존재, 새 탭 링크의 rel=noopener</td><td><span class="pill p-ok">깨진 것 0</span></td><td>같은 폴더 링크 · 앵커 60종 모두 있음. 외부 링크 181개(77개 도메인)는 이 작업 환경에서 접속이 막혀 열어 보지 못함</td></tr>
+            <tr><td>보안</td><td>위키미디어 응답 · AI 서비스 오류 글에 스크립트 · 이벤트 속성 · javascript: 주소를 섞어 보냄, API 키를 넣고 생성 · 백업 · 주소 · 저장소 확인, 묶음 파일에 바깥 메시지 보냄</td><td><span class="pill p-ok">문제 0 (고친 뒤)</span></td><td>찾아서 고친 것: 실시간 사진의 <code>javascript:</code> 원본 · 라이선스 주소가 링크로 만들어지던 문제(누르면 실행될 수 있었음) → http(s) 위키미디어 · CC 주소만 링크로. 자동 실행된 스크립트 0, API 키는 저장소 · 백업 · 프롬프트 · 주소에 없음('키 기억'을 켤 때만 저장, 끄면 지움), 묶음 파일은 자기 iframe이 보낸 메시지만 처리</td></tr>
+            <tr><td>성능</td><td>라이브러리는 로컬 사본, 지도 타일 · 외부 사진은 막고 3회 측정한 가운데 값</td><td><span class="pill p-ok">모두 1.6초 안</span></td><td>아래 표. Case 5(3.4MB, 사진 60장 포함)도 0.7초 안에 열림. 실제 인터넷에서는 CDN · 지도 타일 시간이 더해짐</td></tr>
+            <tr><td>장애 상황</td><td>CDN 하나 · 둘 다 막기, 인터넷 없음</td><td><span class="pill p-ok">통과</span></td><td>지도: unpkg가 막히면 jsDelivr로, 둘 다 막히면 지도 없이 목록 · 상세 동작. 3D: jsDelivr가 막히면 unpkg로 다시 열고, 둘 다 막히면 안내 + Case 3 링크. 실시간 사진 · AI는 인터넷이 없으면 한국어 안내</td></tr>
+            <tr><td>AI 이미지 생성</td><td>Pollinations · Gemini · OpenAI 응답을 흉내 낸 10가지 상황</td><td><span class="pill p-ok">10/10</span></td><td>붐빔 2번 뒤 성공(자동 재시도), 옛 주소 계속 실패 → 새 주소로 성공, 모두 실패 → 한국어 안내 + '대신 빠른 미리보기', 공개 키 → 새 주소 먼저, Gemini 503 재시도, 할당량 소진은 재시도 없이 안내, 모델 없음 → 모델 목록 확인, [멈추기], 미리보기 창, 비교 화면 → 미리보기 창</td></tr>
+            <tr><td>AI 내려받기</td><td>세 서비스 결과 내려받아 파일 머리 확인 · 브라우저로 열기</td><td><span class="pill p-ok">모두 PNG</span></td><td>무료 체험은 서비스 요청 1번뿐(두 번째 요청이 한도에 걸려도 정상 PNG)</td></tr>
+            <tr><td>업종 실사 사진</td><td>위키미디어 응답 흉내(비상업 · 겉모습 · 작은 사진 · 상표 제한 섞음)</td><td><span class="pill p-ok">통과</span></td><td>10건 → 6건만 남김, 같은 장소 한 장, 지하 · 노렌 · 숯불 조건 반영, 3일 저장, [이 사진 빼기]</td></tr>
+            <tr><td>PlaceOS 참고 (한 파일)</td><td>카드 · 화면 안 메뉴 · 주소(#case4?s=C) · 뒤로 가기 · 로고 · 모바일 · 안쪽 내려받기</td><td><span class="pill p-ok">통과</span></td><td>원본 5개와 내용이 같은지 자동 비교(시안만 고치고 다시 안 묶으면 점검 실패)</td></tr>
+            <tr><td>데이터 정확성</td><td>파일 간 교차 검사 · 수식 시험값</td><td><span class="pill p-ok">통과</span></td><td>좌표 · 공실 치수 · 출입구 · 같은 건물 입점 일치, 호실 면적 = 배치 칸 면적, 층 바닥 합 = 가로 × 깊이, CIEDE2000 = 논문 시험값(±0.00005)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>화면별 열기 속도 · 크기</h3>
+      <div class="card tbl"><table class="t"><thead><tr><th>화면</th><th style="text-align:right">크기</th><th style="text-align:right">문서 준비</th><th style="text-align:right">전체 로드</th><th>스크립트 오류</th></tr></thead><tbody><tr><td>목차</td><td style="text-align:right">14 KB</td><td style="text-align:right">23 ms</td><td style="text-align:right">183 ms</td><td>없음</td></tr><tr><td>Case 1 상권 구역 지도</td><td style="text-align:right">57 KB</td><td style="text-align:right">658 ms</td><td style="text-align:right">822 ms</td><td>없음</td></tr><tr><td>Case 2 층별 3D 트윈</td><td style="text-align:right">94 KB</td><td style="text-align:right">513 ms</td><td style="text-align:right">1,519 ms</td><td>없음</td></tr><tr><td>Case 3 거리뷰 · 층별보기</td><td style="text-align:right">84 KB</td><td style="text-align:right">327 ms</td><td style="text-align:right">675 ms</td><td>없음</td></tr><tr><td>Case 4 반경 업종</td><td style="text-align:right">56 KB</td><td style="text-align:right">646 ms</td><td style="text-align:right">894 ms</td><td>없음</td></tr><tr><td>Case 5 손님 모으기</td><td style="text-align:right">3,397 KB</td><td style="text-align:right">534 ms</td><td style="text-align:right">704 ms</td><td>없음</td></tr><tr><td>검증 리포트</td><td style="text-align:right">121 KB</td><td style="text-align:right">27 ms</td><td style="text-align:right">165 ms</td><td>없음</td></tr><tr><td>PlaceOS 참고 (한 파일)</td><td style="text-align:right">3,743 KB</td><td style="text-align:right">298 ms</td><td style="text-align:right">721 ms</td><td>없음</td></tr><tr><td>SpaceOS 종합본</td><td style="text-align:right">10,529 KB</td><td style="text-align:right">756 ms</td><td style="text-align:right">1,209 ms</td><td>없음</td></tr></tbody></table></div>
+
+      <h3>이번(요청 9)에 고친 것</h3>
+      <div class="feats">
+        <div class="card feat"><h4>① AI '서비스 쪽 오류'</h4><p>원인: 키 없는 무료 주소(image.pollinations.ai)는 유지보수만 하는 옛 주소로 붐비면 5xx를 내고 IP당 약 15초에 1번만 되며, Gemini 이미지 모델도 붐비면 503을 자주 냅니다. 해결: 붐빔 · 일시 오류(429 · 5xx)는 남은 시간을 보여 주며 자동으로 다시 시도(무료 16초씩 2번, Gemini 3 · 8 · 15초, OpenAI 4 · 10초), 무료는 마지막에 짧은 프롬프트 · 작은 크기로, 그래도 안 되면 새 주소(gen.pollinations.ai)로. 공개 키(pk_)를 넣으면 새 주소부터. [멈추기], 자세한 기록, 원인별 안내(키 · 지역 · 할당량 · 조직 인증 · 모델 없음 · 붐빔), Gemini [모델 목록 확인].</p></div>
+        <div class="card feat"><h4>② AI 실사 이미지 미리보기</h4><p><b>빠른 미리보기</b>: 키 · 인터넷 없이 브라우저에서 공간 그림에 실사 참고 사진의 색 분포(Lab 색 옮기기) · 조명 색온도 · 빛 번짐 · 비네팅 · 필름 입자를 입혀 바로 보여 줌(AI 아님 표시). <b>미리보기 창</b>: 결과를 누르면 크게 열고 공간 그림과 <b>비교 슬라이더</b> · 그림 · 실사 사진 · AI 세 장 나란히 · 크게 보기, 이전 · 다음(←→), PNG 내려받기, 비교 화면에 놓기. <b>보낼 내용 미리보기</b>: Gemini에 함께 보낼 그림 · 사진 썸네일과 프롬프트 길이.</p></div>
+        <div class="card feat"><h4>③ 접근성 · 문법 · 보안</h4><p>위 표의 수정 — 글자 대비 토큰(회색 #5b6779, 초록 #047857, 빨강 #b91c1c, 주황 #b45309 등), 역할 · 라벨 · 랜드마크 · 목록 구조, HTML 오류, 실시간 사진의 위험한 주소 거르기. 색이 조금 진해졌을 뿐 화면 배치는 그대로입니다.</p></div>
+      </div>
+
+      <h3>기능별 신뢰도</h3>
+      <div class="card tbl">
+        <table class="t">
+          <thead><tr><th>기능</th><th>동작 완성도</th><th>데이터 사실성</th><th>검증 수준</th><th>남은 위험</th></tr></thead>
+          <tbody>
+            <tr><td>Case 1 상권 구역 지도</td><td>높음</td><td>낮음 (구역 · 지표 데모)</td><td>자동 · 접근성 · 장애</td><td>상권 경계는 근사치, 실제 상권 데이터 연동 필요</td></tr>
+            <tr><td>Case 2 층별 3D 트윈</td><td>높음</td><td>중간 (면적 · 호실 구조는 일관, 값은 데모)</td><td>자동 · 교차 검사 · 키보드 · 장애</td><td>3D 형태는 상자, 실제 도면 · 대장 연동 필요</td></tr>
+            <tr><td>Case 3 거리뷰 · 층별보기</td><td>높음</td><td>낮음 (거리뷰는 그림)</td><td>자동 · 교차 검사 · 접근성</td><td>실제 파노라마 · 층 높이 매칭 미구현</td></tr>
+            <tr><td>Case 4 반경 업종</td><td>높음</td><td>낮음 (점포 데모, 보행 거리 추정)</td><td>자동 · 교차 검사 · 장애</td><td>도로망 · 실제 점포 데이터 연동 필요</td></tr>
+            <tr><td>Case 5 가계부 · 행사 · 인테리어</td><td>높음</td><td>중간 (기준치 일부 공개 자료, 나머지 데모)</td><td>자동 · 보안 · 내려받기 · 백업</td><td>단가 · 주방 비율 · 좌석 모듈은 참고치</td></tr>
+            <tr><td>실사 참고 사진 (기본 60장)</td><td>높음</td><td>높음 (실제 사진 · 라이선스 · 출처)</td><td>형식 · 라이선스 자동 검사</td><td>모두 카페 사진, 태그는 1명이 붙임</td></tr>
+            <tr><td>업종 실사 사진 (실시간)</td><td>높음 (모의)</td><td>중간 (실제 사진, 태그는 글에서 자동)</td><td>모의 응답 · 보안</td><td>실제 검색 결과 품질은 확인 못 함 — 엉뚱한 사진은 [빼기]</td></tr>
+            <tr><td>AI 실사 이미지 · 미리보기</td><td>높음 (모의)</td><td>해당 없음 (생성 이미지)</td><td>모의 10상황 · PNG · 보안</td><td>실제 서비스 결과 · 무료 서비스 정책은 확인 못 함</td></tr>
+            <tr><td>PlaceOS 참고 (한 파일)</td><td>높음</td><td>원본과 같음</td><td>자동 · 최신 여부 비교</td><td>검증 리포트는 같은 폴더에 있어야 열림</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>확인하지 못한 것 (정직하게)</h3>
+      <div class="card pad"><ul>
+        <li><b>실제 외부 서비스</b>: 이 작업 환경은 위키미디어 커먼즈 · Pollinations · OpenAI 접속이 막혀 있어, 실제 검색 결과 · 생성 이미지는 보지 못했습니다(Gemini는 브라우저 호출 허용 · 오류 형식까지만 확인). 모든 흐름은 응답 형식을 흉내 낸 모의 시험으로 확인했습니다.</li>
+        <li><b>브라우저 · 기기</b>: Chromium(크롬 · 엣지 계열)만 자동 시험했습니다. 사파리 · 파이어폭스와 실제 휴대폰은 직접 확인이 필요합니다.</li>
+        <li><b>화면 낭독기</b>: 자동 접근성 검사(axe)만 했고, 실제 화면 낭독기(VoiceOver · NVDA)로 끝까지 써 보지는 않았습니다.</li>
+        <li><b>실데이터</b>: 상권 · 점포 · 건물 · 매출 수치는 대부분 데모입니다. 실제 창업 · 임대 판단에는 쓸 수 없습니다(1장).</li>
+        <li><b>외부 링크 181개</b>: 주소 형식과 새 탭 보안 속성만 확인했고, 링크가 지금도 열리는지는 확인하지 못했습니다.</li>
+      </ul></div>
+
+      <h3>다음에 할 일 (우선순위)</h3>
+      <div class="card tbl"><table class="t"><thead><tr><th>순위</th><th>할 일</th><th>이유</th></tr></thead><tbody>
+        <tr><td><span class="pill p-mid">P1</span></td><td>인터넷이 되는 PC에서 Case 5 C 시나리오로 업종 실사 사진 · AI 생성(무료 체험 · Gemini 키) 실제 확인</td><td>이 환경에서 확인하지 못한 유일한 핵심 기능</td></tr>
+        <tr><td><span class="pill p-mid">P1</span></td><td>실서비스용 데이터 연동(서울시 상권분석 · 상가정보 · 건축물대장)</td><td>수치 신뢰도의 가장 큰 한계</td></tr>
+        <tr><td><span class="pill p-gray">P2</span></td><td>AI 키를 서버(프록시)에서 관리 · 사용량 제한</td><td>공개 서비스로 열 때 키를 브라우저에 두지 않기 위해</td></tr>
+        <tr><td><span class="pill p-gray">P2</span></td><td>사파리 · 파이어폭스 · 실제 휴대폰 · 화면 낭독기 점검, 제목 단계 정리</td><td>자동 검사로 못 보는 부분</td></tr>
+        <tr><td><span class="pill p-gray">P3</span></td><td>이자카야 · 바 · 샐러드 실사 사진을 사람이 골라 기본 묶음에 추가(태그 검토 2인)</td><td>실시간 검색의 품질 편차를 줄이기 위해</td></tr>
+      </tbody></table></div>
+      <p class="note" style="margin-top:10px">검증 도구: Playwright(Chromium) · check-pages.cjs, html-validate 9.7, axe-core 4.14, 자체 링크 · 보안 · 성능 · 모의 응답 스크립트. 판정 기준: WCAG 2.1 AA(글자 대비 4.5:1), 외부 데이터는 '신뢰할 수 없는 입력'으로 취급.</p>
+    </section>
 
     <!-- 1 -->
     <section id="summary">
@@ -889,6 +970,9 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
           <li><a href="https://developers.openai.com/api/docs/guides/image-generation" target="_blank" rel="noopener">OpenAI · Image generation 가이드</a></li>
           <li><a href="https://github.com/pollinations/pollinations" target="_blank" rel="noopener">Pollinations (무료 이미지 생성)</a> · <a href="https://blogs.novita.ai/free-ai-image-generation-api-no-key-required/" target="_blank" rel="noopener">키 없는 이미지 API 비교</a> <span>· 2026</span></li>
           <li><a href="https://www.mediawiki.org/wiki/API:Cross-site_requests" target="_blank" rel="noopener">MediaWiki API · 다른 사이트에서 부르기(origin=*)</a> · <a href="https://www.mediawiki.org/wiki/API:Imageinfo" target="_blank" rel="noopener">imageinfo · extmetadata</a></li>
+          <li><a href="https://github.com/pollinations/pollinations/issues/6409" target="_blank" rel="noopener">Pollinations · Legacy API's (옛 주소 유지보수 전환)</a> · <a href="https://github.com/pollinations/pollinations" target="_blank" rel="noopener">gen.pollinations.ai</a> <span>· 2025.12</span></li>
+          <li><a href="https://discuss.ai.google.dev/t/gemini-image-api-frequent-503-model-is-overloaded-errors-for-4k-image-generation-in-production/112949" target="_blank" rel="noopener">Gemini 이미지 API 503 "model is overloaded" (재시도 권장)</a></li>
+          <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener">axe-core (접근성 자동 검사)</a> · <a href="https://html-validate.org/" target="_blank" rel="noopener">html-validate</a> · <a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener">WCAG 2.1</a></li>
         </ol>
       </div>
     </section>

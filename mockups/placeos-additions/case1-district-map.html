@@ -13,9 +13,9 @@
 *{box-sizing:border-box}
 :root{
   --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
-  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --text:#0f172a;--text-2:#475569;--text-3:#5b6779;
   --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
-  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --ok:#047857;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#b91c1c;--bad-soft:#fef2f2;
   --vac:#f97316;--head:#0f172a;--r:14px;
   --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
 }
@@ -192,7 +192,7 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
 
-<div class="phead">
+<div class="phead" role="region" aria-label="페이지 소개">
   <div>
     <div class="eyebrow">CASE 1 · 다른 상권 찾기</div>
     <h1>동네 상권을 구역별로 나눠서 추천 업종과 특징 보기</h1>
@@ -204,7 +204,7 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
       <option value="seongsu">성동구 성수동</option>
       <option value="mangwon">마포구 망원동</option>
     </select>
-    <div class="seg" id="modeSeg" role="tablist" aria-label="지도 색칠 기준">
+    <div class="seg" id="modeSeg" role="group" aria-label="지도 색칠 기준">
       <button data-mode="type" class="on">상권 유형</button>
       <button data-mode="fit">업종 적합도</button>
       <button data-mode="vac">공실률</button>
@@ -214,7 +214,7 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
 </div>
 
 <main class="layout">
-  <aside class="card list">
+  <aside class="card list" aria-label="상권 구역 목록">
     <div class="list-h">
       <h3 id="listTitle">상권 구역</h3>
       <p id="listSub">구역을 누르면 지도와 오른쪽 상세가 바뀝니다</p>
@@ -223,12 +223,12 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
   </aside>
 
   <section class="card mapwrap">
-    <div id="map" aria-label="상권 구역 지도"></div>
+    <div id="map" role="region" aria-label="상권 구역 지도"></div>
     <div class="maphint" id="maphint">색칠된 구역을 누르면 상권 특징과 추천 업종이 나와요</div>
     <div class="legend" id="legend"></div>
   </section>
 
-  <aside class="card detail" id="detail"></aside>
+  <aside class="card detail" id="detail" aria-label="선택한 구역 상세"></aside>
 </main>
 
 <div class="tray" id="tray"></div>
@@ -276,7 +276,7 @@ const INDS = [
 const IND = Object.fromEntries(INDS.map(i => [i.k, i]));
 
 const TYPES = {
-  '발달상권':  {c:'#6366f1', d:'유동인구·점포가 몰린 핵심 상권'},
+  '발달상권':  {c:'#5558e6', d:'유동인구·점포가 몰린 핵심 상권'},
   '골목상권':  {c:'#f59e0b', d:'주거지 옆 생활밀착형 소규모 상권'},
   '오피스상권':{c:'#0ea5e9', d:'직장인 평일 점심·퇴근 수요 중심'},
   '특화상권':  {c:'#ec4899', d:'특정 테마·산업이 모인 상권'},
@@ -540,7 +540,7 @@ function drawHood(){
   // 3D 트윈 데모 매물 핀: 정확한 건물 좌표에 A · B · C
   Object.entries(TWINS).forEach(([k, t]) => {
     if (!h.zones.some(z => inPoly(t.ll, z.poly))) return;
-    L.marker(t.ll, {icon: L.divIcon({className:'', html:`<a class="twinpin" href="case2-3d-floor-twin.html?s=${k}" title="${t.name} · ${t.face}">${k}</a>`, iconSize:[24,24], iconAnchor:[12,12]}), pane:'twinPane'})
+    L.marker(t.ll, {icon: L.divIcon({className:'', html:`<a class="twinpin" href="case2-3d-floor-twin.html?s=${k}" title="${t.name} · ${t.face}">${k}</a>`, iconSize:[24,24], iconAnchor:[12,12]}), pane:'twinPane', keyboard:false})
       .bindTooltip(`<b>${k} · ${t.name}</b><br>${t.face} · 3D 트윈 있음`, {direction:'top', offset:[0,-12]}).addTo(poiLayer);
   });
   h.stations.forEach(s => {
@@ -719,7 +719,7 @@ function openCompare(){
     ['추천 1순위', z => { const [k,s] = topRecs(z)[0]; return `${IND[k].e} ${IND[k].n} (${s})`; }, null],
   ];
   $('#cmpTitle').textContent = `상권 비교 · ${zs.length}곳`;
-  $('#cmpBody').innerHTML = `<table class="cmp"><thead><tr><th></th>${zs.map(z => `<th><span class="type-chip" style="--zc:${TYPES[z.type].c};background:${TYPES[z.type].c}">${z.type}</span><br>${z.name}</th>`).join('')}</tr></thead><tbody>`
+  $('#cmpBody').innerHTML = `<table class="cmp"><thead><tr><th><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">항목</span></th>${zs.map(z => `<th><span class="type-chip" style="--zc:${TYPES[z.type].c};background:${TYPES[z.type].c}">${z.type}</span><br>${z.name}</th>`).join('')}</tr></thead><tbody>`
     + rows.map(([label, get, best, f]) => {
       const vals = zs.map(get);
       const target = best === 'max' ? Math.max(...vals) : best === 'min' ? Math.min(...vals) : null;

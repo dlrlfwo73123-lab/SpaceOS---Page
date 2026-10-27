@@ -11,10 +11,10 @@
 *{box-sizing:border-box}
 :root{
   --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
-  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --text:#0f172a;--text-2:#475569;--text-3:#5b6779;
   --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
-  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
-  --off:#0ea5e9;--on:#8b5cf6;--sup:#10b981;
+  --ok:#047857;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#b91c1c;--bad-soft:#fef2f2;
+  --off:#0369a1;--on:#7c3aed;--sup:#047857;
   --head:#0f172a;--r:14px;
   --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
 }
@@ -314,6 +314,7 @@ figure.rph.live{border-color:#99f6e4}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid #cbd5e1;border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .aigen #aiProv button small{font-weight:500;color:var(--text-3);margin-left:2px}
+.aigen #aiProv button.on small{color:#e0e7ff}
 .aig-set{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
 .aig-set > label{display:grid;gap:3px;font-size:12px;font-weight:700;color:var(--text-2)}
 .aig-set .inp{min-width:220px}
@@ -329,6 +330,45 @@ figure.aig img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;back
 figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
 .aig-empty{margin:0;font-size:12.5px}
 .ipic.aim figcaption{background:rgba(76,29,149,.72)}
+.ipic.aim.loc figcaption{background:rgba(15,118,110,.78)}
+.lcb{display:inline-block;font-size:10.5px;font-weight:800;color:#0f766e;background:#ccfbf1;border-radius:6px;padding:0 6px;vertical-align:1px}
+figure.aig.loc{border-color:#99f6e4}
+figure.aig .phz{display:block;padding:0;border:0;background:#e2e8f0;cursor:zoom-in}
+.aig-send{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--text-2);background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px}
+.aig-send > span{font-weight:700}
+.aig-send em{font-style:normal;color:var(--text-3)}
+.aig-send figure{margin:0;display:grid;gap:2px;justify-items:center}
+.aig-send .th,.aig-send img{display:block;width:96px;height:60px;object-fit:cover;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.aig-send .th svg{width:100%;height:100%;display:block}
+.aig-send figcaption{font-size:10.5px;color:var(--text-3)}
+.aig-log{font-size:11.5px;color:var(--text-2)}
+.aig-log summary{cursor:pointer;color:var(--brand-ink);font-weight:700}
+.aig-log ol{margin:4px 0 0;padding-left:18px}
+#aiview{position:fixed;inset:0;z-index:2100;background:rgba(10,14,20,.86);display:flex;align-items:center;justify-content:center;padding:16px}
+#aiview[hidden]{display:none}
+.avp{background:#fff;border-radius:14px;max-width:min(1100px,96vw);width:100%;max-height:94vh;overflow:auto;padding:14px;display:grid;gap:10px}
+.avh{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.avh b{font-size:14px}
+.avh .seg{margin-left:auto}
+.avc{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#0f172a;user-select:none}
+.avc img,.avo img{display:block;width:100%;height:100%;object-fit:cover}
+.avc .avb,.avc .avt{position:absolute;inset:0}
+.avc .avt{clip-path:inset(0 calc(100% - var(--p)) 0 0)}
+.avc .avbar{position:absolute;top:0;bottom:0;left:var(--p);width:3px;margin-left:-1.5px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);pointer-events:none}
+.avc input[type=range]{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize}
+.avc input[type=range]:focus-visible + .avl{outline:3px solid #6366f1}
+.avc .avl,.avc .avr{position:absolute;top:10px;font-size:11.5px;font-weight:800;color:#fff;background:rgba(15,23,42,.6);border-radius:999px;padding:2px 9px;pointer-events:none}
+.avc .avl{left:10px}.avc .avr{right:10px}
+.avo{border-radius:10px;overflow:hidden;background:#0f172a;max-height:70vh}
+.avo img{object-fit:contain;max-height:70vh}
+.avs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.avs figure{margin:0;display:grid;gap:4px}
+.avs img,.avs .avx{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:8px;background:#e2e8f0}
+.avs figcaption{font-size:11.5px;color:var(--text-2)}
+.avx{display:grid;place-items:center;color:var(--text-3);font-size:12px}
+.avi{margin:0;font-size:12px;color:var(--text-2)}
+.avf{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.avp textarea{width:100%;font:11.5px/1.5 ui-monospace,Menlo,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px}
 .rph-row small{font-size:11.5px;color:var(--text-3)}
 .rphotos .cap{margin:0;font-size:11.3px;color:var(--text-3);line-height:1.6}
 #phbox{position:fixed;inset:0;background:rgba(10,14,20,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2000;padding:16px}
@@ -425,25 +465,25 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
 
-<div class="phead">
+<div class="phead" role="region" aria-label="페이지 소개">
   <div>
     <div class="eyebrow">CASE 5 · 손님 모으기 — 상권분석 정보 추가 입력</div>
     <h1>가계부처럼 매출 목표 · 지출을 적고, 행사 연계와 인테리어 추천까지</h1>
     <p>내 가게 정보를 넣으면 상권 평균과 비교한 목표, 지출 구조, 같이 할 만한 온 · 오프라인 행사, 상권에 어울리는 인테리어를 보여줍니다.</p>
     <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>가게 매출 · 지출은 <b>예시 가게</b> 값이고, 상권 평균 · 상위 25% · 상권 키워드 · 인테리어 단가는 <b>데모 값</b>입니다.</li><li>실서비스 출처: 서울시 상권분석서비스 추정매출(분기) · 주변 매장 리뷰 · SNS 사진 분석 · 시공사 단가표. 행사 이름 · 일정은 예시이고 링크는 공식 기관 · 플랫폼 주소입니다.</li><li>입력값은 이 브라우저에만 저장됩니다. 콘셉트 적합도 · 배치안은 <b>참고용</b>이며 설계 · 견적을 대신하지 않습니다.</li></ul></details>
   </div>
-  <div class="seg" id="scSeg" aria-label="시나리오">
+  <div class="seg" id="scSeg" role="group" aria-label="시나리오">
     <button data-s="A">A · 운영 6개월 디저트 카페</button>
     <button data-s="B">B · 오픈 2개월 샐러드</button>
     <button data-s="C">C · 오픈 준비 이자카야</button>
   </div>
 </div>
 
-<div class="wrap">
+<main class="wrap">
   <div class="card store" id="store"></div>
   <div class="kpis" id="kpis"></div>
 
-  <div class="tabs" id="tabs" role="tablist">
+  <div class="tabs" id="tabs" role="group" aria-label="손님 모으기 메뉴">
     <button data-t="profile"><i>1</i>내 가게 정보</button>
     <button data-t="ledger" class="on"><i>2</i>매출 · 지출 가계부</button>
     <button data-t="events"><i>3</i>온 · 오프라인 행사 연계</button>
@@ -455,9 +495,9 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
     <div class="g2">
       <div class="card box">
         <div class="bh"><h3>상권분석에 넣을 내 가게 정보</h3><small>입력하면 목표 · 행사 · 인테리어 추천에 바로 반영</small></div>
-        <div class="row"><div class="field"><label for="fName">상호</label><input class="inp" id="fName"></div>
+        <div class="row"><div class="field"><label for="fName">상호</label><input class="inp" type="text" id="fName"></div>
           <div class="field"><label for="fInd">업종</label><select class="inp" id="fInd"><option>디저트 카페</option><option>샐러드 · 포케</option><option>이자카야</option><option>카페</option><option>베이커리</option><option>네일 · 뷰티</option><option>필라테스</option></select></div></div>
-        <div class="field"><label>위치</label><input class="inp" id="fPlace" readonly style="background:var(--surface-2)"></div>
+        <div class="field"><label for="fPlace">위치</label><input class="inp" type="text" id="fPlace" readonly style="background:var(--surface-2)"></div>
         <div class="row3">
           <div class="field"><label for="fArea">전용면적</label><div class="unit"><input class="inp" id="fArea" type="number" min="1"><span>㎡</span></div></div>
           <div class="field"><label for="fSeats">좌석 수</label><div class="unit"><input class="inp" id="fSeats" type="number" min="0"><span>석</span></div></div>
@@ -470,7 +510,7 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
         </div>
         <div class="field"><label>주 타깃 손님</label><div class="tchips" id="fTargets"></div></div>
         <div class="field"><label>판매 채널</label><div class="tchips" id="fChannels"></div></div>
-        <div class="field"><label for="fMenu">대표 메뉴 · 서비스</label><input class="inp" id="fMenu"></div>
+        <div class="field"><label for="fMenu">대표 메뉴 · 서비스</label><input class="inp" type="text" id="fMenu"></div>
         <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" id="resetBtn">예시 데이터로 되돌리기</button><button class="btn btn-primary" id="saveBtn">저장하고 분석에 반영</button></div>
       </div>
       <div style="display:grid;gap:12px">
@@ -507,7 +547,7 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
             <div class="field"><label for="goal">월 평균 매출 목표</label><div class="unit"><input class="inp" id="goal" type="number" min="0" step="50"><span>만원</span></div></div>
             <div class="field"><label for="days">월 영업일</label><div class="unit"><input class="inp" id="days" type="number" min="1" max="31"><span>일</span></div></div>
           </div>
-          <input type="range" id="goalRange" min="1000" max="6000" step="50" style="width:100%;accent-color:var(--brand)">
+          <input type="range" id="goalRange" aria-label="월 매출 목표 (만원)" min="1000" max="6000" step="50" style="width:100%;accent-color:var(--brand)">
           <div class="calc" id="goalCalc" style="margin-top:10px"></div>
         </div>
         <div class="card box chart">
@@ -523,12 +563,12 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
       <div style="display:grid;gap:12px">
         <div class="card box">
           <div class="bh"><h3 id="ledTitle">이번 달 장부</h3><div style="display:flex;gap:6px"><button class="btn btn-sm" id="csvBtn">CSV 내보내기</button><button class="btn btn-sm" id="ledReset">예시로 초기화</button></div></div>
-          <div class="ledscroll"><table class="led"><thead><tr><th>날짜</th><th>구분</th><th>항목</th><th>메모</th><th class="amt">금액</th><th></th></tr></thead><tbody id="ledBody"></tbody></table></div>
+          <div class="ledscroll"><table class="led"><thead><tr><th>날짜</th><th>구분</th><th>항목</th><th>메모</th><th class="amt">금액</th><th><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">지우기</span></th></tr></thead><tbody id="ledBody"></tbody></table></div>
           <form class="addrow" id="addForm">
             <input class="inp" type="date" id="aDate" required aria-label="날짜">
             <select class="inp" id="aType" aria-label="구분"><option value="in">매출</option><option value="out" selected>지출</option></select>
             <select class="inp" id="aCat" aria-label="항목"></select>
-            <input class="inp memo" id="aMemo" placeholder="메모 (예: 우유 · 버터)" aria-label="메모">
+            <input class="inp memo" type="text" id="aMemo" placeholder="메모 (예: 우유 · 버터)" aria-label="메모">
             <div class="unit"><input class="inp" id="aAmt" type="number" min="1" placeholder="금액" required aria-label="금액"><span>만원</span></div>
             <button class="btn btn-primary" type="submit">추가</button>
           </form>
@@ -574,9 +614,10 @@ figure.aig figcaption{padding:9px 11px;font-size:12px;display:grid;gap:6px}
       <div class="card box"><div class="bh"><h3>공사 전 체크리스트</h3><small>인허가 · 규정</small></div><ul class="checks" id="checks"></ul></div>
     </div>
   </section>
-</div>
+</main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<div id="phbox" hidden role="dialog" aria-modal="true" aria-label="실사 참고 사진 크게 보기"><figure><img alt=""><figcaption></figcaption></figure><button type="button" class="btn" id="phclose">닫기 (Esc)</button></div>
+<div id="aiview" hidden role="dialog" aria-modal="true" aria-label="AI 실사 이미지 미리보기"></div>
+<div id="phbox" hidden role="dialog" aria-modal="true" aria-label="실사 참고 사진 크게 보기"><figure><img alt="" src="data:,"><figcaption></figcaption></figure><button type="button" class="btn" id="phclose">닫기 (Esc)</button></div>
 
 <script>
 // ── 실사 참고 사진 묶음 (window.PHOTOLIB) 시작 ── 손님 모으기 ④ 인테리어의 기본 사진 60장을 이 파일 안에 넣어 어디서 열어도 보이게 함
@@ -736,7 +777,7 @@ const EVENTS = [
    links:[['서울신용보증재단 소상공인 지원','https://www.seoulsbdc.or.kr']]},
 ];
 const TY = { off:'오프라인 행사', on:'온라인 프로모션', sup:'지원사업' };
-const TY_COL = { off:'#0ea5e9', on:'#8b5cf6', sup:'#10b981' };
+const TY_COL = { off:'#0369a1', on:'#7c3aed', sup:'#047857' };
 
 // 상권별 무드(주변 매장 리뷰 · SNS 사진 키워드, 데모) · 공간 조건(Case 2 · 3 호실 데이터와 같은 값)
 // mood: [키워드, 비율(%), 콘셉트 태그, 디자인 키워드 id(KW)]
@@ -1427,7 +1468,7 @@ function planSvg(pl, V, c, face, ov){
   });
   // 치수 · 방위 · 축척
   s += `<text x="${x0 + w / 2}" y="${y0 + h + 32}" font-size="11" text-anchor="middle" fill="#0369a1" font-weight="700">${V.frontLabel}</text>`;
-  s += `<text x="${x0 - 8}" y="${y0 + h / 2}" font-size="10" text-anchor="end" fill="#94a3b8">${V.d}m</text><text x="${x0}" y="${y0 - 6}" font-size="10" text-anchor="start" fill="#94a3b8">${V.w}m</text>`;
+  s += `<text x="${x0 - 8}" y="${y0 + h / 2}" font-size="10" text-anchor="end" fill="#64748b">${V.d}m</text><text x="${x0}" y="${y0 - 6}" font-size="10" text-anchor="start" fill="#64748b">${V.w}m</text>`;
   const bar = 2 * k;
   s += `<g transform="translate(${x0} ${y0 + h + 50})"><line x1="0" y1="0" x2="${bar}" y2="0" stroke="#334155" stroke-width="2"/><line x1="0" y1="-4" x2="0" y2="4" stroke="#334155" stroke-width="2"/><line x1="${bar}" y1="-4" x2="${bar}" y2="4" stroke="#334155" stroke-width="2"/><text x="${bar + 6}" y="4" font-size="10" fill="#334155">2m</text></g>`;
   s += `<g transform="translate(${VW - 26} ${y0 + h + 44}) rotate(${180 - face})"><circle r="13" fill="#fff" stroke="#cbd5e1"/><path d="M0 -10 L4 3 L0 1 L-4 3 Z" fill="#dc2626"/><text y="-14" font-size="9" text-anchor="middle" fill="#0f172a" transform="rotate(${-(180 - face)} 0 -17)">N</text></g>`;
@@ -1668,7 +1709,9 @@ const PHOTO = (() => {
       return { id:'w' + pg.pageid, live:true, industry:ik, caption:(desc || title.replace(/\.[a-z0-9]+$/i, '').replace(/_/g, ' ')).slice(0, 80),
         styles:tg.styles, materials:tg.materials, light_temp:null, light_types:tg.light_types, layout:tg.layout, size_class:null, features:tg.features,
         reference_value:3, colors:null, venue:'live:' + stem, w:ii.thumbwidth, h:ii.thumbheight, img:ii.thumburl, cats,
-        src:{ provider:'Wikimedia Commons', title, creator:strip(v('Artist')).slice(0, 80) || '작성자 정보 없음', license:lic, license_url:v('LicenseUrl'), page:ii.descriptionurl },
+        // 링크는 https 위키미디어 · 크리에이티브 커먼즈 주소만(javascript: 같은 주소가 섞여 와도 링크로 만들지 않음)
+        src:{ provider:'Wikimedia Commons', title, creator:strip(v('Artist')).slice(0, 80) || '작성자 정보 없음', license:lic,
+          license_url:/^https?:\/\/creativecommons\.org\//i.test(v('LicenseUrl')) ? v('LicenseUrl') : '', page:/^https:\/\/commons\.wikimedia\.org\//i.test(ii.descriptionurl || '') ? ii.descriptionurl : 'https://commons.wikimedia.org/wiki/' + encodeURIComponent(String(pg.title || '')) },
         real:{ taken, uploaded:up, camera:'', era:!!((taken || up) && (taken || up) < '2022-08'), reviews:'실시간 검색 · 사람 검토 전' } };
     }).filter(Boolean);
   }
@@ -1830,7 +1873,7 @@ function renderChart(){
   let s = `<defs><pattern id="hp" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#eef2ff"/><line x1="0" y1="0" x2="0" y2="6" stroke="#c7d2fe" stroke-width="3"/></pattern></defs>`;
   for (let i = 0; i <= 4; i++){
     const v = stepV * i;
-    s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#eef2f7"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#94a3b8">${v.toLocaleString()}</text>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#eef2f7"/><text x="${L - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#64748b">${v.toLocaleString()}</text>`;
   }
   labels.forEach((lb, i) => {
     const x = L + bw * i + bw * .2, w = bw * .6;
@@ -2084,10 +2127,10 @@ function renderIDetail(cu, ph){
     <div class="iprompt">
       <div class="ph"><h4>이미지 생성 AI 프롬프트 ${my ? '<small class="muted">(맞춤안 · 배치 포함)</small>' : ''}${ph && st.img !== 'svg' ? ' <small class="muted">· 실사 참고 줄 포함</small>' : ''}</h4>${seg('iShot', SHOTS.map(x => [x.id, x.ko]), st.shot, '구도')}</div>
       <div class="pcols">
-        <div><small>한국어</small><textarea readonly id="pKo" rows="9">${esc(promptOf(c, ctx, st, 'ko') + photoRefLine(ph, 'ko'))}</textarea><button type="button" class="btn sm" data-copy="pKo">복사</button></div>
-        <div><small>English</small><textarea readonly id="pEn" rows="9">${esc(promptOf(c, ctx, st, 'en') + photoRefLine(ph, 'en'))}</textarea><button type="button" class="btn sm" data-copy="pEn">복사</button></div>
+        <div><small>한국어</small><textarea readonly id="pKo" rows="9" aria-label="이미지 생성 프롬프트 (한국어)">${esc(promptOf(c, ctx, st, 'ko') + photoRefLine(ph, 'ko'))}</textarea><button type="button" class="btn sm" data-copy="pKo">복사</button></div>
+        <div><small>English</small><textarea readonly id="pEn" rows="9" aria-label="이미지 생성 프롬프트 (영어)">${esc(promptOf(c, ctx, st, 'en') + photoRefLine(ph, 'en'))}</textarea><button type="button" class="btn sm" data-copy="pEn">복사</button></div>
       </div>
-      <div class="neg"><small>제외할 것 (negative)</small><textarea readonly id="pNeg" rows="2">${esc(NEG.ko + '\n' + NEG.en)}</textarea><button type="button" class="btn sm" data-copy="pNeg">복사</button></div>
+      <div class="neg"><small>제외할 것 (negative)</small><textarea readonly id="pNeg" rows="2" aria-label="제외할 것 (negative)">${esc(NEG.ko + '\n' + NEG.en)}</textarea><button type="button" class="btn sm" data-copy="pNeg">복사</button></div>
       <p class="note">같은 콘셉트로 컷 5장을 만들 땐 seed(무작위 값)를 고정하고 구도만 바꾸세요. AI 이미지 속 한글은 잘 깨져서 간판은 비워 두고 나중에 합성하는 편이 안전합니다. 생성 이미지는 분위기 참고용이며 시공 도면 · 견적을 대신하지 않습니다.</p>
     </div>`;
 }
@@ -2130,7 +2173,8 @@ function photoResult(cu){
   return (phLast = { q, rk, pages, top:rk.all.slice(phPage * 3, phPage * 3 + 3), sel, selP:photoById(pickId), pos, auto:!S.interior.pick });
 }
 const phDate = p => p.real.taken ? `${p.real.taken} 촬영` : p.real.uploaded ? `${p.real.uploaded} 게시` : '촬영일 정보 없음';
-const phLic = p => p.src.license_url ? `<a href="${esc(p.src.license_url)}" target="_blank" rel="noopener noreferrer">${esc(p.src.license)}</a>` : esc(p.src.license);
+const safeUrl = u => /^https?:\/\//i.test(String(u || '')) ? String(u) : '';   // 데이터에서 온 주소는 http(s)만 링크로
+const phLic = p => safeUrl(p.src.license_url) ? `<a href="${esc(p.src.license_url)}" target="_blank" rel="noopener noreferrer">${esc(p.src.license)}</a>` : esc(p.src.license);
 const IND_PH = { cafe:'카페', dessert:'디저트 카페', salad:'샐러드 · 포케', izakaya:'이자카야', bar:'바', pub:'포차 · 주점', beauty:'뷰티' };
 // 프롬프트에 붙이는 '실사 참고' 줄 — 사진의 재료 · 조명 · 좌석 느낌만 빌리고 구조는 이 공실 기준
 function photoRefLine(ph, lang){
@@ -2163,7 +2207,7 @@ function photoCard(r, i, ph){
     `<li data-v="w-color">${colorLi}</li>` +
     `<li data-v="w-size">규모 — ${p.size_class ? `사진 ${p.size_class}(추정) · 이 자리 ${r.unit_size} ${r.comps.size === 1 ? ck(1) : r.comps.size === 0.5 ? tri : ck(0)}` : `사진 규모 정보 없음 · 이 자리 ${r.unit_size} ${tri}`}</li>` +
     (r.notes ? `<li data-v="w-notes">자리 · 특이사항 — ${r.notes.hit.map(v => ck(1) + esc(v)).concat(r.notes.miss.map(v => ck(0) + esc(v)), r.notes.avoidOk.map(v => ck(1) + esc(v) + ' 없음'), r.notes.avoidHit.map(v => ck(0) + esc(v) + ' 있음')).join(' · ')}</li>` : '') +
-    `</ul><p class="src" data-v="src">사진 ${esc(p.src.creator)} · ${esc(p.src.provider)} · ${phLic(p)} · ${phDate(p)} · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer" title="${esc(p.src.title)}">원본 보기</a></p>` +
+    `</ul><p class="src" data-v="src">사진 ${esc(p.src.creator)} · ${esc(p.src.provider)} · ${phLic(p)} · ${phDate(p)}${safeUrl(p.src.page) ? ` · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer" title="${esc(p.src.title)}">원본 보기</a>` : ''}</p>` +
     `<p class="real" data-v="real">${p.live ? `실시간 검색: 태그는 파일 제목 · 설명 · 분류 글에서 자동으로 뽑았습니다(사람 검토 전 — 사람 얼굴 · 상표가 보일 수 있음)${era ? ' · ' + era : ''}` : `실사 근거: ${[era, p.real.camera ? `카메라 정보 ${esc(p.real.camera)}` : '', `태그 검토 ${esc(p.real.reviews)}`].filter(Boolean).join(' · ')}`}</p>` +
     `<div class="rph-act"><button type="button" class="btn sm${on ? ' on' : ''}" data-phpick="${p.id}" aria-pressed="${on}">${on ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button>${p.live ? `<button type="button" class="btn sm" data-phhide="${p.id}">이 사진 빼기</button>` : ''}</div></figcaption></figure>`;
 }
@@ -2200,7 +2244,7 @@ async function liveLoad(ik, force){
   const L0 = LIVE[ik]; if (L0 && (L0.st === 'loading' || (L0.st === 'ok' && !force) || (L0.st === 'fail' && !force))) return;
   if (!force){
     try { const c = JSON.parse(localStorage.getItem('placeos-live-' + ik) || 'null');
-      if (c && c.v === 1 && Date.now() - c.at < 3 * 864e5 && c.photos && c.photos.length){ LIVE[ik] = { st:'ok', photos:c.photos, at:c.at, cached:true }; liveColors(ik); if (ik === curIk()) renderIPhotos(); return; } } catch (e) {}
+      if (c && c.v === 2 && Date.now() - c.at < 3 * 864e5 && c.photos && c.photos.length){ LIVE[ik] = { st:'ok', photos:c.photos, at:c.at, cached:true }; liveColors(ik); if (ik === curIk()) renderIPhotos(); return; } } catch (e) {}
   }
   LIVE[ik] = { st:'loading', photos:[] };
   if (ik === curIk()) renderIPhotos();
@@ -2212,7 +2256,7 @@ async function liveLoad(ik, force){
   if (photos.length){ liveSave(ik); liveColors(ik); }
   if (ik === curIk()) renderIPhotos();
 }
-function liveSave(ik){ try { const L0 = LIVE[ik]; localStorage.setItem('placeos-live-' + ik, JSON.stringify({ v:1, at:L0.at, photos:L0.photos })); } catch (e) {} }
+function liveSave(ik){ try { const L0 = LIVE[ik]; localStorage.setItem('placeos-live-' + ik, JSON.stringify({ v:2, at:L0.at, photos:L0.photos })); } catch (e) {} }
 // 실시간 사진마다 CORS로 불러 주요색 · 색온도를 계산(위키미디어 그림 서버는 다른 출처 읽기를 허용) → 다 끝나면 한 번 다시 고름
 function liveColors(ik){
   const todo = LIVE[ik].photos.filter(p => !p.colors && !p.colorFail);
@@ -2267,34 +2311,37 @@ function renderPhotoList(ph){
 function openPhoto(id, from){
   const p = photoById(id), box = $('#phbox'); if (!p) return;
   const im = box.querySelector('img'); im.referrerPolicy = 'no-referrer'; im.src = p.img; im.alt = p.caption;
-  box.querySelector('figcaption').innerHTML = `${esc(p.caption)} — 사진 ${esc(p.src.creator)} · ${phLic(p)} · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer">원본 보기</a>`;
+  box.querySelector('figcaption').innerHTML = `${esc(p.caption)} — 사진 ${esc(p.src.creator)} · ${phLic(p)}${safeUrl(p.src.page) ? ` · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer">원본 보기</a>` : ''}`;
   box.hidden = false; box._from = from; $('#phclose').focus();
 }
-function closePhoto(){ const box = $('#phbox'); if (box.hidden) return; box.hidden = true; box.querySelector('img').removeAttribute('src'); if (box._from && document.contains(box._from)) box._from.focus(); }
+function closePhoto(){ const box = $('#phbox'); if (box.hidden) return; box.hidden = true; box.querySelector('img').src = 'data:,'; if (box._from && document.contains(box._from)) box._from.focus(); }
 
 // ── AI 실사 이미지 만들기 ─────────────────────────────────────────
 // 사용자의 브라우저가 고른 서비스에 직접 요청합니다(PlaceOS 서버를 거치지 않음). API 키는 이 화면 메모리에만 두고, '기억'을 켰을 때만 이 브라우저(localStorage)에 저장합니다.
+// 서비스가 붐빌 때(429 · 5xx) 기다렸다가 자동으로 다시 시도하고, 무료 체험은 옛 주소 → 새 주소(gen.pollinations.ai) 순서로 바꿔 가며 받습니다.
 const AIP = {
-  free:{ n:'무료 체험 · Pollinations', sub:'키 없음', models:['flux', 'turbo'], key:false,
-    note:'키 없이 바로 써 볼 수 있는 외부 무료 서비스(image.pollinations.ai)입니다. 글 프롬프트만 보내고, 속도 · 품질 · 워터마크 · 사용 한도는 그 서비스 사정에 따라 달라집니다.' },
+  free:{ n:'무료 체험 · Pollinations', sub:'키 없음', models:['flux', ''], key:false, optKey:true, keyUrl:'https://enter.pollinations.ai',
+    note:'키 없이 써 볼 수 있는 외부 무료 서비스입니다. 키 없는 옛 주소(image.pollinations.ai)는 유지보수만 하는 주소라 붐비면 오류가 잦고 IP당 약 15초에 1번만 됩니다 — 오류가 나면 기다렸다가 자동으로 다시 시도하고 새 주소(gen.pollinations.ai)로도 받아 봅니다. Pollinations에서 받은 공개 키(pk_…)를 넣으면 새 주소를 먼저 씁니다. 글 프롬프트만 보냅니다.' },
   gemini:{ n:'Google Gemini', sub:'내 API 키', models:['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'], key:true, keyUrl:'https://aistudio.google.com/apikey',
-    note:'Google AI Studio에서 만든 API 키를 씁니다. 공간 그림(구도 · 배치 · 색)과 실사 참고 사진(분위기)을 함께 보내 이 공실에 맞춘 실사풍 이미지를 만듭니다. 사용량에 따라 요금이 나올 수 있습니다.' },
+    note:'Google AI Studio에서 만든 API 키를 씁니다. 공간 그림(구도 · 배치 · 색)과 실사 참고 사진(분위기)을 함께 보내 이 공실에 맞춘 실사풍 이미지를 만듭니다. 붐빔(503)이 잦은 모델이라 자동으로 다시 시도합니다. 사용량에 따라 요금이 나올 수 있습니다.' },
   openai:{ n:'OpenAI', sub:'내 API 키', models:['gpt-image-1', 'gpt-image-1-mini', 'dall-e-3'], key:true, keyUrl:'https://platform.openai.com/api-keys',
     note:'OpenAI API 키를 씁니다. 글 프롬프트만 보내며, GPT Image 모델은 조직 인증이 필요할 수 있고 사용량만큼 요금이 나옵니다.' },
 };
+const AI_LOCAL = { n:'빠른 미리보기', model:'브라우저 합성 (AI 아님)' };
 const AIG = (() => {
   let s = {}; try { s = JSON.parse(localStorage.getItem('placeos-ai') || '{}') || {}; } catch (e) {}
-  const key = {}; ['gemini', 'openai'].forEach(k => { try { key[k] = s.remember ? localStorage.getItem('placeos-ai-key-' + k) || '' : ''; } catch (e) { key[k] = ''; } });
+  const key = {}; ['gemini', 'openai', 'free'].forEach(k => { try { key[k] = s.remember ? localStorage.getItem('placeos-ai-key-' + k) || '' : ''; } catch (e) { key[k] = ''; } });
   return { prov:AIP[s.prov] ? s.prov : 'free', model:{ free:'flux', gemini:'gemini-2.5-flash-image', openai:'gpt-image-1', ...(s.model || {}) }, refs:{ svg:true, photo:true, ...(s.refs || {}) },
-           remember:!!s.remember, key, busy:false, items:[], pick:null, msg:'', n:0 };
+           remember:!!s.remember, key, busy:false, items:[], pick:null, msg:'', log:[], n:0, ac:null, gModels:null, cx:{} };
 })();
 function aiSave(){
   try {
     localStorage.setItem('placeos-ai', JSON.stringify({ prov:AIG.prov, model:AIG.model, refs:AIG.refs, remember:AIG.remember }));
-    ['gemini', 'openai'].forEach(k => AIG.remember && AIG.key[k] ? localStorage.setItem('placeos-ai-key-' + k, AIG.key[k]) : localStorage.removeItem('placeos-ai-key-' + k));
+    ['gemini', 'openai', 'free'].forEach(k => AIG.remember && AIG.key[k] ? localStorage.setItem('placeos-ai-key-' + k, AIG.key[k]) : localStorage.removeItem('placeos-ai-key-' + k));
   } catch (e) {}
 }
-// 보낼 프롬프트 — 영어(이미지 모델이 가장 잘 따름) · 무료 서비스는 주소 길이 때문에 짧게
+const aiProvName = it => it.prov === 'local' ? AI_LOCAL.n : AIP[it.prov].n;
+// 보낼 프롬프트 — 영어(이미지 모델이 가장 잘 따름) · 무료 서비스는 주소 길이 때문에 짧게(n자 이하)
 function aiPrompt(cu, ph, short){
   const st = S.interior, my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c, ctx = ctxOf();
   if (short){
@@ -2303,19 +2350,19 @@ function aiPrompt(cu, ph, short){
       `Style: ${c.en}. ${sh.en}. Colors: ${P.map(x => x.en).join(', ')}. Lighting ${c.light.k}K, ${c.light.fxEn}.`,
       c.kw && c.kw.length ? `Include ${c.kw.slice(0, 4).map(k => k.en).join('; ')}.` : '',
       p ? `Look like: ${[...p.materials, ...p.light_types].slice(0, 5).map(x => PHOTO.EN[x] || x).join(', ')}.` : '',
-      'Eye level, 24 mm lens, straight verticals, realistic proportions, no people, no text, no logos.'].filter(Boolean).join(' ').slice(0, 900);
+      'Eye level, 24 mm lens, straight verticals, realistic proportions, no people, no text, no logos.'].filter(Boolean).join(' ').slice(0, typeof short === 'number' ? short : 900);
   }
   // 가게 이름은 보내지 않음(간판 글자는 나중에 합성)
   return promptOf(c, ctx, st, 'en').split(`"${ctx.brand}"`).join('the shop name') + photoRefLine(ph, 'en') + '\nAvoid: ' + NEG.en;
 }
-// 공간 그림(SVG)을 PNG로 바꿔 Gemini에 '구도 · 배치 · 색' 참고로 보냄
-function svgPng(cu){
+// 공간 그림(SVG)을 PNG로 — Gemini에 '구도 · 배치 · 색' 참고로 보내고, 미리보기 비교에도 씀
+function svgPng(cu, w = 1280, h = 800){
   const st = S.interior, my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c;
-  const svg = roomSvg(c, ctxOf(), st).replace('<svg ', '<svg width="1280" height="800" ');
+  const svg = roomSvg(c, ctxOf(), st).replace('<svg ', `<svg width="${w}" height="${h}" `);
   return new Promise((ok, no) => {
     const im = new Image(), u = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }));
-    im.onload = () => { try { const cv = document.createElement('canvas'); cv.width = 1280; cv.height = 800; cv.getContext('2d').drawImage(im, 0, 0, 1280, 800); URL.revokeObjectURL(u); ok(cv.toDataURL('image/png')); } catch (e) { no(e); } };
-    im.onerror = () => { URL.revokeObjectURL(u); no(new Error('svg')); };
+    im.onload = () => { try { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(im, 0, 0, w, h); URL.revokeObjectURL(u); ok(cv.toDataURL('image/png')); } catch (e) { no(e); } };
+    im.onerror = () => { URL.revokeObjectURL(u); no(new Error('공간 그림을 그리지 못했습니다')); };
     im.src = u;
   });
 }
@@ -2326,64 +2373,128 @@ async function urlB64(src){
   return await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(b); });
 }
 const splitData = d => { const m = String(d).match(/^data:([^;]+);base64,(.*)$/); return m ? { mime:m[1], b64:m[2] } : null; };
+const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('그림을 열지 못했습니다')); i.src = src; });
+// 오류 안내 — 원인별 한국어 문장 + 재시도할 만한 오류인지(retry)
 function aiErr(status, msg, code){
-  const t = String(msg || '');
-  const ko = /API key not valid|API_KEY_INVALID|Incorrect API key|invalid_api_key/i.test(t) ? 'API 키가 맞지 않습니다 — 키를 다시 확인하세요'
+  const t = String(msg || ''), c = String(code || '');
+  const ko = /API key not valid|API_KEY_INVALID|Incorrect API key|invalid_api_key/i.test(t) ? 'API 키가 맞지 않습니다 — 키를 다시 복사해 넣으세요'
+    : /location is not supported|not available in your (country|region)|FAILED_PRECONDITION/i.test(t + ' ' + c) ? '이 나라 · 지역에서는 이 서비스의 이미지 생성을 쓸 수 없습니다(결제 설정 · 지원 지역 확인)'
+    : /RESOURCE_EXHAUSTED|quota|billing_hard_limit|insufficient_quota/i.test(t + ' ' + c) ? '사용 한도(무료 할당량 · 결제 한도)를 다 썼습니다 — 결제 설정을 확인하거나 나중에 다시 하세요'
+    : /must be verified|organization.*verif/i.test(t) ? 'OpenAI 조직 인증이 필요한 모델입니다 — 인증하거나 dall-e-3 를 고르세요'
     : status === 401 ? '키가 없거나 맞지 않습니다'
+    : status === 402 ? '이 서비스는 이 요청에 결제 · 크레딧이 필요합니다'
     : status === 403 ? '이 키로는 이 모델을 쓸 수 없습니다(권한 · 결제 · 조직 인증 · 지역 제한 확인)'
-    : status === 404 ? '모델 이름을 찾을 수 없습니다 — 모델을 바꿔 보세요'
-    : status === 429 ? '사용 한도를 넘었습니다 — 잠시 뒤 다시 하거나 결제 · 한도를 확인하세요'
-    : status >= 500 ? '서비스 쪽 오류입니다 — 잠시 뒤 다시 해 보세요'
-    : /safety|blocked|policy|moderation/i.test(t + ' ' + (code || '')) ? '안전 정책으로 이미지가 만들어지지 않았습니다 — 프롬프트를 바꿔 보세요'
+    : status === 404 ? '모델 이름을 찾을 수 없습니다 — [모델 목록 확인]으로 쓸 수 있는 모델을 고르세요'
+    : status === 413 || status === 414 ? '보낼 내용이 너무 깁니다 — 참고 이미지를 빼거나 프롬프트를 줄여 다시 하세요'
+    : status === 429 ? '요청이 너무 잦습니다(사용 한도) — 잠시 뒤 다시 하세요'
+    : status === 503 || /overloaded|UNAVAILABLE/i.test(t + ' ' + c) ? '서비스가 붐빕니다(일시적) — 잠시 뒤 다시 하거나 다른 모델 · 서비스를 고르세요'
+    : status >= 500 ? `서비스 쪽 오류입니다(HTTP ${status}) — 잠시 뒤 다시 하거나 다른 서비스를 고르세요`
+    : /safety|blocked|policy|moderation|PROHIBITED/i.test(t + ' ' + c) ? '안전 정책으로 이미지가 만들어지지 않았습니다 — 프롬프트를 바꿔 보세요'
     : '요청이 거절되었습니다';
-  const e = new Error(ko + (t ? ` (${t.slice(0, 160)})` : '')); e.status = status; return e;
+  const e = new Error(ko); e.status = status; e.detail = t.slice(0, 300);
+  e.retry = (status === 429 && !/RESOURCE_EXHAUSTED|quota/i.test(t + ' ' + c)) || status === 408 || (status >= 500 && status !== 501);
+  return e;
+}
+function aiSleep(ms, tick){
+  return new Promise((ok, no) => {
+    const end = Date.now() + ms * (window.__AI_WAIT ?? 1), ac = AIG.ac;   // __AI_WAIT: 자동 점검에서 기다림을 줄일 때만 씀
+    const step = () => { if (ac && ac.signal.aborted) return no(new Error('멈췄습니다')); const left = end - Date.now(); if (tick) tick(Math.ceil(left / 1000)); if (left <= 0) return ok(); setTimeout(step, Math.min(500, left)); };
+    step();
+  });
 }
 async function fetchT(url, opt, ms){
-  const ac = new AbortController(), t = setTimeout(() => ac.abort(), ms);
+  const ac = new AbortController(), t = setTimeout(() => ac.abort('timeout'), ms), outer = AIG.ac;
+  const stop = () => ac.abort('user'); if (outer) outer.signal.addEventListener('abort', stop);
   try { return await fetch(url, { ...opt, signal:ac.signal }); }
-  catch (e) { throw new Error(e.name === 'AbortError' ? '시간이 너무 오래 걸려 멈췄습니다 — 다시 해 보세요' : '서비스에 접속하지 못했습니다 — 인터넷 · 회사 방화벽 · 광고 차단을 확인하세요'); }
-  finally { clearTimeout(t); }
+  catch (e) {
+    const err = new Error(outer && outer.signal.aborted ? '멈췄습니다' : ac.signal.aborted ? '시간이 너무 오래 걸려 멈췄습니다' : '서비스에 접속하지 못했습니다 — 인터넷 · 회사 방화벽 · 광고 차단을 확인하세요');
+    err.retry = ac.signal.aborted && !(outer && outer.signal.aborted); err.net = !ac.signal.aborted; throw err;
+  } finally { clearTimeout(t); if (outer) outer.signal.removeEventListener('abort', stop); }
 }
+// 붐빔 · 일시 오류는 기다렸다가 다시 — waits(초)만큼, 남은 시간을 상태 줄에 보여 줌
+async function aiRetry(label, fn, waits){
+  for (let i = 0; ; i++){
+    try { return await fn(i); }
+    catch (e) {
+      AIG.log.push(`${label} ${i + 1}회: ${e.message}${e.detail ? ' — ' + e.detail.slice(0, 80) : ''}`);
+      if (!e.retry || i >= waits.length || (AIG.ac && AIG.ac.signal.aborted)) throw e;
+      await aiSleep(waits[i] * 1000, s => aiStatus(`${e.message.split(' — ')[0]} — ${s}초 뒤 다시 시도 (${i + 2}/${waits.length + 1})`));
+      aiStatus(`${label} 다시 요청 중… (${i + 2}/${waits.length + 1})`);
+    }
+  }
+}
+function aiStatus(t){ AIG.msg = t; const el = document.getElementById('aiSt'); if (el) el.textContent = t; }
 async function aiGemini(prompt, imgs){
-  const model = AIG.model.gemini.trim(), url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const model = (AIG.model.gemini || '').trim() || 'gemini-2.5-flash-image', url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   const body = { contents:[{ role:'user', parts:[{ text:prompt }, ...imgs.map(d => ({ inlineData:{ mimeType:d.mime, data:d.b64 } }))] }],
                  generationConfig:{ responseModalities:['TEXT', 'IMAGE'], imageConfig:{ aspectRatio:'16:9' } } };
-  const call = () => fetchT(url, { method:'POST', headers:{ 'Content-Type':'application/json', 'x-goog-api-key':AIG.key.gemini.trim() }, body:JSON.stringify(body) }, 180000);
-  let r = await call(), j = await r.json().catch(() => ({}));
-  if (!r.ok && r.status === 400 && /imageConfig|aspect/i.test((j.error && j.error.message) || '')){ delete body.generationConfig.imageConfig; r = await call(); j = await r.json().catch(() => ({})); }
+  return aiRetry('Gemini', async () => {
+    const call = () => fetchT(url, { method:'POST', headers:{ 'Content-Type':'application/json', 'x-goog-api-key':AIG.key.gemini.trim() }, body:JSON.stringify(body) }, 180000);
+    let r = await call(), j = await r.json().catch(() => ({}));
+    if (!r.ok && r.status === 400 && /imageConfig|aspect/i.test((j.error && j.error.message) || '')){ delete body.generationConfig.imageConfig; r = await call(); j = await r.json().catch(() => ({})); }
+    if (!r.ok) throw aiErr(r.status, j.error && j.error.message, j.error && j.error.status);
+    const cand = (j.candidates || [])[0], parts = (cand && cand.content && cand.content.parts) || [];
+    const im = parts.map(p => p.inlineData || p.inline_data).find(Boolean);
+    if (!im){
+      const why = (j.promptFeedback && j.promptFeedback.blockReason) || (cand && cand.finishReason) || '';
+      const e = aiErr(200, why || parts.map(p => p.text).filter(Boolean).join(' ') || '이미지가 없는 응답', /SAFETY|PROHIBITED|BLOCK/i.test(why) ? 'blocked' : '');
+      if (!/SAFETY|PROHIBITED|BLOCK/i.test(why)) { e.message = '모델이 이미지 대신 글만 보냈습니다 — 다시 시도합니다'; e.retry = true; }
+      throw e;
+    }
+    return { url:`data:${im.mimeType || im.mime_type || 'image/png'};base64,${im.data}`, note:parts.map(p => p.text).filter(Boolean).join(' ').slice(0, 200) };
+  }, [3, 8, 15]);
+}
+// 이 키로 쓸 수 있는 Gemini 이미지 모델 목록
+async function aiGeminiModels(){
+  const r = await fetchT('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', { headers:{ 'x-goog-api-key':AIG.key.gemini.trim() } }, 20000);
+  const j = await r.json().catch(() => ({}));
   if (!r.ok) throw aiErr(r.status, j.error && j.error.message, j.error && j.error.status);
-  const cand = (j.candidates || [])[0], parts = (cand && cand.content && cand.content.parts) || [];
-  const im = parts.map(p => p.inlineData || p.inline_data).find(Boolean);
-  if (!im) throw aiErr(200, (j.promptFeedback && j.promptFeedback.blockReason) || (cand && cand.finishReason) || parts.map(p => p.text).filter(Boolean).join(' ') || '이미지가 없는 응답', 'blocked');
-  return { url:`data:${im.mimeType || im.mime_type || 'image/png'};base64,${im.data}`, note:parts.map(p => p.text).filter(Boolean).join(' ').slice(0, 200) };
+  return (j.models || []).filter(m => /image/i.test(m.name) && (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, ''));
 }
 async function aiOpenAI(prompt){
-  const model = AIG.model.openai.trim(), body = { model, prompt:prompt.slice(0, model.startsWith('dall-e') ? 3900 : 30000), n:1, size:model.startsWith('dall-e-3') ? '1792x1024' : model.startsWith('dall-e') ? '1024x1024' : '1536x1024' };
+  const model = (AIG.model.openai || '').trim() || 'gpt-image-1', body = { model, prompt:prompt.slice(0, model.startsWith('dall-e') ? 3900 : 30000), n:1, size:model.startsWith('dall-e-3') ? '1792x1024' : model.startsWith('dall-e') ? '1024x1024' : '1536x1024' };
   if (model.startsWith('dall-e')) body.response_format = 'b64_json';
-  const r = await fetchT('https://api.openai.com/v1/images/generations', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + AIG.key.openai.trim() }, body:JSON.stringify(body) }, 180000);
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw aiErr(r.status, j.error && j.error.message, j.error && (j.error.code || j.error.type));
-  const d = (j.data || [])[0];
-  if (!d || !(d.b64_json || d.url)) throw aiErr(200, '이미지가 없는 응답');
-  return { url:d.b64_json ? 'data:image/png;base64,' + d.b64_json : d.url, note:d.revised_prompt ? '고쳐 쓴 프롬프트: ' + d.revised_prompt.slice(0, 160) : '' };
+  return aiRetry('OpenAI', async () => {
+    const r = await fetchT('https://api.openai.com/v1/images/generations', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + AIG.key.openai.trim() }, body:JSON.stringify(body) }, 180000);
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw aiErr(r.status, j.error && j.error.message, j.error && (j.error.code || j.error.type));
+    const d = (j.data || [])[0];
+    if (!d || !(d.b64_json || d.url)) throw aiErr(200, '이미지가 없는 응답');
+    return { url:d.b64_json ? 'data:image/png;base64,' + d.b64_json : d.url, note:d.revised_prompt ? '고쳐 쓴 프롬프트: ' + d.revised_prompt.slice(0, 160) : '' };
+  }, [4, 10]);
 }
-// 무료 서비스는 한 번만 받아(fetch) 그 바이트를 그대로 씀 — 내려받을 때 다시 요청하면 사용 한도에 걸려 오류 글이 그림 대신 저장될 수 있음
-async function aiFree(prompt){
-  const seed = Math.floor(Math.random() * 1e6), url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1280&height=800&seed=${seed}&model=${encodeURIComponent(AIG.model.free)}&nologo=true`;
-  let r = null;
-  try { r = await fetchT(url, {}, 150000); } catch (e) { if (/오래 걸려/.test(e.message)) throw e; }
-  if (r){
+// 무료 체험 — 한 번 받은 바이트를 그대로 씀(내려받을 때 다시 요청하지 않음).
+// 순서: (공개 키가 있으면) 새 주소 → 옛 주소(붐비면 16초씩 기다려 2번 더, 마지막엔 짧은 프롬프트 · 작은 크기) → (키 없으면) 새 주소 한 번
+async function aiFree(cu, ph){
+  const seed = Math.floor(Math.random() * 1e6), model = (AIG.model.free || '').trim(), pk = (AIG.key.free || '').trim();
+  const q = (w, h) => `?width=${w}&height=${h}&seed=${seed}${model ? '&model=' + encodeURIComponent(model) : ''}`;
+  const legacy = (p, w, h) => `https://image.pollinations.ai/prompt/${encodeURIComponent(p)}${q(w, h)}`;
+  const modern = (p, w, h) => `https://gen.pollinations.ai/image/${encodeURIComponent(p)}${q(w, h)}${pk ? '&key=' + encodeURIComponent(pk) : ''}`;
+  const get = async (url, headers) => {
+    const r = await fetchT(url, { headers:headers || {} }, 120000);
     const ct = r.headers.get('content-type') || '';
-    if (!r.ok || !/^image\//.test(ct)){ const t = await r.text().catch(() => ''); throw aiErr(r.ok ? 200 : r.status, t.replace(/<[^>]*>/g, ' ').trim() || '이미지가 아닌 응답'); }
+    if (!r.ok || !/^image\//.test(ct)){ const t = await r.text().catch(() => ''); throw aiErr(r.ok ? 502 : r.status, t.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || '이미지가 아닌 응답'); }
     return { blob:await r.blob(), url, note:`seed ${seed}` };
+  };
+  const long = aiPrompt(cu, ph, 900), brief = aiPrompt(cu, ph, 420);
+  const tryModern = async label => {
+    aiStatus(`${label} — 새 주소(gen.pollinations.ai)로 요청 중…`);
+    let o;
+    try { o = await get(modern(brief, 1024, 640)); } catch (e) { if (!(pk && e.status === 401)) throw e; o = await get(modern(brief, 1024, 640), { Authorization:'Bearer ' + pk }); }
+    o.note += ' · 새 주소'; return o;
+  };
+  let first = null;
+  if (pk){ try { return await tryModern('공개 키 사용'); } catch (e) { first = e; AIG.log.push('새 주소: ' + e.message); if (AIG.ac && AIG.ac.signal.aborted) throw e; } }
+  try {
+    return await aiRetry('무료 체험', i => { aiStatus(i ? `무료 체험 다시 요청 중… (${i + 1}/3)` : '무료 체험(옛 주소)에 요청 중… (보통 10초 ~ 1분)'); return i < 2 ? get(legacy(long, 1024, 640)) : get(legacy(brief, 768, 480)); }, [16, 16]);
+  } catch (e) {
+    if (e.net && !pk){
+      // fetch 자체가 막히면(다른 출처 읽기 거부 등) 그림 태그로만 받아 화면에 보여 줌 — 내려받기 대신 새 탭에서 저장
+      try { const url = legacy(long, 1024, 640); await loadImg(url); return { url, note:`seed ${seed} · 화면 표시만 가능` }; } catch (e2) {}
+    }
+    if (pk || (AIG.ac && AIG.ac.signal.aborted)) throw first || e;
+    try { return await tryModern('옛 주소 실패'); } catch (e3) { AIG.log.push('새 주소: ' + e3.message); throw e; }
   }
-  // fetch가 막히면(다른 출처 읽기 거부 등) 그림 태그로만 받아 화면에 보여 줌 — 이때는 내려받기 대신 새 탭에서 저장
-  return new Promise((ok, no) => {
-    const im = new Image(), t = setTimeout(() => { im.src = ''; no(new Error('시간이 너무 오래 걸려 멈췄습니다 — 무료 서비스가 붐비면 생깁니다, 잠시 뒤 다시 해 보세요')); }, 150000);
-    im.onload = () => { clearTimeout(t); ok({ url, note:`seed ${seed} · 화면 표시만 가능` }); };
-    im.onerror = () => { clearTimeout(t); no(new Error('무료 서비스에서 이미지를 받지 못했습니다 — 사용 한도 · 접속 상태를 확인하거나 Gemini · OpenAI 키를 쓰세요')); };
-    im.src = url;
-  });
 }
 // 받은 그림(JPEG · WebP · PNG 무엇이든)을 진짜 PNG로 다시 저장 — 이름만 .png인 JPEG는 일부 뷰어에서 안 열림
 function dataBlob(d){
@@ -2395,99 +2506,224 @@ function dataBlob(d){
 async function toPng(blob){
   const u = URL.createObjectURL(blob);
   try {
-    const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error('서비스가 보낸 파일이 그림이 아닙니다 — 다시 만들어 보세요')); i.src = u; });
+    const im = await loadImg(u).catch(() => { throw new Error('서비스가 보낸 파일이 그림이 아닙니다 — 다시 만들어 보세요'); });
     const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight;
     cv.getContext('2d').drawImage(im, 0, 0);
     const png = await new Promise((ok, no) => cv.toBlob(b => b ? ok(b) : no(new Error('PNG로 바꾸지 못했습니다')), 'image/png'));
     return { blob:png, w:cv.width, h:cv.height };
   } finally { URL.revokeObjectURL(u); }
 }
-async function aiRun(){
+
+// ── 빠른 미리보기 (AI 없이 브라우저에서) ──────────────────────────
+// 공간 그림(구도 · 배치 · 팔레트)에 실사 참고 사진의 색 분포(Lab 평균 · 표준편차, Reinhard 색 옮기기)와
+// 조명 색온도 · 빛 번짐 · 비네팅 · 필름 입자를 입힌 합성입니다. 실사가 아니며, 서비스 없이 바로 분위기를 볼 때 씁니다.
+const LIN = Array.from({ length:256 }, (_, i) => { const c = i / 255; return c > 0.04045 ? ((c + 0.055) / 1.055) ** 2.4 : c / 12.92; });
+const labF = t => t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116, labFi = t => t ** 3 > 216 / 24389 ? t ** 3 : (116 * t - 16) / (24389 / 27);
+const gam = v => { v = v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055; return v < 0 ? 0 : v > 1 ? 255 : v * 255; };
+function px2lab(d, i){
+  const r = LIN[d[i]], g = LIN[d[i + 1]], b = LIN[d[i + 2]];
+  const fx = labF((0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047), fy = labF(0.2126729 * r + 0.7151522 * g + 0.0721750 * b), fz = labF((0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+}
+function lab2px(L, a, b, d, i){
+  const fy = (L + 16) / 116, x = labFi(fy + a / 500) * 0.95047, y = labFi(fy), z = labFi(fy - b / 200) * 1.08883;
+  d[i] = gam(3.2404542 * x - 1.5371385 * y - 0.4985314 * z); d[i + 1] = gam(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z); d[i + 2] = gam(0.0556434 * x - 0.2040259 * y + 1.0572252 * z);
+}
+function labStats(d, step){
+  const m = [0, 0, 0], q = [0, 0, 0]; let n = 0;
+  for (let i = 0; i < d.length; i += 4 * step){ const v = px2lab(d, i); for (let k = 0; k < 3; k++){ m[k] += v[k]; q[k] += v[k] * v[k]; } n++; }
+  return { m:m.map(x => x / n), s:q.map((x, k) => Math.max(1, Math.sqrt(x / n - (m[k] / n) ** 2))) };
+}
+async function aiLocal(cu, ph){
+  const W = 1280, H = 800, st = S.interior, my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d', { willReadFrequently:true });
+  const base = await loadImg(await svgPng(cu));
+  if ('filter' in g) g.filter = 'blur(0.8px)';
+  g.drawImage(base, 0, 0, W, H); if ('filter' in g) g.filter = 'none';
+  const img = g.getImageData(0, 0, W, H), d = img.data;
+  let refNote = '';
+  if (ph && st.img !== 'svg'){
+    try {
+      const ref = await loadImg(await urlB64(ph.selP.img)), rc = document.createElement('canvas'); rc.width = 160; rc.height = 100;
+      const rg = rc.getContext('2d', { willReadFrequently:true }); rg.drawImage(ref, 0, 0, 160, 100);
+      const R = labStats(rg.getImageData(0, 0, 160, 100).data, 1), B = labStats(d, 7), al = [0.35, 0.6, 0.6];
+      for (let i = 0; i < d.length; i += 4){
+        const v = px2lab(d, i), o = v.map((x, k) => x * (1 - al[k]) + ((x - B.m[k]) / B.s[k] * R.s[k] + R.m[k]) * al[k]);
+        lab2px(o[0], o[1], o[2], d, i);
+      }
+      refNote = '실사 사진 색 입힘';
+    } catch (e) { refNote = '실사 사진을 못 읽어 색 입히기 생략'; }
+  }
+  for (let i = 0; i < d.length; i += 4){ const n = (Math.random() - .5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n; }   // 필름 입자
+  g.putImageData(img, 0, 0);
+  const k = st.night ? Math.min(c.light.k, 2700) : c.light.k, kc = kelvinHex(k);
+  g.globalCompositeOperation = 'soft-light'; g.globalAlpha = st.night ? .55 : .35; g.fillStyle = kc; g.fillRect(0, 0, W, H);
+  g.globalCompositeOperation = 'screen'; g.globalAlpha = st.night ? .22 : .14;                                         // 천장 쪽 빛 웅덩이
+  [[.25, .2], [.5, .16], [.75, .2]].forEach(([x, y]) => { const gr = g.createRadialGradient(W * x, H * y, 0, W * x, H * y, H * .45); gr.addColorStop(0, kc); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); });
+  if ('filter' in g){ g.globalAlpha = .18; g.filter = 'blur(10px) brightness(1.15)'; g.drawImage(cv, 0, 0); g.filter = 'none'; }  // 빛 번짐
+  g.globalCompositeOperation = 'multiply'; g.globalAlpha = 1;                                                          // 비네팅
+  const vg = g.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, W * .72); vg.addColorStop(0, 'rgba(255,255,255,1)'); vg.addColorStop(1, st.night ? 'rgba(60,55,70,1)' : 'rgba(150,145,140,1)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  g.globalCompositeOperation = 'source-over';
+  const blob = await new Promise((ok, no) => cv.toBlob(b => b ? ok(b) : no(new Error('미리보기를 만들지 못했습니다')), 'image/png'));
+  return { blob, note:`${refNote ? refNote + ' · ' : ''}조명 ${k}K · AI 생성이 아닌 분위기 미리보기` };
+}
+
+async function aiRun(local){
   const cu = cur(), ph = phLast, P = AIP[AIG.prov];
   if (AIG.busy) return;
-  if (P.key && !AIG.key[AIG.prov].trim()){ AIG.msg = `${P.n} API 키를 먼저 넣어 주세요.`; return renderAigen(cu, ph); }
-  AIG.busy = true; AIG.msg = '이미지를 만드는 중… (보통 10초 ~ 1분)'; renderAigen(cu, ph);
+  if (!local && P.key && !AIG.key[AIG.prov].trim()){ AIG.msg = `${P.n} API 키를 먼저 넣어 주세요. (키 없이 보려면 [👁 빠른 미리보기] 또는 무료 체험)`; return renderAigen(cu, ph); }
+  AIG.busy = local ? 'local' : 'ai'; AIG.ac = new AbortController(); AIG.log = []; AIG.fail = false;
+  AIG.msg = local ? '빠른 미리보기를 만드는 중…' : '이미지를 만드는 중… (보통 10초 ~ 1분)'; renderAigen(cu, ph);
   const t0 = performance.now(), my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c, refs = [];
   try {
-    let out;
-    if (AIG.prov === 'gemini'){
+    let out, sent = '';
+    const svgRef = await svgPng(cu, 640, 400).catch(() => '');                                                          // 미리보기 비교용 공간 그림
+    if (local){ out = await aiLocal(cu, ph); if (ph && S.interior.img !== 'svg') refs.push('공간 그림', '실사 참고 사진'); else refs.push('공간 그림'); }
+    else if (AIG.prov === 'gemini'){
       const imgs = [];
       if (AIG.refs.svg){ const d = splitData(await svgPng(cu)); if (d){ imgs.push(d); refs.push('공간 그림'); } }
       if (AIG.refs.photo && ph && S.interior.img !== 'svg'){ try { const d = splitData(await urlB64(ph.selP.img)); if (d){ imgs.push(d); refs.push('실사 참고 사진'); } } catch (e) { refs.push('실사 사진 첨부 실패'); } }
       const lead = imgs.length ? `${refs.includes('공간 그림') ? 'Image 1 is a schematic render of this vacant unit: keep its camera angle, room proportions, layout, window and door positions and color scheme. ' : ''}${refs.includes('실사 참고 사진') ? `The ${refs.includes('공간 그림') ? 'second' : 'attached'} image is a real reference photo of another shop: borrow only its materials, lighting mood and furniture style. ` : ''}Turn this into a photorealistic photograph.\n` : '';
-      out = await aiGemini(lead + aiPrompt(cu, ph), imgs);
-    } else if (AIG.prov === 'openai') out = await aiOpenAI(aiPrompt(cu, ph));
-    else out = await aiFree(aiPrompt(cu, ph, true));
+      sent = lead + aiPrompt(cu, ph); out = await aiGemini(sent, imgs);
+    } else if (AIG.prov === 'openai'){ sent = aiPrompt(cu, ph); out = await aiOpenAI(sent); }
+    else { sent = aiPrompt(cu, ph, 900); out = await aiFree(cu, ph); }
     let src = out.blob || (String(out.url).startsWith('data:') ? dataBlob(out.url) : null);
     if (!src && out.url && !out.note.includes('화면 표시만')){ try { const r2 = await fetch(out.url); if (r2.ok && /^image\//.test(r2.headers.get('content-type') || '')) src = await r2.blob(); } catch (e) {} }
     const png = src ? await toPng(src) : null;
-    const it = { id:'ai' + (++AIG.n), url:png ? URL.createObjectURL(png.blob) : out.url, blob:png ? png.blob : null, w:png ? png.w : 0, h:png ? png.h : 0, prov:AIG.prov, model:AIG.model[AIG.prov], at:new Date(), sec:Math.round((performance.now() - t0) / 1000), concept:c.name, shot:(SHOTS.find(x => x.id === S.interior.shot) || SHOTS[0]).ko, refs, note:out.note, scen:key };
-    AIG.items.unshift(it); AIG.items = AIG.items.slice(0, 8); AIG.pick = it.id;
-    AIG.msg = `완성 (${it.sec}초) — 위 비교 화면에 놓았습니다.`;
-    toast('AI 이미지를 만들었어요');
-  } catch (e) { AIG.msg = '⚠ ' + e.message; }
-  AIG.busy = false;
+    const it = { id:'ai' + (++AIG.n), url:png ? URL.createObjectURL(png.blob) : out.url, blob:png ? png.blob : null, w:png ? png.w : 0, h:png ? png.h : 0,
+      prov:local ? 'local' : AIG.prov, model:local ? AI_LOCAL.model : (AIG.model[AIG.prov] || '').trim() || '기본', at:new Date(), sec:Math.round((performance.now() - t0) / 1000), concept:c.name,
+      shot:(SHOTS.find(x => x.id === S.interior.shot) || SHOTS[0]).ko, refs, note:out.note, scen:key, svg:svgRef, prompt:sent,
+      photo:ph && S.interior.img !== 'svg' ? { img:ph.selP.img, cap:ph.selP.caption, by:ph.selP.src.creator, lic:ph.selP.src.license } : null };
+    AIG.items.unshift(it); AIG.items.slice(8).forEach(x => { if (x.blob) URL.revokeObjectURL(x.url); }); AIG.items = AIG.items.slice(0, 8); AIG.pick = it.id;
+    AIG.msg = local ? `빠른 미리보기 완성 (${it.sec}초) — AI가 아닌 브라우저 합성입니다. 위 비교 화면에 놓았습니다.` : `완성 (${it.sec}초) — 위 비교 화면에 놓았습니다. 이미지를 누르면 크게 · 비교해 볼 수 있습니다.`;
+    toast(local ? '빠른 미리보기를 만들었어요' : 'AI 이미지를 만들었어요');
+  } catch (e) { AIG.msg = '⚠ ' + e.message; AIG.fail = !local; }
+  AIG.busy = false; AIG.ac = null;
   renderIPhotos();
 }
-// 위 비교 화면에 놓는 AI 이미지
+// 위 비교 화면에 놓는 AI 이미지(누르면 미리보기 창)
 function aiFig(){
   const it = AIG.items.find(x => x.id === AIG.pick && x.scen === key); if (!it) return '';
-  return `<figure class="ipic aim" data-v="mainai"><img src="${esc(it.url)}" alt="AI로 만든 ${esc(it.concept)} 실사풍 이미지"><figcaption>AI 생성 · ${esc(AIP[it.prov].n)} ${esc(it.model)} — 실제 공실 사진이 아닙니다</figcaption></figure>`;
+  return `<figure class="ipic aim${it.prov === 'local' ? ' loc' : ''}" data-v="mainai"><button type="button" class="phz" data-aiview="${it.id}" aria-label="미리보기 창으로 크게 보기"><img src="${esc(it.url)}" alt="${it.prov === 'local' ? '빠른 미리보기' : 'AI로 만든'} ${esc(it.concept)} 이미지"></button><figcaption>${it.prov === 'local' ? '빠른 미리보기 · 브라우저 합성 — AI 생성 아님' : `AI 생성 · ${esc(AIP[it.prov].n)} ${esc(it.model)} — 실제 공실 사진이 아닙니다`} · 누르면 크게</figcaption></figure>`;
+}
+// 보낼 내용 미리보기 — 서비스에 실제로 무엇이 가는지
+function aiSendPreview(cu, ph){
+  const st = S.interior, my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c, sendPh = ph && st.img !== 'svg';
+  if (AIG.prov !== 'gemini') return `<div class="aig-send"><span>보낼 내용</span><em>글 프롬프트만 (${aiPrompt(cu, ph, AIG.prov === 'free' ? 900 : false).length}자, 영어) — 그림은 보내지 않음</em></div>`;
+  return `<div class="aig-send"><span>보낼 내용</span>${AIG.refs.svg ? `<figure><div class="th">${roomSvg(c, ctxOf(), st)}</div><figcaption>공간 그림</figcaption></figure>` : ''}${AIG.refs.photo && sendPh ? `<figure><img src="${esc(ph.selP.img)}" alt="" referrerpolicy="no-referrer"><figcaption>실사 참고 사진</figcaption></figure>` : ''}<em>+ 글 프롬프트 ${aiPrompt(cu, ph).length}자</em></div>`;
 }
 function renderAigen(cu, ph){
   const box = $('#aigen'); if (!box) return;
   const P = AIP[AIG.prov], ae = document.activeElement, editing = ae && box.contains(ae) && /^(aiKey|aiModelX)$/.test(ae.id);
+  const mList = [...P.models, ...(AIG.prov === 'gemini' && AIG.gModels ? AIG.gModels.filter(m => !P.models.includes(m)) : [])], custom = AIG.cx[AIG.prov] || !mList.includes(AIG.model[AIG.prov]);
   const items = AIG.items.filter(x => x.scen === key);
-  const grid = items.length ? items.map(it => `<figure class="aig${AIG.pick === it.id ? ' on' : ''}" data-ai="${it.id}"><img src="${esc(it.url)}" alt="AI 생성 이미지 — ${esc(it.concept)}"><figcaption><b>${esc(it.concept)}</b> · ${esc(it.shot)}<br><small>${esc(AIP[it.prov].n)} ${esc(it.model)} · ${it.at.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' })} · ${it.sec}초${it.blob ? ` · PNG ${it.w}×${it.h} · ${(it.blob.size / 1048576).toFixed(1)}MB` : ' · 내려받기 대신 새 탭에서 저장'}${it.refs.length ? ' · 참고: ' + esc(it.refs.join(', ')) : ''}</small>${it.note ? `<br><small class="muted">${esc(it.note)}</small>` : ''}
-      <div class="rph-act"><button type="button" class="btn sm${AIG.pick === it.id ? ' on' : ''}" data-aipick="${it.id}" aria-pressed="${AIG.pick === it.id}">${AIG.pick === it.id ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button><button type="button" class="btn sm" data-aidl="${it.id}">${it.blob ? '⬇ PNG 내려받기' : '새 탭에서 열기'}</button><button type="button" class="btn sm" data-aidel="${it.id}">지우기</button></div></figcaption></figure>`).join('')
-    : '<p class="muted aig-empty">아직 만든 이미지가 없습니다. 위에서 서비스를 고르고 [✨ 이미지 만들기]를 누르세요.</p>';
-  const prompt = cu ? aiPrompt(cu, ph, AIG.prov === 'free') : '';
-  if (editing){ $('#aiGrid').innerHTML = grid; $('#aiSt').innerHTML = esc(AIG.msg); $('#aiPrompt').value = prompt; return; }
+  const grid = items.length ? items.map(it => `<figure class="aig${AIG.pick === it.id ? ' on' : ''}${it.prov === 'local' ? ' loc' : ''}" data-ai="${it.id}"><button type="button" class="phz" data-aiview="${it.id}" aria-label="미리보기 창으로 크게 보기"><img src="${esc(it.url)}" alt="${it.prov === 'local' ? '빠른 미리보기' : 'AI 생성 이미지'} — ${esc(it.concept)}"></button><figcaption><b>${it.prov === 'local' ? '<span class="lcb">미리보기</span> ' : ''}${esc(it.concept)}</b> · ${esc(it.shot)}<br><small>${esc(aiProvName(it))} ${esc(it.model)} · ${it.at.toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' })} · ${it.sec}초${it.blob ? ` · PNG ${it.w}×${it.h} · ${(it.blob.size / 1048576).toFixed(1)}MB` : ' · 내려받기 대신 새 탭에서 저장'}${it.refs.length ? ' · 참고: ' + esc(it.refs.join(', ')) : ''}</small>${it.note ? `<br><small class="muted">${esc(it.note)}</small>` : ''}
+      <div class="rph-act"><button type="button" class="btn sm" data-aiview="${it.id}">🔍 미리보기</button><button type="button" class="btn sm${AIG.pick === it.id ? ' on' : ''}" data-aipick="${it.id}" aria-pressed="${AIG.pick === it.id}">${AIG.pick === it.id ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button><button type="button" class="btn sm" data-aidl="${it.id}">${it.blob ? '⬇ PNG' : '새 탭에서 열기'}</button><button type="button" class="btn sm" data-aidel="${it.id}">지우기</button></div></figcaption></figure>`).join('')
+    : '<p class="muted aig-empty">아직 만든 이미지가 없습니다. [✨ 이미지 만들기]로 AI 이미지를 만들거나, [👁 빠른 미리보기]로 키 · 인터넷 없이 분위기를 먼저 보세요.</p>';
+  const prompt = cu ? (AIG.prov === 'free' ? aiPrompt(cu, ph, 900) : aiPrompt(cu, ph)) : '';
+  const log = AIG.log.length ? `<details class="aig-log"><summary>자세한 기록 (${AIG.log.length})</summary><ol>${AIG.log.map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : '';
+  const stHtml = `${esc(AIG.msg)}${AIG.fail && !AIG.busy ? ' <button type="button" class="btn sm" id="aiLocal2">대신 빠른 미리보기 만들기</button>' : ''}`;
+  if (editing){ $('#aiGrid').innerHTML = grid; $('#aiSt').innerHTML = stHtml; $('#aiPrompt').value = prompt; return; }
   box.innerHTML = `
-    <div class="rph-h"><div><small>이 공실의 콘셉트 · 키워드 · 배치 · 실사 참고 사진으로 실사풍 이미지를 바로 만듭니다 — 만든 이미지는 실제 공실 사진이 아닙니다</small><h3>✨ AI 실사 이미지 만들기</h3></div></div>
+    <div class="rph-h"><div><small>이 공실의 콘셉트 · 키워드 · 배치 · 실사 참고 사진으로 실사풍 이미지를 만들고, 크게 · 비교해 미리 봅니다 — 만든 이미지는 실제 공실 사진이 아닙니다</small><h3>✨ AI 실사 이미지 만들기 · 미리보기</h3></div></div>
     <div class="seg sm" id="aiProv" role="group" aria-label="이미지 생성 서비스">${Object.entries(AIP).map(([k, v]) => `<button type="button" data-v="${k}" class="${AIG.prov === k ? 'on' : ''}">${esc(v.n)} <small>${esc(v.sub)}</small></button>`).join('')}</div>
     <div class="aig-set">
-      <label>모델 <select class="inp" id="aiModel">${P.models.map(m => `<option ${AIG.model[AIG.prov] === m ? 'selected' : ''}>${m}</option>`).join('')}<option value="__x" ${P.models.includes(AIG.model[AIG.prov]) ? '' : 'selected'}>직접 입력…</option></select></label>
-      ${P.models.includes(AIG.model[AIG.prov]) ? '' : `<label>모델 이름 <input class="inp" id="aiModelX" value="${esc(AIG.model[AIG.prov])}" spellcheck="false"></label>`}
-      ${P.key ? `<label>API 키 <input class="inp" id="aiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${AIG.prov === 'gemini' ? 'AIza…' : 'sk-…'}" value="${esc(AIG.key[AIG.prov])}"></label>
-      <div class="aig-k"><a href="${P.keyUrl}" target="_blank" rel="noopener noreferrer">키 만들기 ↗</a><label class="chk"><input type="checkbox" id="aiRemember" ${AIG.remember ? 'checked' : ''}> 이 브라우저에 키 기억</label></div>` : ''}
+      <label>모델 <select class="inp" id="aiModel">${mList.map(m => `<option value="${esc(m)}" ${!custom && AIG.model[AIG.prov] === m ? 'selected' : ''}>${m ? esc(m) : '기본 (서비스가 고름)'}</option>`).join('')}<option value="__x" ${custom ? 'selected' : ''}>직접 입력…</option></select></label>
+      ${custom ? `<label>모델 이름 <input class="inp" id="aiModelX" value="${esc(AIG.model[AIG.prov])}" spellcheck="false"></label>` : ''}
+      ${P.key || P.optKey ? `<label>${P.optKey ? '공개 키 (선택 · pk_…)' : 'API 키'} <input class="inp" id="aiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${AIG.prov === 'gemini' ? 'AIza…' : AIG.prov === 'free' ? '없어도 됨' : 'sk-…'}" value="${esc(AIG.key[AIG.prov] || '')}"></label>
+      <div class="aig-k"><a href="${P.keyUrl}" target="_blank" rel="noopener noreferrer">키 만들기 ↗</a>${AIG.prov === 'gemini' ? '<button type="button" class="btn sm" id="aiModels">모델 목록 확인</button>' : ''}<label class="chk"><input type="checkbox" id="aiRemember" ${AIG.remember ? 'checked' : ''}> 이 브라우저에 키 기억</label></div>` : ''}
       ${AIG.prov === 'gemini' ? `<div class="aig-r"><span>함께 보낼 참고 이미지</span><label class="chk"><input type="checkbox" id="aiRefSvg" ${AIG.refs.svg ? 'checked' : ''}> 공간 그림 (구도 · 배치 · 색)</label><label class="chk"><input type="checkbox" id="aiRefPh" ${AIG.refs.photo ? 'checked' : ''} ${S.interior.img === 'svg' ? 'disabled' : ''}> 실사 참고 사진 (분위기)</label></div>` : ''}
     </div>
+    ${cu ? aiSendPreview(cu, ph) : ''}
     <p class="note" style="margin:0">${esc(P.note)} 구도는 위 프롬프트 칸의 '${esc((SHOTS.find(x => x.id === S.interior.shot) || SHOTS[0]).ko)}'를 따릅니다.</p>
-    <div class="rph-row"><button type="button" class="btn btn-primary" id="aiGo" ${AIG.busy ? 'disabled' : ''}>${AIG.busy ? '만드는 중…' : '✨ 이미지 만들기'}</button><small id="aiSt" aria-live="polite">${esc(AIG.msg)}</small></div>
+    <div class="rph-row"><button type="button" class="btn btn-primary" id="aiGo" ${AIG.busy ? 'disabled' : ''}>${AIG.busy === 'ai' ? '만드는 중…' : '✨ 이미지 만들기'}</button><button type="button" class="btn" id="aiLocal" ${AIG.busy ? 'disabled' : ''} title="키 · 인터넷 없이 브라우저에서 바로 — AI 생성 아님">👁 빠른 미리보기</button>${AIG.busy === 'ai' ? '<button type="button" class="btn sm" id="aiStop">멈추기</button>' : ''}<small id="aiSt" aria-live="polite">${stHtml}</small></div>
+    ${log}
     <details class="aig-p"><summary>보낼 프롬프트 보기 (영어)</summary><textarea readonly id="aiPrompt" rows="6"></textarea></details>
     <div class="aig-grid" id="aiGrid" data-v="aigrid">${grid}</div>
-    <p class="cap">요청은 이 브라우저에서 고른 서비스로 바로 갑니다(PlaceOS 서버를 거치지 않음). API 키는 이 화면에만 두고, '키 기억'을 켰을 때만 이 브라우저에 저장합니다 — 공용 PC에서는 켜지 마세요. 만든 이미지는 새로고침하면 사라지니 내려받아 두세요. 생성 이미지는 실제와 다른 구조 · 글자가 섞일 수 있어 분위기 참고용이며 시공 도면 · 견적을 대신하지 않습니다. 상업 이용 조건은 각 서비스 약관을 따르고, 실사 참고 사진을 함께 보내면 그 사진의 라이선스(CC BY-SA 등)도 지켜야 할 수 있습니다.</p>`;
+    <p class="cap">요청은 이 브라우저에서 고른 서비스로 바로 갑니다(PlaceOS 서버를 거치지 않음). 서비스가 붐비면(429 · 5xx) 기다렸다가 자동으로 다시 시도하고, [멈추기]로 그만둘 수 있습니다. API 키는 이 화면에만 두고, '키 기억'을 켰을 때만 이 브라우저에 저장합니다 — 공용 PC에서는 켜지 마세요. '빠른 미리보기'는 AI가 아니라 공간 그림에 실사 참고 사진의 색 · 빛을 입힌 브라우저 합성으로, 서비스 없이 분위기를 먼저 볼 때 씁니다. 만든 이미지는 새로고침하면 사라지니 내려받아 두세요. 생성 이미지는 실제와 다른 구조 · 글자가 섞일 수 있어 분위기 참고용이며 시공 도면 · 견적을 대신하지 않습니다. 상업 이용 조건은 각 서비스 약관을 따르고, 실사 참고 사진을 함께 보내면 그 사진의 라이선스(CC BY-SA 등)도 지켜야 할 수 있습니다.</p>`;
   $('#aiPrompt').value = prompt;
 }
+// ── 미리보기 창 — 크게 보기 · 공간 그림과 비교 슬라이더 · 나란히 · 이전/다음 · 내려받기 ──
+const AIV = { id:null, mode:'cmp', from:null, pos:50 };
+function aiView(id, from){
+  const it = AIG.items.find(x => x.id === id); if (!it) return;
+  AIV.id = id; if (from) AIV.from = from;
+  const items = AIG.items.filter(x => x.scen === it.scen), i = items.indexOf(it), box = $('#aiview');
+  const ai = `<img src="${esc(it.url)}" alt="${it.prov === 'local' ? '빠른 미리보기' : 'AI 생성 이미지'}">`, sv = it.svg ? `<img src="${esc(it.svg)}" alt="공간 그림">` : '<div class="avx">공간 그림 없음</div>';
+  const view = AIV.mode === 'cmp' && it.svg ? `<div class="avc" style="--p:${AIV.pos}%"><div class="avb">${sv}</div><div class="avt">${ai}</div><div class="avbar" aria-hidden="true"></div><input type="range" id="avPos" min="0" max="100" value="${AIV.pos}" aria-label="비교 위치 — 왼쪽 ${it.prov === 'local' ? '미리보기' : 'AI 이미지'}, 오른쪽 공간 그림"><span class="avl">${it.prov === 'local' ? '빠른 미리보기' : 'AI 실사'}</span><span class="avr">공간 그림</span></div>`
+    : AIV.mode === 'side' ? `<div class="avs"><figure>${sv}<figcaption>공간 그림</figcaption></figure>${it.photo ? `<figure><img src="${esc(it.photo.img)}" alt="실사 참고 사진" referrerpolicy="no-referrer"><figcaption>실사 참고 사진 · ${esc(it.photo.by)} · ${esc(it.photo.lic)}</figcaption></figure>` : ''}<figure>${ai}<figcaption>${it.prov === 'local' ? '빠른 미리보기 (AI 아님)' : 'AI 실사'}</figcaption></figure></div>`
+    : `<div class="avo">${ai}</div>`;
+  box.innerHTML = `<div class="avp" role="document">
+    <div class="avh"><b>${it.prov === 'local' ? '👁 빠른 미리보기' : '✨ AI 실사 이미지'} — ${esc(it.concept)} · ${esc(it.shot)}</b><span class="muted">${i + 1} / ${items.length}</span>
+      <div class="seg sm" id="avMode" role="group" aria-label="보기">${[['cmp', '비교 슬라이더'], ['side', '나란히'], ['one', '크게']].map(([k, n]) => `<button type="button" data-v="${k}" class="${AIV.mode === k ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    ${view}
+    <p class="avi">${esc(aiProvName(it))} ${esc(it.model)} · ${it.blob ? `PNG ${it.w}×${it.h} · ${(it.blob.size / 1048576).toFixed(1)}MB · ` : ''}${it.sec}초${it.refs.length ? ' · 참고: ' + esc(it.refs.join(', ')) : ''}${it.note ? ' · ' + esc(it.note) : ''} — ${it.prov === 'local' ? '공간 그림에 실사 사진의 색 · 빛을 입힌 브라우저 합성으로 AI 생성이 아닙니다.' : '실제 공실 사진이 아니며 구조 · 글자가 실제와 다를 수 있습니다.'}</p>
+    ${it.prompt ? `<details class="aig-p"><summary>보낸 프롬프트</summary><textarea readonly rows="5">${esc(it.prompt)}</textarea></details>` : ''}
+    <div class="avf"><button type="button" class="btn sm" id="avPrev" ${i <= 0 ? 'disabled' : ''}>◀ 이전</button><button type="button" class="btn sm" id="avNext" ${i >= items.length - 1 ? 'disabled' : ''}>다음 ▶</button>
+      <button type="button" class="btn sm${AIG.pick === it.id ? ' on' : ''}" data-aipick="${it.id}">${AIG.pick === it.id ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button><button type="button" class="btn sm" data-aidl="${it.id}">${it.blob ? '⬇ PNG 내려받기' : '새 탭에서 열기'}</button><button type="button" class="btn sm btn-primary" id="avClose">닫기 (Esc)</button></div></div>`;
+  box.hidden = false; $('#avClose').focus();
+}
+function aiViewClose(){ const box = $('#aiview'); if (!box || box.hidden) return; box.hidden = true; box.innerHTML = ''; AIV.id = null; if (AIV.from && document.contains(AIV.from)) AIV.from.focus(); }
+function aiDownload(id){
+  // 만들 때 이미 PNG로 바꿔 둔 파일을 그대로 저장(다시 요청하지 않음)
+  const it = AIG.items.find(x => x.id === id); if (!it) return;
+  if (!it.blob){ window.open(it.url, '_blank', 'noopener'); return toast('새 탭의 그림을 오른쪽 클릭 → "이미지를 다른 이름으로 저장"으로 받으세요'); }
+  const name = `placeos-${key}-${it.prov === 'local' ? 'preview' : 'ai'}-${it.at.toISOString().slice(0, 19).replace(/[-:T]/g, '')}.png`, a = document.createElement('a');
+  a.href = it.url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  toast(`${name} 내려받기 (PNG ${it.w}×${it.h})`);
+}
 function bindAigen(){
-  const box = $('#aigen'), re = () => renderAigen(cur(), phLast);
+  const box = $('#aigen'), re = () => renderAigen(cur(), phLast), vb = $('#aiview');
+  const common = b => {
+    if (b.dataset.aiview){ aiView(b.dataset.aiview, b); return true; }
+    if (b.dataset.aipick){ AIG.pick = AIG.pick === b.dataset.aipick ? null : b.dataset.aipick; renderIPhotos(); if (AIV.id) aiView(AIV.id); else { const nb = box.querySelector(`[data-aipick="${b.dataset.aipick}"]`); if (nb) nb.focus(); } return true; }
+    if (b.dataset.aidl){ aiDownload(b.dataset.aidl); return true; }
+    return false;
+  };
   box.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (b.closest('#aiProv')){ AIG.prov = b.dataset.v; AIG.msg = ''; aiSave(); re(); const nb = box.querySelector(`#aiProv button[data-v="${AIG.prov}"]`); if (nb) nb.focus(); return; }
-    if (b.id === 'aiGo') return aiRun();
-    if (b.dataset.aipick){ AIG.pick = AIG.pick === b.dataset.aipick ? null : b.dataset.aipick; renderIPhotos(); const nb = box.querySelector(`[data-aipick="${b.dataset.aipick}"]`); if (nb) nb.focus(); return; }
-    if (b.dataset.aidel){ const gone = AIG.items.find(x => x.id === b.dataset.aidel); if (gone && gone.blob) URL.revokeObjectURL(gone.url); AIG.items = AIG.items.filter(x => x.id !== b.dataset.aidel); if (AIG.pick === b.dataset.aidel) AIG.pick = null; return renderIPhotos(); }
-    if (b.dataset.aidl){
-      // 만들 때 이미 PNG로 바꿔 둔 파일을 그대로 저장(다시 요청하지 않음)
-      const it = AIG.items.find(x => x.id === b.dataset.aidl); if (!it) return;
-      if (!it.blob){ window.open(it.url, '_blank', 'noopener'); return toast('새 탭의 그림을 오른쪽 클릭 → "이미지를 다른 이름으로 저장"으로 받으세요'); }
-      const name = `placeos-${key}-ai-${it.at.toISOString().slice(0, 19).replace(/[-:T]/g, '')}.png`, a = document.createElement('a');
-      a.href = it.url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      toast(`${name} 내려받기 (PNG ${it.w}×${it.h})`);
+    if (common(b)) return;
+    if (b.closest('#aiProv')){ AIG.prov = b.dataset.v; AIG.msg = ''; AIG.log = []; AIG.fail = false; aiSave(); re(); const nb = box.querySelector(`#aiProv button[data-v="${AIG.prov}"]`); if (nb) nb.focus(); return; }
+    if (b.id === 'aiGo') return aiRun(false);
+    if (b.id === 'aiLocal' || b.id === 'aiLocal2') return aiRun(true);
+    if (b.id === 'aiStop'){ if (AIG.ac) AIG.ac.abort(); return aiStatus('멈추는 중…'); }
+    if (b.id === 'aiModels'){
+      if (!AIG.key.gemini.trim()) return aiStatus('API 키를 먼저 넣어 주세요.');
+      aiStatus('모델 목록을 확인하는 중…');
+      aiGeminiModels().then(ms => { AIG.gModels = ms; aiStatus(ms.length ? `이 키로 쓸 수 있는 이미지 모델 ${ms.length}개: ${ms.join(', ')}` : '이 키로 쓸 수 있는 이미지 모델이 없습니다(지역 · 결제 설정 확인)'); re(); })
+        .catch(err => { AIG.msg = '⚠ ' + err.message; re(); });
+      return;
     }
+    if (b.dataset.aidel){ const gone = AIG.items.find(x => x.id === b.dataset.aidel); if (gone && gone.blob) URL.revokeObjectURL(gone.url); AIG.items = AIG.items.filter(x => x.id !== b.dataset.aidel); if (AIG.pick === b.dataset.aidel) AIG.pick = null; return renderIPhotos(); }
   });
   box.addEventListener('change', e => {
     const t = e.target;
-    if (t.id === 'aiModel'){ if (t.value === '__x') AIG.model[AIG.prov] = ''; else AIG.model[AIG.prov] = t.value; aiSave(); re(); if (t.value === '__x') $('#aiModelX').focus(); }
+    if (t.id === 'aiModel'){ AIG.cx[AIG.prov] = t.value === '__x'; if (t.value !== '__x') AIG.model[AIG.prov] = t.value; aiSave(); re(); if (t.value === '__x'){ const x = $('#aiModelX'); if (x) x.focus(); } }
     if (t.id === 'aiRemember'){ AIG.remember = t.checked; aiSave(); toast(t.checked ? '이 브라우저에 키를 기억해요 — 공용 PC에서는 끄세요' : '저장한 키를 지웠어요'); }
-    if (t.id === 'aiRefSvg') { AIG.refs.svg = t.checked; aiSave(); }
-    if (t.id === 'aiRefPh') { AIG.refs.photo = t.checked; aiSave(); }
+    if (t.id === 'aiRefSvg') { AIG.refs.svg = t.checked; aiSave(); re(); }
+    if (t.id === 'aiRefPh') { AIG.refs.photo = t.checked; aiSave(); re(); }
   });
   box.addEventListener('input', e => {
     const t = e.target;
     if (t.id === 'aiKey'){ AIG.key[AIG.prov] = t.value; if (AIG.remember) aiSave(); }
     if (t.id === 'aiModelX'){ AIG.model[AIG.prov] = t.value; aiSave(); }
+  });
+  // 미리보기 창
+  vb.addEventListener('click', e => {
+    if (e.target === vb) return aiViewClose();
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'avClose') return aiViewClose();
+    if (b.closest('#avMode')){ AIV.mode = b.dataset.v; aiView(AIV.id); const nb = vb.querySelector(`#avMode button[data-v="${AIV.mode}"]`); if (nb) nb.focus(); return; }
+    if (b.id === 'avPrev' || b.id === 'avNext'){ const it = AIG.items.find(x => x.id === AIV.id), list = AIG.items.filter(x => x.scen === it.scen), j = list.indexOf(it) + (b.id === 'avNext' ? 1 : -1); if (list[j]) aiView(list[j].id); return; }
+    if (b.dataset.aipick || b.dataset.aidl) common(b);
+  });
+  vb.addEventListener('input', e => { if (e.target.id === 'avPos'){ AIV.pos = +e.target.value; const c = vb.querySelector('.avc'); if (c) c.style.setProperty('--p', AIV.pos + '%'); } });
+  document.addEventListener('keydown', e => {
+    if (vb.hidden) return;
+    if (e.key === 'Escape') return aiViewClose();
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && e.target.id !== 'avPos'){ const nb = $(e.key === 'ArrowLeft' ? '#avPrev' : '#avNext'); if (nb && !nb.disabled) nb.click(); }
   });
 }
 // 지금 공실 기준으로 위 그림 · 실사 사진 · AI 카드를 함께 다시 그리고, 필요하면 업종 실사 사진을 찾기 시작
@@ -2601,6 +2837,7 @@ function bindInterior(){
     const st = S.interior, b = e.target.closest('button'); if (!b) return;
     const g = b.closest('.seg');
     if (b.dataset.phz) return openPhoto(b.dataset.phz, b);
+    if (b.dataset.aiview) return aiView(b.dataset.aiview, b);
     if (b.id === 'iAi'){ $('#aigen').scrollIntoView({ behavior:'smooth', block:'start' }); return setTimeout(() => $('#aiGo').focus({ preventScroll:true }), 300); }
     if (g && g.id === 'iImg') st.img = b.dataset.v;
     else if (g && g.id === 'iMy') S.design.view = b.dataset.v;

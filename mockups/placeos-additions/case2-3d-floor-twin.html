@@ -11,9 +11,9 @@
 *{box-sizing:border-box}
 :root{
   --bg:#f1f5f9;--surface:#fff;--surface-2:#f8fafc;--line:#e2e8f0;--line-2:#cbd5e1;
-  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --text:#0f172a;--text-2:#475569;--text-3:#5b6779;
   --brand:#4f46e5;--brand-2:#6366f1;--brand-soft:#eef2ff;--brand-ink:#3730a3;
-  --ok:#059669;--ok-soft:#ecfdf5;--warn:#d97706;--warn-soft:#fffbeb;--bad:#dc2626;--bad-soft:#fef2f2;
+  --ok:#047857;--ok-soft:#ecfdf5;--warn:#b45309;--warn-soft:#fffbeb;--bad:#b91c1c;--bad-soft:#fef2f2;
   --vac:#f97316;--vac-soft:#fff7ed;--head:#0f172a;--r:14px;
   --sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
 }
@@ -250,14 +250,14 @@ button{cursor:pointer}
   <span class="demo-pill">추가안 시안 · 데모 데이터</span>
 </header>
 
-<div class="phead">
+<div class="phead" role="region" aria-label="페이지 소개">
   <div>
     <div class="eyebrow">CASE 2 · 공실 선택 → 건물 층별 3D 디지털 트윈</div>
     <h1>공실을 고르면 그 건물을 층별로 쪼개 3D로 보여줍니다</h1>
     <p>층마다 운영 중 · 공실 · 주거를 색으로 구분하고, 층을 누르면 호실 배치와 임대 조건 · 설비 정보가 열립니다.</p>
     <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>건물 · 호실 · 임대 조건 · 건축물대장 값은 <b>데모 값</b>입니다. 3D는 바닥 크기 · 층수로 만든 상자 모델이고, 호실 칸은 전용면적으로 계산한 개략 배치입니다.</li><li>실서비스 출처: 건축물대장(층별개요 · 전유공용면적, 건축HUB) · 공실 매물 DB · 관리단 · 현장 확인. 공실 상태 기준일은 호실마다 표시합니다(데모 2026-10-21).</li><li>공실률은 집계 기준(호실 · 점포 · 전용 · 계약 · 미분양 · 미입주)에 따라 달라 범위로 보여줍니다.</li></ul></details>
   </div>
-  <div class="seg" id="scSeg" aria-label="시나리오">
+  <div class="seg" id="scSeg" role="group" aria-label="시나리오">
     <button data-s="A">A · 2층 공실 (근린상가)</button>
     <button data-s="B">B · 1층 상가 (지식산업센터)</button>
     <button data-s="C">C · 지하 1층 (꼬마빌딩)</button>
@@ -265,7 +265,7 @@ button{cursor:pointer}
 </div>
 
 <main class="layout">
-  <aside class="card side left">
+  <aside class="card side left" aria-label="공실 목록 · 건물 정보">
     <div class="sec">
       <div class="sec-h"><h3>공실 매물</h3><small>누르면 3D에서 해당 층으로 이동</small></div>
       <div id="vacList"></div>
@@ -287,7 +287,7 @@ button{cursor:pointer}
     <div id="view"><div class="loading" id="loading">3D 트윈 불러오는 중…</div></div>
     <div class="ov ov-tl"><div class="bname" id="bName"></div></div>
     <div class="ov ov-tr">
-      <div class="seg" id="modeSeg" aria-label="보기 방식">
+      <div class="seg" id="modeSeg" role="group" aria-label="보기 방식">
         <button data-m="normal" class="on">외관</button>
         <button data-m="explode">층 분리</button>
         <button data-m="vaconly">공실만 강조</button>
@@ -298,7 +298,7 @@ button{cursor:pointer}
         <button class="tg" id="tgReset">시점 초기화</button>
       </div>
     </div>
-    <div class="elev" id="elev" aria-label="층 선택"></div>
+    <div class="elev" id="elev" role="group" aria-label="층 선택"></div>
     <div class="legend">
       <span><em style="background:#7fb2f0"></em>운영 중</span>
       <span><em style="background:#fdba74"></em>일부 공실</span>
@@ -314,7 +314,7 @@ button{cursor:pointer}
     <div id="kbLive" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
   </section>
 
-  <aside class="card side right" id="right"></aside>
+  <aside class="card side right" id="right" aria-label="선택한 층 · 호실"></aside>
 </main>
 
 <script type="module" onerror="twinFail()">

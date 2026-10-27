@@ -7,7 +7,7 @@
 //      Case 5 공실 치수 · Case 4 출입구 · 같은 건물 입점이 공통 건물 블록과 맞는지, 인테리어 배치안이 겹치거나 벽 밖으로 나가지 않는지.
 //   ⑦ 실사 참고 사진: Case 5 안 사진 묶음(PHOTOLIB) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
 //      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지,
-//      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내 · PNG 변환).
+//      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내 · 재시도 규칙 · 빠른 미리보기 · 미리보기 창).
 //   ⑧ PlaceOS 참고.html(Case 1~5 한 파일): 원본과 같은 최신 내용인지, 카드 · 화면 안 메뉴 · 주소(#case4?s=C)로 화면이 바뀌는지.
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
@@ -66,7 +66,17 @@ const PAGES = [
         return r.length === 1 && r[0].industry === 'izakaya' && r[0].materials.includes('원목') && r[0].features.includes('노렌 · 종이등') && r[0].src.creator === 'Kim' && PHOTO.indFit(r[0], 'izakaya') === 1 && PHOTO.indFit(r[0], 'bar') === .5 && PHOTO.indFit(PHOTO.L.photos[0], 'izakaya') === 0; })()`, '업종 실시간 사진 해석(라이선스 거르기 · 태그 · 업종)이 틀림'],
       // AI 이미지 생성: 무료 서비스용 짧은 프롬프트 길이, 오류 안내 문구
       ['eval', `(() => { const cu = cur(), short = aiPrompt(cu, phLast, true), long = aiPrompt(cu, phLast); return short.length <= 900 && /^Photorealistic/.test(short) && long.length > short.length && /Avoid:/.test(long)
-        && /^API 키가 맞지 않습니다/.test(aiErr(400, 'API key not valid. Please pass a valid API key.').message) && /^사용 한도/.test(aiErr(429, '').message); })()`, 'AI 이미지 생성 프롬프트 · 오류 안내가 틀림'],
+        && /^API 키가 맞지 않습니다/.test(aiErr(400, 'API key not valid. Please pass a valid API key.').message) && /사용 한도/.test(aiErr(429, '').message); })()`, 'AI 이미지 생성 프롬프트 · 오류 안내가 틀림'],
+      // 보안: 실시간 사진 응답에 javascript: 같은 주소가 섞여 와도 링크로 만들지 않음
+      ['eval', `(() => { const r = PHOTO.live.parse({ query:{ pages:[{ pageid:7, title:'File:Izakaya interior.jpg', imageinfo:[{ width:2000, mime:'image/jpeg', thumburl:'https://upload.wikimedia.org/a/7.jpg', thumbwidth:500, thumbheight:375,
+        descriptionurl:'javascript:alert(1)', extmetadata:{ Artist:{ value:'<img src=x onerror=alert(1)>Kim' }, LicenseShortName:{ value:'CC0' }, LicenseUrl:{ value:'javascript:alert(2)' }, ImageDescription:{ value:'Interior counter' } } }] }] } }, 'izakaya');
+        return r.length === 1 && r[0].src.page.startsWith('https://commons.wikimedia.org/') && r[0].src.license_url === '' && !/[<>]/.test(r[0].src.creator) && safeUrl('javascript:alert(1)') === ''; })()`, '실시간 사진 응답의 위험한 주소 · 글을 거르지 못함'],
+      // AI 오류 처리: 붐빔(503) · 일시 오류는 다시 시도, 할당량 소진 · 모델 없음은 바로 안내
+      ['eval', `aiErr(503, 'The model is overloaded.').retry && aiErr(502, '').retry && aiErr(429, 'Rate limit').retry && !aiErr(429, 'You exceeded your current quota', 'RESOURCE_EXHAUSTED').retry && !aiErr(404, '').retry && !aiErr(400, 'API key not valid').retry
+        && /^서비스가 붐빕니다/.test(aiErr(503, 'The model is overloaded.').message)`, 'AI 오류 재시도 · 안내 규칙이 틀림'],
+      // 빠른 미리보기(브라우저 합성) → PNG · 미리보기 창(비교 슬라이더)
+      ['eval', `(async () => { await aiRun(true); const it = AIG.items[0]; if (!it || it.prov !== 'local' || !it.blob || it.blob.type !== 'image/png' || it.w !== 1280) return false;
+        aiView(it.id); const ok = !document.querySelector('#aiview').hidden && !!document.querySelector('#aiview .avc img') && !!document.querySelector('#idetail [data-v=mainai]'); aiViewClose(); return ok && document.querySelector('#aiview').hidden; })()`, '빠른 미리보기 · 미리보기 창이 동작하지 않음'],
       ['click', '#phMore'], ['click', '#iImg button[data-v=photo]'], ['visible', '#idetail [data-v=mainphoto] img'],
       ['eval', `(async () => { const im = [...document.querySelectorAll('#phGrid img, #idetail [data-v=mainphoto] img')]; for (const i of im){ i.scrollIntoView(); await i.decode().catch(() => {}); } return im.length === 4 && im.every(i => i.naturalWidth > 0); })()`, '실사 사진이 그려지지 않음'],
       ['click', '#tabs button[data-t=profile]'], ['click', '#scSeg button[data-s=C]']] },

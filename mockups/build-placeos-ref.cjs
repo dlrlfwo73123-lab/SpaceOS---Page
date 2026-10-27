@@ -80,7 +80,7 @@ function page({ docs, info }){
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--brand:#4f46e5;--brand-soft:#eef2ff;--brand-ink:#3730a3;--head:#0f172a;--r:14px;--sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06)}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#5b6779;--brand:#4f46e5;--brand-soft:#eef2ff;--brand-ink:#3730a3;--head:#0f172a;--r:14px;--sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06)}
 html,body{margin:0;height:100%}
 body{font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;cursor:pointer}
