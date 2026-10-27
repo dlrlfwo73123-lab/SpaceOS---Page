@@ -110,6 +110,7 @@ button{cursor:pointer}
 .viewer{position:relative;overflow:hidden;padding:0;min-height:520px}
 #view{position:absolute;inset:0;border-radius:var(--r);overflow:hidden;background:#eef2f7}
 #view canvas{display:block;touch-action:none}
+#view:focus-visible{outline:3px solid #6366f1;outline-offset:-3px}
 .labels{position:absolute;inset:0;pointer-events:none}
 .fl-label{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:4px;font:700 10.5px/1 'Noto Sans KR',sans-serif;padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.95);border:1px solid #cbd5e1;color:#334155;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.12);margin-left:6px}
 .fl-label i{width:7px;height:7px;border-radius:50%;background:#60a5fa}
@@ -213,8 +214,26 @@ button{cursor:pointer}
 .dsrc ul{margin:6px 0 0;padding-left:18px;max-width:900px}
 .dsrc li{margin:2px 0}
 </style>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+<script>
+// three.js 받을 곳 — 기본 jsDelivr, 못 받으면 unpkg(?cdn=unpkg)로 한 번 다시 열고, 둘 다 안 되면 안내 + 2D 층별 평면(Case 3)으로 연결
+(() => {
+  const q = new URLSearchParams(location.search), alt = q.get('cdn') === 'unpkg';
+  const base = alt ? 'https://unpkg.com/three@0.160.0/' : 'https://cdn.jsdelivr.net/npm/three@0.160.0/';
+  document.write('<script type="importmap">' + JSON.stringify({ imports:{ three:base + 'build/three.module.js', 'three/addons/':base + 'examples/jsm/' } }) + '<\/script>');
+  window.twinFail = () => {
+    if (window.TWIN_READY || window.TWIN_FAILED) return;
+    if (!alt){ q.set('cdn', 'unpkg'); location.replace(location.pathname + '?' + q); return; }
+    window.TWIN_FAILED = true;
+    const show = () => {
+      const el = document.getElementById('loading'); if (!el) return;
+      const s = ['A', 'B', 'C'].includes(q.get('s')) ? q.get('s') : 'A';
+      el.setAttribute('role', 'alert');
+      el.innerHTML = '<div style="max-width:440px;text-align:center;line-height:1.6;padding:16px"><b style="color:#0f172a;font-size:15px">3D 라이브러리(three.js)를 불러오지 못했습니다</b><br>jsDelivr · unpkg 두 곳 모두 응답이 없습니다. 인터넷 연결 · 회사 방화벽 · 광고 차단을 확인하고 새로고침하세요.<br>같은 건물 · 같은 호실 데이터는 2D 층별 평면으로 볼 수 있습니다.<br><a href="case3-streetview-floor.html?s=' + s + (q.get('f') ? '&f=' + encodeURIComponent(q.get('f')) : '') + '" style="display:inline-block;margin-top:8px;font-weight:700;color:#4f46e5">Case 3 · 거리뷰 · 층별보기 열기 →</a></div>';
+    };
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', show) : show();
+  };
+  setTimeout(() => { if (!window.TWIN_READY) window.twinFail(); }, 25000);
+})();
 </script>
 </head>
 <body>
@@ -290,14 +309,15 @@ button{cursor:pointer}
       <span><em style="background:#d6dde6"></em>주거 · 주차</span>
       <span><em style="background:#6366f1"></em>선택</span>
     </div>
-    <div class="hint"><span>드래그 회전 · 휠 확대 · 우클릭 이동</span><div class="compass" title="북쪽"><svg id="needle" width="18" height="18" viewBox="0 0 18 18"><path d="M9 1 L12 9 L9 8 L6 9 Z" fill="#dc2626"/><path d="M9 17 L6 9 L9 10 L12 9 Z" fill="#94a3b8"/></svg></div></div>
+    <div class="hint"><span>드래그 회전 · 휠 확대 · 우클릭 이동 · 키보드: 3D 칸 선택 후 ← → ↑ ↓ · + − · PageUp/Down</span><div class="compass" title="북쪽"><svg id="needle" width="18" height="18" viewBox="0 0 18 18"><path d="M9 1 L12 9 L9 8 L6 9 Z" fill="#dc2626"/><path d="M9 17 L6 9 L9 10 L12 9 Z" fill="#94a3b8"/></svg></div></div>
     <div class="tip" id="tip"></div>
+    <div id="kbLive" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
   </section>
 
   <aside class="card side right" id="right"></aside>
 </main>
 
-<script type="module">
+<script type="module" onerror="twinFail()">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
@@ -1264,8 +1284,34 @@ $('#tgReset').onclick = () => {
   tween = { t0:performance.now(), dur:800, fT:controls.target.clone(), tT:new THREE.Vector3(0, H * .38, 0), fP:camera.position.clone(), tP:new THREE.Vector3(dist * .62, H * .38 + dist * .5, dist * .78) };
 };
 
+// ── 키보드로 3D 보기 (3D 칸에 초점이 있을 때) ──────────────────────
+// ← → 돌리기 · ↑ ↓ 기울이기 · + − 확대 · 축소 · PageUp / PageDown 위 · 아래 층 · Home 처음 시점
+view.tabIndex = 0;
+view.setAttribute('aria-label', '3D 건물 보기 — 화살표 ← → 돌리기, ↑ ↓ 기울이기, + − 확대 · 축소, PageUp · PageDown 층 이동, Home 처음 시점');
+view.addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === 'PageUp' || k === 'PageDown'){
+    e.preventDefault();
+    const fs = BUILDINGS[state.s].floors.map(f => f.lv).sort((a, b) => a - b), i = fs.indexOf(state.lv), j = Math.min(fs.length - 1, Math.max(0, i + (k === 'PageUp' ? 1 : -1)));
+    if (j !== i) selectFloor(fs[j]);
+    const F = BUILDINGS[state.s].floors.find(f => f.lv === state.lv);
+    $('#kbLive').textContent = `${flName(state.lv)} · ${ST_TEXT[floorStatus(F)]}${j === i ? (k === 'PageUp' ? ' — 맨 위층' : ' — 맨 아래층') : ''}`;
+    return;
+  }
+  if (k === 'Home'){ e.preventDefault(); $('#tgReset').click(); $('#kbLive').textContent = '처음 시점'; return; }
+  const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+  if (k === 'ArrowLeft' || k === 'ArrowRight') sph.theta += (k === 'ArrowLeft' ? -1 : 1) * Math.PI / 12;
+  else if (k === 'ArrowUp' || k === 'ArrowDown') sph.phi = Math.min(controls.maxPolarAngle, Math.max(.12, sph.phi + (k === 'ArrowUp' ? -1 : 1) * Math.PI / 24));
+  else if (k === '+' || k === '=') sph.radius = Math.max(controls.minDistance, sph.radius * .85);
+  else if (k === '-' || k === '_') sph.radius = Math.min(controls.maxDistance, sph.radius / .85);
+  else return;
+  e.preventDefault();
+  tween = { t0:performance.now(), dur:220, fT:controls.target.clone(), tT:controls.target.clone(), fP:camera.position.clone(), tP:new THREE.Vector3().setFromSpherical(sph).add(controls.target) };
+});
+
 const qf = params.get('f');
 loadScenario(state.s, qf !== null && qf !== '' ? +qf : undefined);
+window.TWIN_READY = true;
 
 // 접근성: 켜짐(.on) 상태를 화면 낭독기에도 알림 (aria-pressed)
 (() => {

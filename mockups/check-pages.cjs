@@ -5,6 +5,8 @@
 //   ① 스크립트 오류(pageerror) ② 콘솔 오류 ③ 모바일 가로 넘침 ④ 핵심 요소 존재 ⑤ 기본 클릭 동작을 확인합니다.
 //   ⑥ 데이터 검사: 호실 면적 합 = 3D · 평면 칸 면적, 층 바닥 합 = 가로×깊이, Case 2 · 3 공통 건물 블록이 똑같은지, 시나리오 좌표가 화면마다 같은지,
 //      Case 5 공실 치수 · Case 4 출입구 · 같은 건물 입점이 공통 건물 블록과 맞는지, 인테리어 배치안이 겹치거나 벽 밖으로 나가지 않는지.
+//   ⑦ 실사 참고 사진: 사진 묶음(interior-photos.js) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
+//      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지.
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
 const fs = require('fs');
@@ -28,7 +30,7 @@ const PAGES = [
         return !l.overflow.length && Math.abs(tot - b.W * b.D) < .5 && f.units.every(u => Math.abs((l.units[u.no] || []).reduce((s, p) => s + pieceArea(p), 0) - u.a) < 1); }))`, '호실 면적과 배치 칸 면적이 맞지 않음']] },
   { file: 'case4-nearby-competitors.html', must: ['.leaflet-container', '.poi', '.tiles'],
     act: [['click', '#scSeg button[data-s=C]'], ['click', '.qbtn[data-r="50"]'], ['click', '.fchip[data-k=chain]'], ['click', '#mSeg button[data-m=line]'], ['click', '#mSeg button[data-m=real]']] },
-  { file: 'case5-customer-ledger.html', must: ['#ledBody tr', '.kpi', '#kwset .kwr', '#vdesign svg'],
+  { file: 'case5-customer-ledger.html', must: ['#ledBody tr', '.kpi', '#kwset .kwr', '#vdesign svg', '#rphotos'],
     act: [['click', '#tabs button[data-t=events]'], ['click', '#tabs button[data-t=interior]'], ['click', '#concepts .cc:nth-child(2)'], ['click', '#iDay button[data-v="1"]'], ['click', '#iSeed'],
       ['visible', '#idetail .ipic svg'], ['click', '.kwr .lv button[data-lv="3"]'], ['click', '#dScope button[data-v=part]'], ['visible', '#vdesign svg'],
       // 기본 키워드 설정이면 적합도가 설정 없이 계산한 값과 같아야 함
@@ -39,6 +41,22 @@ const PAGES = [
           const solid = pl.zones.filter(z => z.k !== 'stool' && !z.inside); let ok = pl.seats > 0 && pl.zones.every(z => z.u0 >= -1e-6 && z.u1 <= V.w + 1e-6 && z.v0 >= -1e-6 && z.v1 <= V.d + 1e-6);
           for (let i = 0; i < solid.length; i++) for (let j = i + 1; j < solid.length; j++){ const a = solid[i], b = solid[j]; if (Math.min(a.u1, b.u1) - Math.max(a.u0, b.u0) > 1e-6 && Math.min(a.v1, b.v1) - Math.max(a.v0, b.v0) > 1e-6) ok = false; }
           return ok; }); })`, '인테리어 배치안 칸이 겹치거나 벽 밖으로 나감'],
+      // 실사 참고 사진: 색차 공식 · 부정어 · 추천 규칙 · 사진 표시
+      ['eval', `[[[50,2.6772,-79.7751],[50,0,-82.7485],2.0425],[[50,3.1571,-77.2803],[50,0,-82.7485],2.8615],[[50,2.8361,-74.02],[50,0,-82.7485],3.4412],[[50,-1.3802,-84.2814],[50,0,-82.7485],1.0],
+        [[50,0,0],[50,-1,2],2.3669],[[50,2.5,0],[73,25,-18],27.1492],[[50,2.5,0],[61,-5,29],22.8977],[[50,2.5,0],[56,-27,-3],31.903],[[50,2.5,0],[58,24,15],19.4535],[[60.2574,-34.0099,36.2677],[60.4626,-34.1751,39.4387],1.2644]]
+        .every(([a, b, e]) => Math.abs(PHOTO.de2000(a, b) - e) < 5e-5 && Math.abs(PHOTO.de2000(b, a) - e) < 5e-5)`, 'CIEDE2000 색차가 논문 시험값(Sharma 2005)과 다름'],
+      ['eval', `(() => { const n = PHOTO.parseNotes('강아지 동반 불가, 통창, 지하철역 가까움'); return n.neg.some(w => w.val === '반려동물') && n.want.some(w => w.val === '큰 창') && !n.want.concat(n.neg).some(w => w.val === '지하'); })()`, '특이사항 부정어 · 예외 처리가 틀림'],
+      ['eval', `['A','B','C'].every(k => { const S0 = S, k0 = key; key = k; S = { ...S, design:designDefault(INTERIOR[k]), interior:{ ...S.interior, note:'', siteAuto:true, pick:null } };
+        const r = CONCEPTS.map(c => ({ c, f:fitOf(c, INTERIOR[k], SC[k].profile, S.design) })).sort((a, b) => b.f.total - a.f.total)[0];
+        const dz = designOf(r.c, INTERIOR[k], S.design), cu = { r, dz, pl:null, V:VACANCY[k] }, q = photoQuery(cu), rk = PHOTO.rank(q, 0, 3), byid = id => PHOTO.L.photos.find(p => p.id === id);
+        S = S0; key = k0;
+        const top = rk.top, sc = rk.all.map(x => x.raw);
+        return top.length === 3 && new Set(top.map(x => byid(x.id).venue)).size === 3 && rk.all.every(x => x.score >= 0 && x.score <= 100)
+          && top.every((x, i) => i === 0 || top[i - 1].raw >= x.raw - 1e-9) && rk.total === PHOTO.L.photos.length; })`, '실사 사진 추천 규칙(다른 장소 3장 · 점수 순 · 0~100점)이 틀림'],
+      ['visible', '#phGrid figure.rph'], ['fill', '#phNote', '노트북 손님 많음, 강아지 동반 불가'],
+      ['eval', `new Promise(r => setTimeout(() => r(/빼고 봄/.test((document.querySelector('#phSum') || {}).textContent) && /반려동물 없음/.test((document.querySelector('#phGrid') || {}).textContent)), 400))`, '특이사항 입력이 사진 고르기에 반영되지 않음'],
+      ['click', '#phMore'], ['click', '#iImg button[data-v=photo]'], ['visible', '#idetail [data-v=mainphoto] img'],
+      ['eval', `(async () => { const im = [...document.querySelectorAll('#phGrid img, #idetail [data-v=mainphoto] img')]; for (const i of im){ i.scrollIntoView(); await i.decode().catch(() => {}); } return im.length === 4 && im.every(i => i.naturalWidth > 0); })()`, '실사 사진이 그려지지 않음'],
       ['click', '#tabs button[data-t=profile]'], ['click', '#scSeg button[data-s=C]']] },
   { file: 'verification-report.html', must: ['#summary', '#sources'], act: [] },
 ];
@@ -80,6 +98,17 @@ function crossChecks(){
       sb[k].forEach(([no, name, , lv]) => { const fl = b.floors.find(x => x.lv === lv), un = fl && fl.units.find(x => x.no === no); if (!un || un.name !== name) errs.push(`Case 4 같은 건물 ${k} ${no}호 '${name}'이 3D 호실(${un ? un.name : '없음'})과 다름`); });
     }
   } catch (e) { errs.push('공통 블록 실행 검사 실패: ' + e.message); }
+  // 실사 참고 사진 묶음: 사진마다 이미지 · 저작자 · 라이선스 · 원본 링크 · 태그가 어휘 안에 있는지
+  try {
+    const pctx = { window:{} }; vm.createContext(pctx); vm.runInContext(read('interior-photos.js'), pctx);
+    const L = pctx.window.PHOTOLIB, V = L.vocab, inV = (g, x) => (Array.isArray(V[g]) ? V[g] : Object.keys(V[g])).includes(x);
+    if (!/<script src="interior-photos\.js"><\/script>/.test(read('case5-customer-ledger.html'))) errs.push('Case 5가 interior-photos.js 를 불러오지 않음');
+    L.photos.forEach(p => {
+      if (!/^data:image\/jpeg;base64,/.test(p.img) || !p.src.creator || !p.src.license || !/^https:\/\/commons\.wikimedia\.org\//.test(p.src.page)) errs.push(`사진 ${p.id}: 이미지 · 저작자 · 라이선스 · 원본 링크 누락`);
+      if (!['styles', 'materials', 'light_types', 'layout', 'features'].every(g => p[g].every(x => inV(g, x))) || !inV('light_temp', p.light_temp) || !inV('size_class', p.size_class)) errs.push(`사진 ${p.id}: 어휘에 없는 태그`);
+    });
+    if (new Set(L.photos.map(p => p.id)).size !== L.photos.length) errs.push('사진 id 중복');
+  } catch (e) { errs.push('interior-photos.js 검사 실패: ' + e.message); }
   if (c1.length !== 3 || c2.length !== 3 || c4.length !== 3) errs.push(`시나리오 좌표를 다 찾지 못함 (Case1 ${c1.length} · Case2/3 ${c2.length} · Case4 ${c4.length})`);
   else if (norm(c1) !== norm(c2) || norm(c2) !== norm(c4)) errs.push(`시나리오 건물 좌표가 화면마다 다름: Case1 ${norm(c1)} / Case2·3 ${norm(c2)} / Case4 ${norm(c4)}`);
   return errs;
@@ -89,7 +118,7 @@ function crossChecks(){
   const browser = await chromium.launch();
   let fails = 0;
   const cross = crossChecks();
-  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점)');
+  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점 · 실사 사진 묶음)');
   cross.forEach(e => console.log('    - ' + e));
   if (cross.length) fails++;
   for (const pg of PAGES) {
@@ -113,6 +142,7 @@ function crossChecks(){
           try {
             if (kind === 'click') await page.click(sel, { timeout: 5000 });
             if (kind === 'select') await page.selectOption(sel, val);
+            if (kind === 'fill') await page.fill(sel, val, { timeout: 5000 });
             if (kind === 'visible' && !(await page.isVisible(sel))) errors.push('안 보임: ' + sel);
             if (kind === 'eval' && !(await page.evaluate(sel))) errors.push('데이터 검사 실패: ' + val);
             await page.waitForTimeout(250);

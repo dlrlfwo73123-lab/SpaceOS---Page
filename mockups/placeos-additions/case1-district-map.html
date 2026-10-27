@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" integrity="sha256-eSrJl9z2rm9kPrTi3uRjDIXnBWUmvY+4X/6Dxn1sQbQ=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" integrity="sha256-eSrJl9z2rm9kPrTi3uRjDIXnBWUmvY+4X/6Dxn1sQbQ=" crossorigin="" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css'">
 <style>
 *{box-sizing:border-box}
 :root{
@@ -239,9 +239,25 @@ table.cmp td.best{background:var(--ok-soft);color:var(--ok);font-weight:800}
   </div>
 </div>
 
+<!-- 지도 라이브러리: unpkg가 안 되면 jsDelivr(같은 파일 · 같은 무결성 해시)로 한 번 더 받음 -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>window.L || document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""><\/script>');</script>
 <script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js" integrity="sha256-B+bKcaW22DWnw4A/tITwpuXw3L+hMUB2Zu256TFlZPk=" crossorigin=""></script>
+<script>window.maplibregl || document.write('<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js" integrity="sha256-B+bKcaW22DWnw4A/tITwpuXw3L+hMUB2Zu256TFlZPk=" crossorigin=""><\/script>');</script>
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js" integrity="sha256-HDM2eWLndVwaFtH4Vlj9yWtbqjb4Gt/KlJMXTNG1Js4=" crossorigin=""></script>
+<script>!window.L || L.maplibreGL || document.write('<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.3/leaflet-maplibre-gl.js" integrity="sha256-HDM2eWLndVwaFtH4Vlj9yWtbqjb4Gt/KlJMXTNG1Js4=" crossorigin=""><\/script>');</script>
+<script>
+// 두 CDN 모두 실패하면 지도 칸에 안내를 띄우고, 같은 이름의 빈 객체(L)로 바꿔 목록 · 상세 · 비교는 지도 없이 그대로 돌게 합니다.
+if (!window.L){
+  window.MAP_FAIL = true;
+  const stub = () => new Proxy(function(){}, { get:(t, k) => k === Symbol.toPrimitive ? () => 0 : k === 'then' ? undefined : k === 'style' ? (t._st || (t._st = {})) : stub(), apply:() => stub(), construct:() => stub() });
+  window.L = stub();
+  document.addEventListener('DOMContentLoaded', () => {
+    const m = document.getElementById('map'); if (!m) return;
+    m.innerHTML = '<div role="alert" style="position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#334155;font-size:13.5px;line-height:1.6;background:#eef2f7"><div><b style="font-size:15px">🗺 지도 라이브러리를 불러오지 못했습니다</b><br>unpkg · jsDelivr 두 곳 모두 응답이 없습니다. 인터넷 연결 · 회사 방화벽 · 광고 차단을 확인하고 새로고침하세요.<br>지도 없이도 목록 · 상세 · 비교는 그대로 쓸 수 있습니다.</div></div>';
+  });
+}
+</script>
 <script>
 // [데모 데이터] 수치는 시안 확인용 가상값입니다. 실제 서비스에서는 서울시 상권분석서비스(골목상권/발달상권 영역)·생활인구·소상공인 상가정보로 교체합니다.
 // 성수 구역의 공실률 · 임대료는 2024~2026 보도치(뚝섬 상권 공실률 1~6%대, 연무장길 1층 3.3㎡당 30~40만원)에 맞춰 보정한 값입니다.

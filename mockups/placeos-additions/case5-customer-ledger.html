@@ -265,7 +265,54 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
 .atab td:nth-child(2),.atab td:nth-child(3),.ctab td:last-child{text-align:right;white-space:nowrap}
 .atab tr.tot td,.ctab tr.tot td{font-weight:800;border-bottom:0}
 .ctab tr.save td{color:var(--ok)}
-.ipics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ipics{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.pov{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.pvop{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2)}
+.pvdim{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--text-2);width:100%}
+.pvdim .inp{width:90px;padding:5px 8px}
+.pvdim small{font-size:11.5px;color:var(--text-2)}
+.pvdim b.ok{color:var(--ok)}.pvdim b.bad{color:var(--bad)}
+.ipic .phz{display:block;width:100%;height:100%;padding:0;border:0;background:#e2e8f0;cursor:zoom-in}
+.ipic .phz img{display:block;width:100%;height:100%;object-fit:cover}
+.rphotos{margin-top:12px;padding:16px;display:grid;gap:10px}
+.rph-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.rph-h small{font-size:11px;color:var(--text-3)}
+.rph-h h3{margin:2px 0 0;font-size:16px}
+.rph-h h3 em{font-style:normal;font-size:12px;margin-left:6px}
+.rph-set{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px 10px;align-items:center}
+.rph-set .fld2{font-size:12px;font-weight:700;color:var(--text-2)}
+.rph-sum,.rph-ind{margin:0;font-size:12px;color:var(--text-2);line-height:1.6}
+.rph-sum small{color:var(--text-3)}
+.rph-ind.warn{background:var(--warn-soft);border:1px solid #fde68a;border-radius:10px;padding:7px 10px;color:#92400e}
+.warnbox{margin:0;background:var(--warn-soft);border:1px solid #fde68a;border-radius:10px;padding:9px 12px;font-size:12.5px;color:#92400e}
+.rphg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+figure.rph{margin:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+figure.rph.on{border-color:var(--brand-2);box-shadow:0 0 0 2px rgba(99,102,241,.18)}
+.rph .phz{display:block;padding:0;border:0;background:#e2e8f0;cursor:zoom-in}
+.rph .phz img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}
+.rph figcaption{padding:10px 12px;font-size:12px;display:grid;gap:6px;align-content:start}
+.pht{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.pht b{font-size:13px;line-height:1.4}
+.sc{flex:none;font-size:11.5px;font-weight:800;color:#fff;background:#0f766e;border-radius:999px;padding:1px 9px}
+ul.why{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+ul.why li{line-height:1.45;color:var(--text-2)}
+ul.why i{font-style:normal;font-weight:800;margin-right:1px}
+ul.why i.y{color:#047857}ul.why i.n{color:#b91c1c}ul.why i.p{color:#b45309}
+.sw{display:inline-flex;width:88px;height:12px;border-radius:3px;overflow:hidden;vertical-align:-1px;border:1px solid var(--line);margin-left:3px}
+.sw i{display:block;height:100%}
+p.src,p.real{margin:0;color:var(--text-3);font-size:11.3px;line-height:1.45;overflow-wrap:anywhere}
+p.src a{color:var(--brand-ink)}
+.btn.on{border-color:var(--brand-2);background:var(--brand-soft);color:var(--brand-ink)}
+.rph-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn[hidden]{display:none}
+.rph-row small{font-size:11.5px;color:var(--text-3)}
+.rphotos .cap{margin:0;font-size:11.3px;color:var(--text-3);line-height:1.6}
+#phbox{position:fixed;inset:0;background:rgba(10,14,20,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2000;padding:16px}
+#phbox[hidden]{display:none}
+#phbox figure{margin:0;max-width:min(94vw,900px)}
+#phbox img{display:block;max-width:100%;max-height:78vh;border-radius:8px;margin:0 auto}
+#phbox figcaption{color:#e2e8f0;font-size:12.5px;margin-top:8px;text-align:center}
+#phbox figcaption a{color:#c7d2fe}
 .ipic img{display:block;width:100%;height:100%;object-fit:cover}
 .upl{position:relative;overflow:hidden}
 .consent{display:grid;gap:6px}
@@ -303,6 +350,7 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
   .concepts{grid-template-columns:1fr 1fr}
   .g3{grid-template-columns:1fr 1fr}
   .igrid,.g3i,.vgrid{grid-template-columns:1fr}
+  .rphg{grid-template-columns:1fr 1fr}
   .kwgrid{grid-template-columns:1fr 1fr}
   .kwopts{grid-template-columns:1fr 1fr}
 }
@@ -316,7 +364,9 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
   .kpi .v{font-size:18px}
   .concepts,.g3{grid-template-columns:1fr}
   .pcols{grid-template-columns:1fr}
-  .kwgrid,.kwopts,.ipics{grid-template-columns:1fr}
+  .kwgrid,.kwopts,.ipics,.rphg{grid-template-columns:1fr}
+  .rph-set{grid-template-columns:1fr}
+  .rphotos{padding:12px}
   .wgrid{grid-template-columns:1fr 1fr}
   .vdesign{padding:12px}
   .idetail{padding:12px}
@@ -486,6 +536,7 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
     <div class="ihead"><h3>상권 맞춤 인테리어 콘셉트</h3><small id="iSub"></small></div>
     <div class="concepts" id="concepts"></div>
     <div class="card idetail" id="idetail"></div>
+    <div class="card rphotos" id="rphotos"></div>
     <div class="card vdesign" id="vdesign"></div>
     <div class="g3" style="margin-top:12px">
       <div class="card box"><div class="bh"><h3>예산 계산</h3><small>맞춤 견적 + 간판 · 가구 (데모 단가)</small></div>
@@ -498,7 +549,10 @@ table.led{width:100%;border-collapse:collapse;font-size:12.5px}
   </section>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="phbox" hidden role="dialog" aria-modal="true" aria-label="실사 참고 사진 크게 보기"><figure><img alt=""><figcaption></figcaption></figure><button type="button" class="btn" id="phclose">닫기 (Esc)</button></div>
 
+<!-- 실사 참고 사진 묶음 (window.PHOTOLIB) — 없으면 실사 기능만 꺼짐 -->
+<script src="interior-photos.js"></script>
 <script>
 // [데모 데이터] 매출 · 지출 · 상권 평균 · 행사 일정은 시안 확인용 가상값입니다.
 // 링크는 실제 공식 사이트(구청 · 소상공인 지원기관 · 플랫폼 사업자 센터)로만 연결합니다.
@@ -1211,7 +1265,7 @@ function planOf(V, ik, rows){
 }
 
 // 배치안 그림 (위에서 본 평면, 아래쪽이 전면)
-function planSvg(pl, V, c, face){
+function planSvg(pl, V, c, face, ov){
   const VW = 560, VH = 380, pad = 46;
   const k = Math.min((VW - pad * 2) / V.w, (VH - pad - 70) / V.d);
   const w = V.w * k, h = V.d * k, x0 = (VW - w) / 2, y0 = 24;
@@ -1246,6 +1300,11 @@ function planSvg(pl, V, c, face){
     if (lab) s += `<text x="${X((z.u0 + z.u1) / 2).toFixed(1)}" y="${(Y((z.v0 + z.v1) / 2) + (sub && zh > 30 ? -1 : 4)).toFixed(1)}" font-size="${zw < 70 ? 9.5 : 11}" text-anchor="middle" fill="${z.k === 'photo' && lum(pc) < .3 ? '#fff' : '#334155'}" font-weight="700">${lab}</text>`
        + (sub && zh > 30 ? `<text x="${X((z.u0 + z.u1) / 2).toFixed(1)}" y="${(Y((z.v0 + z.v1) / 2) + 12).toFixed(1)}" font-size="9.5" text-anchor="middle" fill="#64748b">${sub}</text>` : '');
   });
+  // 내가 올린 도면 이미지 겹쳐 보기 — 벽 안쪽 사각형(실측 가로 × 깊이)에 맞춤, 90° 단위 회전
+  if (ov && ov.url){
+    const cx = x0 + w / 2, cy = y0 + h / 2, q = ov.rot % 180 !== 0, iw = q ? h : w, ih = q ? w : h;
+    s += `<image href="${ov.url}" x="${(cx - iw / 2).toFixed(1)}" y="${(cy - ih / 2).toFixed(1)}" width="${iw.toFixed(1)}" height="${ih.toFixed(1)}" preserveAspectRatio="${ov.fit ? 'xMidYMid meet' : 'none'}" opacity="${ov.op}" transform="rotate(${ov.rot} ${cx.toFixed(1)} ${cy.toFixed(1)})" data-v="planov"/>`;
+  }
   // 벽 · 창 · 문
   s += `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#0f172a" stroke-width="4"/>`;
   if (V.front === 'window') s += `<line x1="${x0 + 3}" y1="${y0 + h}" x2="${x0 + w - 3}" y2="${y0 + h}" stroke="#38bdf8" stroke-width="5"/>`;
@@ -1287,6 +1346,156 @@ function designCost(c, rows, D, py, grade, V){
   const sum = a => a.reduce((s, x) => s + x.v, 0);
   return { base, kw, save, total:base + sum(kw) + sum(save) };
 }
+
+// ── 4-3. 실사 참고 사진 — 사용자 제공 「PlaceOS 4-5 Program」의 사진 매칭 규칙을 콘셉트 · 상권 키워드 · 공실 조건에 맞게 옮김 ──
+// 사진 · 태그 · 어휘는 interior-photos.js(window.PHOTOLIB, 위키미디어 커먼즈 실사 60장)를 그대로 씁니다.
+// 파일이 없으면 이 기능만 꺼지고(안내 표시) 나머지 화면은 그대로 동작합니다.
+const PHOTO = (() => {
+  const L = window.PHOTOLIB && Array.isArray(window.PHOTOLIB.photos) && window.PHOTOLIB.photos.length && window.PHOTOLIB.vocab ? window.PHOTOLIB : null;
+  const V = L ? L.vocab : null;
+  const jround = (x, d = 0) => { const m = 10 ** d; return Math.floor(x * m + 0.5) / m; };
+  const hexRgb = h => { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+  const lin = c => { c = c / 255; return c > 0.04045 ? ((c + 0.055) / 1.055) ** 2.4 : c / 12.92; };
+  // sRGB → CIE Lab (D65)
+  function rgbLab(rgb){
+    const [r, g, b] = rgb.map(lin);
+    const x = (0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / 0.95047, y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b, z = (0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / 1.08883;
+    const f = t => t > 216 / 24389 ? t ** (1 / 3) : (24389 / 27 * t + 16) / 116;
+    const fx = f(x), fy = f(y), fz = f(z);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+  const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI, mod = (a, n) => ((a % n) + n) % n;
+  // CIEDE2000 색차 (Sharma · Wu · Dalal 2005) — 자동 점검이 논문 시험값과 비교합니다
+  function de2000(l1, l2){
+    const [L1, a1, b1] = l1, [L2, a2, b2] = l2;
+    const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cb = (C1 + C2) / 2;
+    const G = 0.5 * (1 - Math.sqrt(Cb ** 7 / (Cb ** 7 + 25 ** 7)));
+    const a1p = (1 + G) * a1, a2p = (1 + G) * a2, C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+    const h1p = (a1p === 0 && b1 === 0) ? 0 : mod(deg(Math.atan2(b1, a1p)), 360), h2p = (a2p === 0 && b2 === 0) ? 0 : mod(deg(Math.atan2(b2, a2p)), 360);
+    const dLp = L2 - L1, dCp = C2p - C1p;
+    let dhp = 0;
+    if (C1p * C2p !== 0){ dhp = h2p - h1p; if (dhp > 180) dhp -= 360; else if (dhp < -180) dhp += 360; }
+    const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(rad(dhp) / 2), Lbp = (L1 + L2) / 2, Cbp = (C1p + C2p) / 2;
+    let hbp;
+    if (C1p * C2p === 0) hbp = h1p + h2p; else if (Math.abs(h1p - h2p) <= 180) hbp = (h1p + h2p) / 2; else if (h1p + h2p < 360) hbp = (h1p + h2p + 360) / 2; else hbp = (h1p + h2p - 360) / 2;
+    const T = 1 - 0.17 * Math.cos(rad(hbp - 30)) + 0.24 * Math.cos(rad(2 * hbp)) + 0.32 * Math.cos(rad(3 * hbp + 6)) - 0.20 * Math.cos(rad(4 * hbp - 63));
+    const dth = 30 * Math.exp(-(((hbp - 275) / 25) ** 2)), Rc = 2 * Math.sqrt(Cbp ** 7 / (Cbp ** 7 + 25 ** 7));
+    const Sl = 1 + (0.015 * (Lbp - 50) ** 2) / Math.sqrt(20 + (Lbp - 50) ** 2), Sc = 1 + 0.045 * Cbp, Sh = 1 + 0.015 * Cbp * T, Rt = -Math.sin(rad(2 * dth)) * Rc;
+    return Math.sqrt((dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh));
+  }
+  // 팔레트(60·30·10 비중) ↔ 사진 주요색 5개(비중)의 평균 색차 — 사진→팔레트, 팔레트→사진 양쪽을 비중으로 평균
+  function paletteDistance(pal, photo){
+    const P = pal.map(([h, w]) => [rgbLab(hexRgb(h)), w]), Q = photo.map(([h, w]) => [rgbLab(hexRgb(h)), w]);
+    const side = (A, B) => { let num = 0, den = 0; for (const [a, w] of A){ let mn = Infinity; for (const [b] of B) mn = Math.min(mn, de2000(a, b)); num += w * mn; den += w; } return num / den; };
+    return (side(Q, P) + side(P, Q)) / 2;
+  }
+  const sizeClass = py => { for (const [k, [a, b]] of Object.entries(V.size_py)) if (a <= py && py < b) return k; return '대형'; };
+  const tempOf = k => k <= 3200 ? '웜' : k <= 4200 ? '중간' : '쿨';
+  // 특이사항 글 → 원하는 것 / 빼고 싶은 것 (부정어가 바로 뒤 10자 안에 있으면 '빼고')
+  function parseNotes(text){
+    const hit = new Map(), negd = new Map();
+    for (const clause of String(text || '').split(new RegExp(V.clause_split))){
+      for (const [pat, g, v] of V.note_dict){
+        const re = new RegExp(pat, 'gi');
+        let m;
+        while ((m = re.exec(clause)) !== null){
+          const tail = clause.slice(m.index + m[0].length, m.index + m[0].length + V.neg_window);
+          if (new RegExp(V.neg, 'i').test(tail)){ if (!negd.has(v)) negd.set(v, [g, m[0]]); } else if (!hit.has(v)) hit.set(v, [g, m[0]]);
+          if (m[0].length === 0) re.lastIndex++;
+        }
+      }
+    }
+    const want = [...hit].map(([v, [g, w]]) => ({ grp:g, val:v, word:w }));
+    const neg = [...negd].filter(([v]) => !hit.has(v)).map(([v, [g, w]]) => ({ grp:g, val:v, word:w }));
+    return { want, neg };
+  }
+  const unmatched = text => String(text || '').split(new RegExp(V.clause_split)).map(c => c.trim()).filter(c => c && !V.note_dict.some(([pat]) => new RegExp(pat, 'i').test(c)));
+  // 공실 실측 조건 → 사진 특징 (창 · 층고 · 모양 · 지하)
+  function siteNotes(Vc, sp){
+    const out = [], long = Math.max(Vc.w, Vc.d) / Math.min(Vc.w, Vc.d);
+    if (Vc.front === 'window') out.push({ grp:'features', val:'큰 창', why:sp.window || '전면 창' });
+    if (Vc.ceil >= 4) out.push({ grp:'features', val:'높은 층고', why:`천장고 ${Vc.ceil}m` });
+    if (Vc.ceil < 2.7) out.push({ grp:'features', val:'낮은 층고', why:`천장고 ${Vc.ceil}m` });
+    if (long >= 1.8) out.push({ grp:'features', val:'좁고 긴 공간', why:`${Vc.w}×${Vc.d}m (${long.toFixed(1)}:1)` });
+    if (/^B/.test(Vc.no) || /지하/.test(sp.floorKo || '')) out.push({ grp:'features', val:'지하', why:sp.floorKo || '지하' });
+    return out;
+  }
+  // 콘셉트 → 사진에서 보이는 재료 · 조명 · 배치 규칙 (사용자 규칙표 tier_rules와 같은 모양) — [데모] 디자인 관례로 정한 값
+  const RULES = {
+    gallery:   { st:['미니멀', '모던', '깔끔함'], mat:['석재·대리석', '원목', '유리'], light:['간접조명', '트랙·스팟'], lay:['진열 쇼케이스', '2인석', '공용 큰 테이블'] },
+    industrial:{ st:['인더스트리얼', '우드', '모던'], mat:['콘크리트', '스틸 프레임', '벽돌', '원목'], light:['펜던트', '에디슨 전구', '트랙·스팟'], lay:['바 좌석', '공용 큰 테이블', '2인석'] },
+    pastel:    { st:['파스텔', '깔끔함', '모던'], mat:['테라조', '타일', '패브릭·소파'], light:['펜던트', '균일 천장등', '자연광(큰 창)'], lay:['2인석', '소파·벤치석'] },
+    japandi:   { st:['우드', '미니멀', '따뜻함'], mat:['원목', '라탄·식물섬유', '패브릭·소파'], light:['펜던트', '간접조명'], lay:['2인석', '공용 큰 테이블', '바 좌석'] },
+    warm:      { st:['따뜻함', '우드'], mat:['원목', '라탄·식물섬유', '패브릭·소파'], light:['펜던트', '자연광(큰 창)'], lay:['4인석', '2인석', '소파·벤치석'] },
+    retro:     { st:['레트로', '빈티지', '따뜻함'], mat:['타일', '원목', '가죽', '패브릭·소파'], light:['펜던트', '에디슨 전구'], lay:['소파·벤치석', '4인석'] },
+    green:     { st:['깔끔함', '모던'], mat:['타일', '원목', '유리'], light:['균일 천장등', '자연광(큰 창)'], lay:['바 좌석', '창가 카운터석', '2인석'] },
+    grab:      { st:['모던', '깔끔함'], mat:['스테인리스', '타일', '스틸 프레임'], light:['균일 천장등', '트랙·스팟'], lay:['테이크아웃 창구·픽업대', '키오스크', '스탠딩', '좌석 거의 없음'] },
+    noren:     { st:['우드', '따뜻함', '빈티지'], mat:['원목'], light:['펜던트', '간접조명'], lay:['바 좌석', '오픈 바(작업대 노출)', '4인석'] },
+    darkbar:   { st:['모던', '인더스트리얼'], mat:['스틸 프레임', '콘크리트', '가죽'], light:['네온·사인', '간접조명', '트랙·스팟'], lay:['바 좌석', '오픈 바(작업대 노출)'] },
+    cellar:    { st:['빈티지', '따뜻함'], mat:['벽돌', '원목', '가죽'], light:['펜던트', '에디슨 전구', '간접조명'], lay:['바 좌석', '2인석', '4인석'] },
+    pocha:     { st:['레트로'], mat:['타일', '스테인리스'], light:['균일 천장등'], lay:['4인석', '좌석 촘촘함'] },
+  };
+  // 상권 키워드 → 사진 태그 (분위기 · 요소). 사진 어휘로 나타낼 수 없는 키워드(포토존 · 노렌 · 숯불 · 숨은 가게 · 어두운 조명)는 비워 둠
+  const KWMAP = {
+    concrete:{ st:['인더스트리얼'], el:[['features', '노출 천장'], ['materials', '콘크리트']] }, photo:{ st:[], el:[] },
+    window:{ st:[], el:[['layout', '창가 카운터석']] }, wood:{ st:['우드'], el:[['materials', '원목']] },
+    gallery:{ st:['미니멀'], el:[['light_types', '간접조명']] }, vintage:{ st:['빈티지'], el:[['light_types', '에디슨 전구']] },
+    clean:{ st:['깔끔함'], el:[] }, pickup:{ st:[], el:[['layout', '테이크아웃 창구·픽업대']] },
+    plants:{ st:[], el:[['features', '식물 많음']] }, bright:{ st:[], el:[['light_types', '균일 천장등']] },
+    solo:{ st:[], el:[['layout', '바 좌석']] }, eco:{ st:['우드'], el:[['materials', '원목']] },
+    dark:{ st:[], el:[] }, noren:{ st:[], el:[] }, bar:{ st:[], el:[['layout', '오픈 바(작업대 노출)'], ['layout', '바 좌석']] },
+    grill:{ st:[], el:[] }, retro:{ st:['레트로'], el:[] }, hidden:{ st:[], el:[] },
+    neon:{ st:[], el:[['light_types', '네온·사인']] }, terrazzo:{ st:[], el:[['materials', '테라조']] },
+    brick:{ st:[], el:[['materials', '벽돌']] }, group:{ st:[], el:[['layout', '공용 큰 테이블']] },
+    work:{ st:[], el:[['features', '노트북 작업 좌석']] }, pet:{ st:[], el:[['features', '반려동물']] },
+  };
+  // 일치 점수 가중치 — 사용자 규칙(전략 30 · 키워드 25 · 색 15 · 규모 15 · 특이사항 30)에 '상권 키워드 요소 20'을 더함
+  const W = { concept:30, style:25, kw:20, color:15, size:15, notes:30 };
+  const WN = { concept:'콘셉트', style:'분위기', kw:'키워드 요소', color:'색', size:'규모', notes:'자리 · 특이사항' };
+  function conceptFit(p, R, temp){
+    const mat = p.materials.filter(m => R.mat.includes(m)), lt = p.light_types.filter(t => R.light.includes(t));
+    const light = p.light_temp === temp && lt.length > 0, lay = p.layout.filter(x => R.lay.includes(x));
+    return { mat, light:light ? [p.light_temp, ...lt] : [], lay, n:(mat.length ? 1 : 0) + (light ? 1 : 0) + (lay.length ? 1 : 0) };
+  }
+  const has = (p, x) => (Array.isArray(p[x.grp]) ? p[x.grp] : [p[x.grp]]).includes(x.val);
+  // q = { R, temp, styles, els:[{grp,val,w,kw}], pal:[[hex,pct]], py, want:[{grp,val}], avoid:[{grp,val}] }
+  function score(p, q){
+    const cf = conceptFit(p, q.R, q.temp), comps = { concept:cf.n / 3 };
+    let sf = null, ef = null, nf = null;
+    if (q.styles.length){ const hit = q.styles.filter(k => p.styles.includes(k)); sf = { hit, miss:q.styles.filter(k => !hit.includes(k)) }; comps.style = hit.length / q.styles.length; }
+    if (q.els.length){ const hit = q.els.filter(e => has(p, e)); ef = { hit, miss:q.els.filter(e => !hit.includes(e)) }; comps.kw = hit.reduce((s, e) => s + e.w, 0) / q.els.reduce((s, e) => s + e.w, 0); }
+    const d = paletteDistance(q.pal, p.colors);
+    comps.color = Math.min(1, Math.max(0, 1 - (d - 5) / 30));
+    const order = ['소형', '중형', '대형'], u = sizeClass(q.py), dd = Math.abs(order.indexOf(u) - order.indexOf(p.size_class));
+    comps.size = dd === 0 ? 1 : dd === 1 ? 0.5 : 0;
+    if (q.want.length || q.avoid.length){
+      const wh = q.want.filter(w => has(p, w)), ab = q.avoid.filter(w => has(p, w));
+      nf = { hit:wh.map(w => w.val), miss:q.want.filter(w => !wh.includes(w)).map(w => w.val), avoidOk:q.avoid.filter(w => !ab.includes(w)).map(w => w.val), avoidHit:ab.map(w => w.val) };
+      comps.notes = (wh.length + q.avoid.length - ab.length) / (q.want.length + q.avoid.length);
+    }
+    let tot = 0, s = 0;
+    for (const [k, v] of Object.entries(comps)){ tot += W[k]; s += W[k] * v; }
+    s = s / tot * 100;
+    return { id:p.id, score:jround(s), raw:s, comps, concept:cf, style:sf, kw:ef, color_d:d, unit_size:u, notes:nf };
+  }
+  // 점수 높은 순 → 참고 가치 → id. 같은 장소 사진은 한 번에 한 장만(나머지는 뒤로)
+  function rank(q, page = 0, n = 3){
+    const byid = Object.fromEntries(L.photos.map(p => [p.id, p]));
+    const R = L.photos.map(p => score(p, q));
+    R.sort((a, b) => (jround(b.raw, 6) - jround(a.raw, 6)) || (byid[b.id].reference_value - byid[a.id].reference_value) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const picked = [], rest = [], venues = new Set();
+    for (const r of R){ const v = byid[r.id].venue; if (venues.has(v)) rest.push(r); else { picked.push(r); venues.add(v); } }
+    const all = picked.concat(rest);
+    return { all, top:all.slice(page * n, (page + 1) * n), total:all.length };
+  }
+  // 프롬프트에 넣을 영어 표현
+  const EN = { '원목':'solid wood', '합판':'plywood', '멜라민·라미네이트':'laminate', '석재·대리석':'stone and marble', '테라조':'terrazzo', '콘크리트':'concrete', '벽돌':'brick', '타일':'tiles', '황동·금속 장식':'brass details', '스틸 프레임':'steel frames', '스테인리스':'stainless steel', '유리':'glass', '패브릭·소파':'upholstered sofas', '라탄·식물섬유':'rattan', '가죽':'leather',
+    '펜던트':'pendant lights', '간접조명':'indirect lighting', '균일 천장등':'even ceiling lights', '트랙·스팟':'track spotlights', '자연광(큰 창)':'daylight from large windows', '에디슨 전구':'Edison bulbs', '네온·사인':'neon signs',
+    '바 좌석':'bar seating', '2인석':'two-person tables', '4인석':'four-person tables', '공용 큰 테이블':'a large communal table', '소파·벤치석':'sofa and bench seating', '창가 카운터석':'a window counter', '스탠딩':'standing tables', '테이크아웃 창구·픽업대':'a takeout pickup counter', '키오스크':'an ordering kiosk', '오픈 바(작업대 노출)':'an open work bar', '진열 쇼케이스':'a display case', '좌석 촘촘함':'densely packed seats', '좌석 거의 없음':'almost no seating',
+    '웜':'warm 2700-3000K', '중간':'neutral 3500-4000K', '쿨':'cool 4000K+' };
+  return { ok:!!L, L, V, RULES, KWMAP, W, WN, EN, rank, score, conceptFit, parseNotes, unmatched, siteNotes, sizeClass, tempOf, paletteDistance, de2000, rgbLab, hexRgb, jround };
+})();
+// ── 실사 참고 사진 끝 ──
 
 // ── 상태 ──────────────────────────────────────────────
 const params = new URLSearchParams(location.search);
@@ -1546,8 +1755,10 @@ function adjFit(e){
 // ── 4. 인테리어 ──────────────────────────────────────
 const ctxOf = () => { const p = S.profile; return { ...INTERIOR[key].space, area:p.area, ik:indKeyOf(p.ind), brand:(p.name || '').replace(/\s*\(가상\)\s*/, '').trim() || '가게 이름' }; };
 let ranked = [], upUrl = null;
+// 도면 이미지 겹쳐 보기 — 이 화면에서만 쓰고 저장 · 전송하지 않음
+const PV = { url:null, op:.5, rot:0, fit:false, w:'', d:'' };
 function iState(){
-  const st = Object.assign({ id:null, night:false, view:0, seed:0, variant:'base', shot:'entry' }, S.interior || {});
+  const st = Object.assign({ id:null, night:false, view:0, seed:0, variant:'base', shot:'entry', img:'both', note:'', siteAuto:true, pick:null }, S.interior || {});
   if (!ranked.some(r => r.c.id === st.id)) st.id = ranked[0].c.id;
   return (S.interior = st);
 }
@@ -1609,8 +1820,9 @@ function renderDesignParts(){
         <p>${esc(c.desc)}</p>
         <div class="meta"><span>💡 ${c.light.k}K · CRI ${c.light.cri}</span><span>평당 ${c.unit[grade]}만원</span></div>
       </div></button>`).join('');
-  const cu = cur();
-  renderIDetail(cu);
+  const cu = cur(), ph = photoResult(cu);
+  renderIDetail(cu, ph);
+  renderPhotos(cu, ph);
   const cost = renderVDesign(cu, grade);
   const sign = [180, 300, 520][grade], furn = Math.round(p.seats * [18, 28, 45][grade]);
   $('#budget').innerHTML = `<span>인테리어 (콘셉트 + 키워드 요소 − 설비 재사용)</span><b>${man(cost.total)}</b><span>간판 · 사인물</span><b>${man(sign)}</b><span>가구 · 집기 (${p.seats}석)</span><b>${man(furn)}</b><span class="tot">합계 (설비 · 주방기기 제외)</span><b class="tot">${man(cost.total + sign + furn)}원</b>`;
@@ -1620,7 +1832,7 @@ function renderDesignParts(){
   $('#checks').innerHTML = [...it.checks, ...kwChk].map(t => `<li>${esc(t)}</li>`).join('');
   const wn = $('#wNow'); if (wn) wn.textContent = Object.entries(fitWeights(D)).map(([k, w]) => `${FIT_N[k]} ${Math.round(w * 100)}%`).join(' · ');
 }
-function renderIDetail(cu){
+function renderIDetail(cu, ph){
   const st = S.interior, D = S.design, { r, dz } = cu, f = r.f, ctx = ctxOf();
   const my = D.view !== 'base', c = my ? dz.c : r.c;
   const P = paletteOf(c, st.variant);
@@ -1632,10 +1844,14 @@ function renderIDetail(cu){
   $('#idetail').innerHTML = `
     <div class="idh">
       <div><small>선택한 콘셉트 · 카드를 누르면 바뀝니다</small><h3>${esc(c.name)} <em>적합 ${f.total}</em></h3></div>
-      <div class="ictl">${seg('iMy', [['my', '키워드 맞춤안'], ['base', '기준 콘셉트']], my ? 'my' : 'base', '보기')}${seg('iDay', [[0, '☀ 낮'], [1, '🌙 밤']], st.night ? 1 : 0, '시간')}${seg('iView', [[0, '시점 1'], [1, '시점 2']], st.view, '시점')}${seg('iVar', VARIANTS, st.variant, '팔레트')}<button type="button" class="btn sm" id="iSeed">🎲 다른 배치</button><label class="btn sm upl">🖼 내 이미지 비교<input type="file" id="iUp" accept="image/*" hidden></label></div>
+      <div class="ictl">${PHOTO.ok ? seg('iImg', [['svg', '그림'], ['both', '그림 + 실사'], ['photo', '실사']], st.img, '이미지') : ''}${seg('iMy', [['my', '키워드 맞춤안'], ['base', '기준 콘셉트']], my ? 'my' : 'base', '보기')}${seg('iDay', [[0, '☀ 낮'], [1, '🌙 밤']], st.night ? 1 : 0, '시간')}${seg('iView', [[0, '시점 1'], [1, '시점 2']], st.view, '시점')}${seg('iVar', VARIANTS, st.variant, '팔레트')}<button type="button" class="btn sm" id="iSeed">🎲 다른 배치</button><label class="btn sm upl">🖼 내 이미지 비교<input type="file" id="iUp" accept="image/*" hidden></label></div>
     </div>
     <div class="igrid">
-      ${upUrl ? `<div class="ipics">${fig}<figure class="ipic"><img src="${upUrl}" alt="직접 만든 이미지"><figcaption>내가 만든 이미지 — 이 화면에서만 보이고 저장 · 전송하지 않습니다</figcaption></figure></div>` : fig}
+      ${(() => {
+        const figs = [...(!ph || st.img !== 'photo' ? [fig] : []), ...(ph && st.img !== 'svg' ? [photoFig(ph)] : []),
+          ...(upUrl ? [`<figure class="ipic"><img src="${upUrl}" alt="직접 만든 이미지"><figcaption>내가 만든 이미지 — 이 화면에서만 보이고 저장 · 전송하지 않습니다</figcaption></figure>`] : [])];
+        return figs.length > 1 ? `<div class="ipics">${figs.join('')}</div>` : figs[0];
+      })()}
       <div class="iinfo">
         <h4>적합도 ${f.total}점 근거</h4>
         <div class="fitb">${Object.entries(f.W).map(([k, w]) => `<div><span>${FIT_N[k]} <small>×${Math.round(w * 100)}%</small></span><div class="bar"><i style="width:${f.parts[k]}%"></i></div><b>${Math.round(f.parts[k])}</b></div>`).join('')}</div>
@@ -1655,15 +1871,139 @@ function renderIDetail(cu){
         <p class="note">${esc(c.sign.type)}${my && D.useBrand ? ' · 브랜드 색 적용' : ''} · 기준은 웹 접근성(WCAG) 글자 명암비를 빌려 쓴 것으로, 야간 조명 · 시선 거리에 따라 실제 가독성은 달라집니다.${ctx.window ? '' : ' 지하는 계단 입구 간판 · 조명이 첫인상입니다.'}</p></div>
     </div>
     <div class="iprompt">
-      <div class="ph"><h4>이미지 생성 AI 프롬프트 ${my ? '<small class="muted">(맞춤안 · 배치 포함)</small>' : ''}</h4>${seg('iShot', SHOTS.map(x => [x.id, x.ko]), st.shot, '구도')}</div>
+      <div class="ph"><h4>이미지 생성 AI 프롬프트 ${my ? '<small class="muted">(맞춤안 · 배치 포함)</small>' : ''}${ph && st.img !== 'svg' ? ' <small class="muted">· 실사 참고 줄 포함</small>' : ''}</h4>${seg('iShot', SHOTS.map(x => [x.id, x.ko]), st.shot, '구도')}</div>
       <div class="pcols">
-        <div><small>한국어</small><textarea readonly id="pKo" rows="9">${esc(promptOf(c, ctx, st, 'ko'))}</textarea><button type="button" class="btn sm" data-copy="pKo">복사</button></div>
-        <div><small>English</small><textarea readonly id="pEn" rows="9">${esc(promptOf(c, ctx, st, 'en'))}</textarea><button type="button" class="btn sm" data-copy="pEn">복사</button></div>
+        <div><small>한국어</small><textarea readonly id="pKo" rows="9">${esc(promptOf(c, ctx, st, 'ko') + photoRefLine(ph, 'ko'))}</textarea><button type="button" class="btn sm" data-copy="pKo">복사</button></div>
+        <div><small>English</small><textarea readonly id="pEn" rows="9">${esc(promptOf(c, ctx, st, 'en') + photoRefLine(ph, 'en'))}</textarea><button type="button" class="btn sm" data-copy="pEn">복사</button></div>
       </div>
       <div class="neg"><small>제외할 것 (negative)</small><textarea readonly id="pNeg" rows="2">${esc(NEG.ko + '\n' + NEG.en)}</textarea><button type="button" class="btn sm" data-copy="pNeg">복사</button></div>
       <p class="note">같은 콘셉트로 컷 5장을 만들 땐 seed(무작위 값)를 고정하고 구도만 바꾸세요. AI 이미지 속 한글은 잘 깨져서 간판은 비워 두고 나중에 합성하는 편이 안전합니다. 생성 이미지는 분위기 참고용이며 시공 도면 · 견적을 대신하지 않습니다.</p>
     </div>`;
 }
+// 실사 참고 사진 — 지금 보고 있는 안(키워드 맞춤안 / 기준 콘셉트) · 팔레트 · 공실 실측 · 특이사항으로 사진 고르기
+let phPage = 0, phLast = null;
+function photoQuery(cu){
+  const st = S.interior, my = S.design.view !== 'base', c = my ? cu.dz.c : cu.r.c, it = INTERIOR[key];
+  const R = PHOTO.RULES[cu.r.c.id], parsed = PHOTO.parseNotes(st.note);
+  const rows = my ? cu.dz.rows.filter(rw => rw.eff && !rw.na && PHOTO.KWMAP[rw.id]) : [];
+  const negSt = parsed.neg.filter(w => w.grp === 'styles').map(w => w.val);
+  const styles = [...new Set([...R.st, ...rows.flatMap(rw => PHOTO.KWMAP[rw.id].st), ...parsed.want.filter(w => w.grp === 'styles').map(w => w.val)])].filter(s => !negSt.includes(s));
+  const els = [];
+  rows.forEach(rw => PHOTO.KWMAP[rw.id].el.forEach(([grp, val]) => {
+    const e = els.find(x => x.val === val);
+    if (e){ e.w = Math.max(e.w, rw.eff); e.kw.push(rw.kw.n); } else els.push({ grp, val, w:rw.eff, kw:[rw.kw.n] });
+  }));
+  const noMap = rows.filter(rw => !PHOTO.KWMAP[rw.id].st.length && !PHOTO.KWMAP[rw.id].el.length).map(rw => rw.kw.n);
+  const site = st.siteAuto !== false ? PHOTO.siteNotes(cu.V, it.space) : [];
+  const want = [...site];
+  parsed.want.filter(w => w.grp !== 'styles').forEach(w => { if (!want.some(x => x.val === w.val)) want.push(w); });
+  const avoid = parsed.neg.filter(w => w.grp !== 'styles' && !want.some(x => x.val === w.val));
+  // 사진 묶음 어디에도 없는 조건(예: 지하)은 모든 사진 점수를 똑같이 깎기만 하므로 점수에서 빼고 따로 알림
+  const inLib = w => PHOTO.L.photos.some(p => (Array.isArray(p[w.grp]) ? p[w.grp] : [p[w.grp]]).includes(w.val));
+  const none = [...new Set([...want, ...els].filter(w => !inLib(w)).map(w => w.val))];
+  return { R, c, my, temp:PHOTO.tempOf(c.light.k), k:c.light.k, styles, negSt, els:els.filter(inLib), noMap, site, want:want.filter(inLib), avoid:avoid.filter(inLib), parsed, none,
+           pal:paletteOf(c, st.variant).map(x => [x.hex, x.pct]), area:cu.V.area, py:cu.V.area / 3.3058 };
+}
+function photoResult(cu){
+  if (!PHOTO.ok) return null;
+  const q = photoQuery(cu), rk = PHOTO.rank(q, 0, 3), pages = Math.min(3, Math.ceil(rk.total / 3));
+  if (phPage >= pages) phPage = 0;
+  const byid = id => PHOTO.L.photos.find(p => p.id === id);
+  const pickId = S.interior.pick && byid(S.interior.pick) ? S.interior.pick : rk.all[0].id;
+  const sel = rk.all.find(r => r.id === pickId), pos = rk.all.indexOf(sel) + 1;
+  return (phLast = { q, rk, pages, top:rk.all.slice(phPage * 3, phPage * 3 + 3), sel, selP:byid(pickId), pos, auto:!S.interior.pick });
+}
+const phDate = p => p.real.taken ? `${p.real.taken} 촬영` : p.real.uploaded ? `${p.real.uploaded} 게시` : '촬영일 정보 없음';
+const phLic = p => p.src.license_url ? `<a href="${esc(p.src.license_url)}" target="_blank" rel="noopener noreferrer">${esc(p.src.license)}</a>` : esc(p.src.license);
+// 프롬프트에 붙이는 '실사 참고' 줄 — 사진의 재료 · 조명 · 좌석 느낌만 빌리고 구조는 이 공실 기준
+function photoRefLine(ph, lang){
+  if (!ph || S.interior.img === 'svg') return '';
+  const p = ph.selP, en = x => PHOTO.EN[x] || x;
+  if (lang === 'en') return `\nReference look (real photo "${p.src.title}" by ${p.src.creator}, ${p.src.license}, Wikimedia Commons): ${p.materials.map(en).join(', ')}; ${[p.light_temp, ...p.light_types].map(en).join(', ')}; ${p.layout.map(en).join(', ')}. Borrow only the look; keep this unit's structure, dimensions and window positions.`;
+  return `\n실사 참고 (사진 "${p.src.title}" · ${p.src.creator} · ${p.src.license} · 위키미디어 커먼즈): 재료 ${p.materials.join(' · ')} / 조명 ${p.light_temp} ${p.light_types.join(' · ')} / 좌석 ${p.layout.join(' · ')}의 느낌만 따르고, 구조 · 치수 · 창 위치는 이 공실 기준.`;
+}
+// 위 비교 화면에 놓는 실사 사진
+function photoFig(ph){
+  const p = ph.selP;
+  return `<figure class="ipic rpm" data-v="mainphoto"><button type="button" class="phz" data-phz="${p.id}" aria-label="크게 보기 — ${esc(p.caption)}"><img src="${p.img}" alt="${esc(p.caption)}" width="${p.w}" height="${p.h}"></button>` +
+    `<figcaption>실사 참고 ${ph.auto ? '1위' : ph.pos + '위 (직접 고름)'} · 일치 ${ph.sel.score}점 — 실제 매장 사진이며 이 자리가 아닙니다 · ${esc(p.src.creator)} · ${esc(p.src.license)}</figcaption></figure>`;
+}
+function photoCard(r, i, ph){
+  const p = PHOTO.L.photos.find(x => x.id === r.id), q = ph.q, cf = r.concept, ck = ok => ok ? '<i class="y">✓</i>' : '<i class="n">✗</i>';
+  const part = (lab, arr, extra) => `${lab} ${arr.length ? ck(1) + esc(arr.join('·')) : ck(0) + (extra || '')}`;
+  const dl = r.color_d <= 12 ? '가까움' : r.color_d <= 20 ? '보통' : '멂';
+  const era = p.real.era ? `${(p.real.taken || p.real.uploaded).slice(0, 4)}년 ${p.real.taken ? '촬영' : '게시'} — 생성형 이미지 도구가 퍼진 2022년 8월 이전` : '';
+  const lightX = p.light_temp !== q.temp ? `(사진 ${p.light_temp} · 이 안 ${q.k}K ${q.temp})` : '(조명 기구 다름)';
+  const on = ph.selP.id === p.id;
+  return `<figure class="rph${on ? ' on' : ''}" data-ph="${p.id}"><button type="button" class="phz" data-phz="${p.id}" aria-label="크게 보기 — ${esc(p.caption)}"><img src="${p.img}" alt="${esc(p.caption)}" width="${p.w}" height="${p.h}" loading="lazy"></button>` +
+    `<figcaption><div class="pht"><b>${phPage * 3 + i + 1}. ${esc(p.caption)}</b><span class="sc" data-v="score">일치 ${r.score}점</span></div><ul class="why">` +
+    `<li data-v="w-concept">콘셉트 ${esc(q.c.name.replace(' + 상권 키워드', ''))} ${cf.n}/3 — ${part('재료', cf.mat)} · ${part('조명', cf.light, lightX)} · ${part('배치', cf.lay)}</li>` +
+    (r.style ? `<li data-v="w-style">분위기 ${r.style.hit.length}/${q.styles.length} — ${r.style.hit.map(k => ck(1) + esc(k)).concat(r.style.miss.map(k => ck(0) + esc(k))).join(' · ')}</li>` : '') +
+    (r.kw ? `<li data-v="w-kw">키워드 요소 — ${r.kw.hit.map(e => ck(1) + esc(e.val)).concat(r.kw.miss.map(e => ck(0) + esc(e.val))).join(' · ')}</li>` : '') +
+    `<li data-v="w-color">색 — 팔레트와 평균 색차 ΔE ${r.color_d.toFixed(1)}(${dl}) <span class="sw" title="사진 주요색(비중)">${p.colors.map(([h, w]) => `<i style="background:${h};flex:${w}" title="${h} ${Math.round(w * 100)}%"></i>`).join('')}</span></li>` +
+    `<li data-v="w-size">규모 — 사진 ${p.size_class}(추정) · 이 자리 ${r.unit_size} ${r.comps.size === 1 ? ck(1) : r.comps.size === 0.5 ? '<i class="p">△</i>' : ck(0)}</li>` +
+    (r.notes ? `<li data-v="w-notes">자리 · 특이사항 — ${r.notes.hit.map(v => ck(1) + esc(v)).concat(r.notes.miss.map(v => ck(0) + esc(v)), r.notes.avoidOk.map(v => ck(1) + esc(v) + ' 없음'), r.notes.avoidHit.map(v => ck(0) + esc(v) + ' 있음')).join(' · ')}</li>` : '') +
+    `</ul><p class="src" data-v="src">사진 ${esc(p.src.creator)} · ${esc(p.src.provider)} · ${phLic(p)} · ${phDate(p)} · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer" title="${esc(p.src.title)}">원본 보기</a></p>` +
+    `<p class="real" data-v="real">실사 근거: ${[era, p.real.camera ? `카메라 정보 ${esc(p.real.camera)}` : '', `태그 검토 ${esc(p.real.reviews)}`].filter(Boolean).join(' · ')}</p>` +
+    `<div><button type="button" class="btn sm${on ? ' on' : ''}" data-phpick="${p.id}" aria-pressed="${on}">${on ? '✓ 위 비교 화면에 놓임' : '위 비교 화면에 놓기'}</button></div></figcaption></figure>`;
+}
+function photoSummary(ph){
+  const q = ph.q, st = S.interior, un = PHOTO.unmatched(st.note), out = [];
+  if (q.site.length) out.push(`<b>공실 조건</b> ${q.site.map(w => `${esc(w.val)} <small>(${esc(w.why)})</small>`).join(' · ')}`);
+  const typed = q.parsed.want.filter(w => !q.site.some(s => s.val === w.val));
+  if (typed.length) out.push(`<b>특이사항 반영</b> ${typed.map(w => (w.grp === 'styles' ? '분위기 ' : '') + esc(w.val)).join(' · ')}`);
+  const negs = q.parsed.neg.filter(w => !q.site.some(x => x.val === w.val));
+  if (negs.length) out.push(`<b>빼고 봄</b>(부정) ${negs.map(w => `${esc(w.val)}('${esc(w.word)}…')`).join(' · ')}`);
+  if (un.length) out.push(`<b>반영 못 한 말</b> ${un.map(c => `'${esc(c)}'`).join(' · ')}`);
+  if (q.noMap.length) out.push(`<b>사진 태그로 못 찾는 키워드</b> ${q.noMap.map(n => '#' + esc(n)).join(' ')} — 그림 · 배치안에는 반영됨`);
+  if (q.none.length) out.push(`<b>사진 묶음에 없는 조건</b> ${q.none.map(esc).join(' · ')} — 이 특징을 가진 실사 사진이 아직 없어 점수에서 뺐습니다(사진을 더 모으면 반영)`);
+  if (!st.note.trim()) out.push('특이사항을 적으면 사진 고르기에 넣습니다 — 창 · 층고 · 좌석(바 · 소파 · 스탠딩) · 노트북 · 반려동물 · 식물 · 재료(원목 · 대리석 · 스테인리스) 같은 말을 알아듣고, "강아지 동반 불가"처럼 부정하면 그 특징이 없는 사진을 고릅니다.');
+  return out.join('<br>');
+}
+function renderPhotos(cu, ph){
+  const st = S.interior, box = $('#rphotos');
+  if (!PHOTO.ok){ box.innerHTML = `<div class="rph-h"><h3>실사 참고 사진</h3></div><p class="warnbox" data-v="phmissing">실사 사진 묶음(<code>interior-photos.js</code>)을 불러오지 못했습니다 — 이 파일을 이 HTML과 같은 폴더에 두고 새로고침하세요. 그림 · 배치안 · 견적은 그대로 쓸 수 있습니다.</p>`; return; }
+  if (st.img === 'svg'){ box.innerHTML = `<div class="rph-h"><div><small>위키미디어 커먼즈 실제 매장 사진 ${PHOTO.L.photos.length}장 중 이 자리 · 콘셉트 · 키워드에 가까운 것</small><h3>실사 참고 사진 <em class="muted">꺼짐</em></h3></div><button type="button" class="btn sm" id="phOn">실사 사진 켜기</button></div>`; return; }
+  const typing = document.activeElement && document.activeElement.id === 'phNote' && box.contains(document.activeElement);
+  if (!typing) box.innerHTML = `
+    <div class="rph-h"><div><small>위키미디어 커먼즈 실제 매장 사진 ${PHOTO.L.photos.length}장 중 이 자리 · 콘셉트 · 키워드에 가까운 것 — 근거 · 출처 · 라이선스와 함께</small><h3>실사 참고 사진</h3></div></div>
+    <div class="rph-set">
+      <label class="fld2" for="phNote">특이사항 (직접 입력 · 쉼표로 나눠 적기)</label>
+      <input class="inp" id="phNote" placeholder="예: 통창, 천장 높음, 노트북 손님 많음, 강아지 동반 불가" value="${esc(st.note)}">
+      <label class="chk"><input type="checkbox" id="phSite" ${st.siteAuto !== false ? 'checked' : ''}> 공실 실측 조건 자동 반영 (창 · 천장고 · 평면 비율 · 지하)</label>
+    </div>
+    <p class="rph-sum" id="phSum" data-v="notes" aria-live="polite"></p>
+    <p class="rph-ind" id="phInd"></p>
+    <div class="rphg" id="phGrid" data-v="photos"></div>
+    <div class="rph-row"><button type="button" class="btn sm" id="phMore">다른 사진 3장 보기</button><small id="phPg" data-v="phpage"></small><button type="button" class="btn sm" id="phAuto" ${st.pick ? '' : 'hidden'}>비교 사진 자동(1위)으로</button></div>
+    <p class="cap" id="phCap"></p>`;
+  renderPhotoList(ph);
+}
+function renderPhotoList(ph){
+  const q = ph.q, W = PHOTO.W, WN = PHOTO.WN, ik = indKeyOf(S.profile.ind), nCafe = PHOTO.L.photos.length;
+  $('#phSum').innerHTML = photoSummary(ph);
+  $('#phInd').innerHTML = ik === 'cafe' || ik === 'dessert'
+    ? `사진 묶음은 카페 · 디저트 카페 실사 ${nCafe}장입니다 — 이 가게 업종(${esc(IND_KO[ik])})과 같은 계열입니다.`
+    : `<b>업종 주의</b> 사진 묶음 ${nCafe}장은 모두 카페 사진입니다 — ${esc(IND_KO[ik])} 실사 사진이 아직 없어, 재료 · 조명 · 좌석 배치 같은 <b>공간 요소만</b> 참고하세요(메뉴 · 주방 · 분위기는 다를 수 있음).`;
+  $('#phInd').className = 'rph-ind' + (ik === 'cafe' || ik === 'dessert' ? '' : ' warn');
+  $('#phGrid').innerHTML = ph.top.map((r, i) => photoCard(r, i, ph)).join('');
+  $('#phPg').textContent = `${phPage + 1} / ${ph.pages} 쪽 · 사진 ${ph.rk.total}장 중 고름`;
+  $('#phAuto').hidden = !S.interior.pick;
+  $('#phCap').innerHTML = `고르는 규칙 — 일치 점수 = ${Object.keys(W).map(k => `${WN[k]} ${W[k]}`).join(' · ')} (해당 조건이 있는 항목만 넣고 그 가중치 합으로 나눠 100점). ` +
+    `콘셉트는 사진에 보이는 재료 · 조명(색온도 + 기구) · 배치가 콘셉트 규칙과 맞는 개수(0~3), 분위기는 콘셉트 · 켠 키워드 · 특이사항의 분위기 단어, 키워드 요소는 켠 상권 키워드가 사진에 보이는지(강도로 가중), ` +
+    `색은 지금 팔레트(60 · 30 · 10 비중)와 사진 주요색 5개의 평균 색차(CIEDE2000 — 12 이하 가까움 · 20 이하 보통), 규모는 사진에서 추정한 크기 등급(소형 ~20평 · 중형 20~40평 · 대형 40평~)과 공실 실측 ${q.area}㎡(${q.py.toFixed(1)}평)의 등급입니다. ` +
+    `같은 장소 사진은 한 번에 한 장만 보입니다. 사진 · 태그 · 매칭 규칙은 사용자 제공 「PlaceOS 4-5 Program」의 사진 묶음을 그대로 옮겼고(태그는 작성자 1명이 붙임 · 독립 재확인 전), 콘셉트 규칙과 키워드 연결표는 이 시안의 가정입니다. ` +
+    `사진은 상업 이용 · 변형이 허용된 라이선스(CC0 · 퍼블릭 도메인 · CC BY · CC BY-SA)만 쓰고 저작자 · 라이선스 · 원본을 적었습니다 — 다시 쓸 때도 표시하고, CC BY-SA 사진을 고쳐 쓰면 같은 라이선스로 공개해야 합니다. ` +
+    `<b>사진 속 가게는 이 공실 · PlaceOS 와 관계없는 참고 예시</b>이고, 실제 자리의 기둥 · 창 위치 · 천장고는 다릅니다. 이 공실을 실사처럼 보려면 아래 프롬프트(실사 참고 줄 포함)로 이미지를 만들어 '내 이미지 비교'에 올려 보세요.`;
+}
+function openPhoto(id, from){
+  const p = PHOTO.L.photos.find(x => x.id === id), box = $('#phbox'); if (!p) return;
+  box.querySelector('img').src = p.img; box.querySelector('img').alt = p.caption;
+  box.querySelector('figcaption').innerHTML = `${esc(p.caption)} — 사진 ${esc(p.src.creator)} · ${phLic(p)} · <a href="${esc(p.src.page)}" target="_blank" rel="noopener noreferrer">원본 보기</a>`;
+  box.hidden = false; box._from = from; $('#phclose').focus();
+}
+function closePhoto(){ const box = $('#phbox'); if (box.hidden) return; box.hidden = true; box.querySelector('img').removeAttribute('src'); if (box._from && document.contains(box._from)) box._from.focus(); }
+function renderIPhotos(){ const cu = cur(), ph = photoResult(cu); renderIDetail(cu, ph); renderPhotos(cu, ph); }
 const stateText = r => !r.lv ? '끔'
   : r.na ? `<span class="st na">대체</span>${esc(r.na)}`
   : r.lost.length && !r.won ? `<span class="st lost">밀림</span>${r.lost.map(x => '#' + esc(x)).join(' ')} 우선`
@@ -1680,7 +2020,13 @@ function renderVDesign(cu, grade){
   $('#vdesign').innerHTML = `
     <div class="vdh"><div><small>공실 맞춤 디자인 · 키워드를 반영한 개략 배치안</small><h3>${V.no}호 · 전용 ${V.area}㎡ · ${V.w}×${V.d}m · 천장고 ${V.ceil}m</h3></div><span class="vpill">${esc(dz.c.name)}</span></div>
     <div class="vgrid">
-      <figure class="vplan">${planSvg(pl, V, dz.c, V.face)}<figcaption>개략 배치안 — 실측 · 설계 도면이 아닙니다. 피난 통로 · 출입문 폭 · 주방 설비는 설계 · 소방 · 위생 기준으로 다시 확인하세요.</figcaption></figure>
+      <div><figure class="vplan">${planSvg(pl, V, dz.c, V.face, PV)}<figcaption>개략 배치안 — 실측 · 설계 도면이 아닙니다. 피난 통로 · 출입문 폭 · 주방 설비는 설계 · 소방 · 위생 기준으로 다시 확인하세요.</figcaption></figure>
+        <div class="pov" id="pov">
+          <label class="btn sm upl">📐 실제 도면 이미지 겹쳐 보기<input type="file" id="pvUp" accept="image/*" hidden></label>
+          ${PV.url ? `<label class="pvop">도면 진하기 <input type="range" id="pvOp" min="0.1" max="1" step="0.05" value="${PV.op}" aria-label="도면 진하기"></label><button type="button" class="btn sm" id="pvRot">↻ 90° 돌리기 (${PV.rot}°)</button><label class="chk"><input type="checkbox" id="pvFit" ${PV.fit ? 'checked' : ''}> 도면 비율 유지</label><button type="button" class="btn sm" id="pvDel">도면 빼기</button>` : ''}
+          <div class="pvdim"><span>도면 · 실측 치수</span><input class="inp" id="pvW" type="number" min="1" max="60" step="0.01" placeholder="가로 m" value="${esc(PV.w)}" aria-label="도면 가로(m)"><span>×</span><input class="inp" id="pvD" type="number" min="1" max="60" step="0.01" placeholder="깊이 m" value="${esc(PV.d)}" aria-label="도면 깊이(m)"><small id="pvCmp" aria-live="polite">${pvCompare(V)}</small></div>
+          <p class="note" style="margin:0">도면 · 스캔 이미지를 이 호실 벽 안쪽에 맞춰 자른 뒤 올리면 배치안과 겹쳐 볼 수 있습니다(파일은 이 화면에서만 쓰고 저장 · 전송하지 않음). 도면의 가로 · 깊이를 적으면 3D 칸 치수(${V.w}×${V.d}m)와 대조합니다 — 3% 넘게 다르면 배치안 · 견적을 실측 기준으로 다시 잡아야 합니다.</p>
+        </div></div>
       <div class="vinfo">
         <h4>키워드 → 적용 요소</h4>
         <table class="kwt"><thead><tr><th>키워드</th><th>강도</th><th>적용 요소</th><th>상태</th></tr></thead><tbody>${dz.rows.map(rw => `<tr class="${rw.eff ? '' : 'off'}"><td>#${esc(rw.kw.n)}</td><td>${LV[rw.lv][0]}${rw.sat ? '→' + LV[rw.eff][0] : ''}</td><td>${esc(rw.kw.el)}</td><td>${stateText(rw)}</td></tr>`).join('')}</tbody></table>
@@ -1704,7 +2050,31 @@ function renderVDesign(cu, grade){
     </div>`;
   return cost;
 }
+function pvCompare(V){
+  const w = parseFloat(PV.w), d = parseFloat(PV.d);
+  if (!(w > 0) || !(d > 0)) return `3D 칸 ${V.w}×${V.d}m · 전용 ${V.area}㎡ — 도면 치수를 적으면 대조합니다`;
+  const dw = (w - V.w) / V.w * 100, dd = (d - V.d) / V.d * 100, da = (w * d - V.w * V.d) / (V.w * V.d) * 100, bad = Math.max(Math.abs(dw), Math.abs(dd)) > 3;
+  const f = v => `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
+  return `<b class="${bad ? 'bad' : 'ok'}">${bad ? '차이 큼' : '일치 (3% 이내)'}</b> 가로 ${f(dw)} · 깊이 ${f(dd)} · 면적 ${(w * d).toFixed(1)}㎡ (${f(da)})${bad ? ' — 공실 실측 · 3D 칸을 도면 기준으로 고쳐야 합니다' : ''}`;
+}
 function bindInterior(){
+  // 도면 이미지 겹쳐 보기
+  const vRe = () => renderVDesign(cur(), +$('#grade').value);
+  $('#vdesign').addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'pvUp' && t.files[0]){ if (PV.url) URL.revokeObjectURL(PV.url); PV.url = URL.createObjectURL(t.files[0]); PV.rot = 0; vRe(); toast('도면을 배치안에 겹쳤어요 — 이 화면에서만 보입니다'); }
+    if (t.id === 'pvFit'){ PV.fit = t.checked; vRe(); $('#pvFit').focus(); }
+  });
+  $('#vdesign').addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'pvOp'){ PV.op = +t.value; const im = document.querySelector('[data-v=planov]'); if (im) im.setAttribute('opacity', PV.op); }
+    if (t.id === 'pvW' || t.id === 'pvD'){ PV[t.id === 'pvW' ? 'w' : 'd'] = t.value; $('#pvCmp').innerHTML = pvCompare(VACANCY[key]); }
+  });
+  $('#vdesign').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'pvRot'){ PV.rot = (PV.rot + 90) % 360; vRe(); $('#pvRot').focus(); }
+    if (b.id === 'pvDel'){ if (PV.url) URL.revokeObjectURL(PV.url); PV.url = null; vRe(); }
+  });
   $('#concepts').addEventListener('click', e => { const b = e.target.closest('.cc'); if (!b) return; S.interior.id = b.dataset.id; save(); renderDesignParts(); });
   const upd = (all) => { save(); all ? renderInterior() : renderDesignParts(); };
   $('#kwset').addEventListener('click', e => {
@@ -1732,12 +2102,14 @@ function bindInterior(){
     if (e.target.id !== 'iUp' || !e.target.files[0]) return;
     if (upUrl) URL.revokeObjectURL(upUrl);
     upUrl = URL.createObjectURL(e.target.files[0]);
-    renderIDetail(cur());
+    renderIPhotos();
   });
   $('#idetail').addEventListener('click', e => {
     const st = S.interior, b = e.target.closest('button'); if (!b) return;
     const g = b.closest('.seg');
-    if (g && g.id === 'iMy') S.design.view = b.dataset.v;
+    if (b.dataset.phz) return openPhoto(b.dataset.phz, b);
+    if (g && g.id === 'iImg') st.img = b.dataset.v;
+    else if (g && g.id === 'iMy') S.design.view = b.dataset.v;
     else if (g && g.id === 'iDay') st.night = b.dataset.v === '1';
     else if (g && g.id === 'iView') st.view = +b.dataset.v;
     else if (g && g.id === 'iVar') st.variant = b.dataset.v;
@@ -1749,8 +2121,29 @@ function bindInterior(){
       try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); document.execCommand('copy'); done(); }); } catch (err) { ta.select(); try { document.execCommand('copy'); done(); } catch (e2) {} }
       return;
     } else return;
-    save(); renderIDetail(cur());
+    save(); renderIPhotos();
   });
+  // 실사 참고 사진
+  $('#rphotos').addEventListener('click', e => {
+    const st = S.interior, b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.phz) return openPhoto(b.dataset.phz, b);
+    if (b.id === 'phOn'){ st.img = 'both'; save(); renderIPhotos(); return toast('실사 참고 사진을 켰어요'); }
+    if (b.id === 'phMore'){ phPage = (phPage + 1) % (phLast ? phLast.pages : 1); renderIPhotos(); return $('#phMore').focus(); }
+    if (b.dataset.phpick){ st.pick = st.pick === b.dataset.phpick ? null : b.dataset.phpick; save(); renderIPhotos(); const nb = document.querySelector(`[data-phpick="${b.dataset.phpick}"]`); if (nb) nb.focus(); return toast(st.pick ? '이 사진을 위 비교 화면에 놓았어요' : '비교 사진을 자동(1위)으로 되돌렸어요'); }
+    if (b.id === 'phAuto'){ st.pick = null; save(); renderIPhotos(); return $('#phMore').focus(); }
+  });
+  let phT = 0;
+  $('#rphotos').addEventListener('input', e => {
+    if (e.target.id !== 'phNote') return;
+    S.interior.note = e.target.value.slice(0, 300); phPage = 0;
+    clearTimeout(phT); phT = setTimeout(() => { save(); renderIPhotos(); }, 250);
+  });
+  $('#rphotos').addEventListener('change', e => {
+    if (e.target.id !== 'phSite') return;
+    S.interior.siteAuto = e.target.checked; phPage = 0; save(); renderIPhotos(); $('#phSite').focus();
+  });
+  $('#phbox').addEventListener('click', e => { if (e.target.id === 'phbox' || e.target.id === 'phclose') closePhoto(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePhoto(); });
 }
 
 // ── 백업 · 데이터 공유 설정 ───────────────────────────
@@ -1791,6 +2184,8 @@ $('#evSeg').addEventListener('click', e => {
 });
 $('#grade').onchange = renderInterior;
 function loadScenario(k){
+  if (k !== key && PV.url){ URL.revokeObjectURL(PV.url); Object.assign(PV, { url:null, rot:0, w:'', d:'' }); }   // 다른 공실로 바꾸면 겹친 도면은 뺌
+  if (k !== key) phPage = 0;
   key = k; S = load(k);
   document.querySelectorAll('#scSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === k));
   $('#aDate').value = SC[k].plan ? '2026-11-20' : '2026-10-26';
