@@ -802,11 +802,11 @@ const INTERIOR = {
 // 공실 호실 개략 치수 — Case 2 · 3 공통 건물 블록의 layoutFloor가 계산한 호실 칸과 같은 값(자동 점검이 비교).
 // w: 도로에서 보아 가로, d: 전면 → 안쪽 깊이. 문 at = 그 벽 길이 대비 위치. util = 다시 쓸 수 있는 기존 설비.
 const VACANCY = {
-  A:{ no:'201', area:84, w:10.0, d:8.4, ceil:3.3, face:180, front:'window', left:'window', frontLabel:'▼ 연무장길 쪽 남측 통창 (서측 벽 창 1개)',
+  A:{ no:'201', area:84, w:10.0, d:8.4, ceil:3.3, face:199, front:'window', left:'window', frontLabel:'▼ 연무장길 쪽 남측 통창 (서측 벽 창 1개)',
       doors:[{ side:'back', at:.8, label:'복도 · 계단 · EV' }], util:{ toilet:true } },
-  B:{ no:'102', area:72, w:6.1, d:11.8, ceil:4.6, face:270, front:'window', frontLabel:'▼ 성수이로 쪽 서측 전면 유리',
+  B:{ no:'102', area:72, w:6.1, d:11.8, ceil:4.6, face:282, front:'window', frontLabel:'▼ 성수이로 쪽 서측 전면 유리',
       doors:[{ side:'front', at:.72, label:'성수이로 출입문' }, { side:'right', at:.3, label:'로비' }], util:{ grease:true, duct:true, gas:true } },
-  C:{ no:'B01', area:95, w:12.18, d:7.8, ceil:3.0, face:90, front:'none', frontLabel:'▼ 먹자골목길 쪽 (지하 · 창 없음)',
+  C:{ no:'B01', area:95, w:12.18, d:7.8, ceil:3.0, face:72, front:'none', frontLabel:'▼ 상원길 쪽 (지하 · 창 없음)',
       doors:[{ side:'right', at:.25, label:'계단 홀' }], util:{ grease:true, duct:true, gas:true }, ductAt:{ side:'back', at:.85 } },
 };
 

@@ -4,6 +4,7 @@
 // 확인 내용: 각 화면을 데스크톱(1440×900)·모바일(390×844)로 열어
 //   ① 스크립트 오류(pageerror) ② 콘솔 오류 ③ 모바일 가로 넘침 ④ 핵심 요소 존재 ⑤ 기본 클릭 동작을 확인합니다.
 //   ⑥ 데이터 검사: 호실 면적 합 = 3D · 평면 칸 면적, 층 바닥 합 = 가로×깊이, Case 2 · 3 공통 건물 블록이 똑같은지, 시나리오 좌표가 화면마다 같은지,
+//      Case 2 실제 도로 형상에서 건물 정면 앞 첫 도로가 그 건물의 도로 이름 · 거리 · 방향과 맞는지,
 //      Case 5 공실 치수 · Case 4 출입구 · 같은 건물 입점이 공통 건물 블록과 맞는지, 인테리어 배치안이 겹치거나 벽 밖으로 나가지 않는지.
 //   ⑦ 실사 참고 사진: Case 5 안 사진 묶음(PHOTOLIB) 형식 · 출처 · 라이선스, CIEDE2000 색차 = 논문 시험값(Sharma 2005),
 //      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지,
@@ -24,8 +25,11 @@ const PAGES = [
   { file: 'index.html', must: ['.flow .case'], act: [] },
   { file: 'case1-district-map.html', must: ['.leaflet-container', '.zi', '#detail h2', '.twinpin'],
     act: [['click', '#modeSeg button[data-mode=fit]'], ['select', '#hoodSel', 'mangwon'], ['click', '.zi'], ['click', '#modeSeg button[data-mode=vac]']] },
-  { file: 'case2-3d-floor-twin.html', must: ['#elev button', '.fhead h2', '.vc', '#vacAgg .agg', '#ledgerChk .lsum'],
-    act: [['click', '#ledgerChk summary'], ['click', '#ledDemo'], ['click', '#ledRun'], ['click', '#scSeg button[data-s=B]'], ['click', '#modeSeg button[data-m=explode]'], ['click', '#elev button'], ['click', '#scSeg button[data-s=C]']] },
+  { file: 'case2-3d-floor-twin.html', must: ['#elev button', '.fhead h2', '.vc', '#vacAgg .agg', '#ledgerChk .lsum', '#roadChk .rmap', '#tgRd'],
+    act: [['eval', `!!document.querySelector('#roadChk .rok')`, 'A 앞 도로가 실제 도로 데이터와 맞지 않음(도로 · 위치 확인)'], ['click', '#tgRd'], ['click', '#tgRd'],
+      ['click', '#ledgerChk summary'], ['click', '#ledDemo'], ['click', '#ledRun'], ['click', '#scSeg button[data-s=B]'],
+      ['eval', `!!document.querySelector('#roadChk .rok')`, 'B 앞 도로가 실제 도로 데이터와 맞지 않음'], ['click', '#modeSeg button[data-m=explode]'], ['click', '#elev button'], ['click', '#scSeg button[data-s=C]'],
+      ['eval', `!!document.querySelector('#roadChk .rok')`, 'C 앞 도로가 실제 도로 데이터와 맞지 않음']] },
   { file: 'case3-streetview-floor.html', must: ['#openBtn', '.vcard'],
     act: [['click', '#openBtn'], ['visible', '#viewer'], ['click', '#yearSeg button[data-y="2019"]'], ['click', '#fpIn .dir button'], ['click', '#closeBtn'],
       // 호실 전용면적 = 배치 칸 면적 합, 층 칸 면적 합 = 바닥(가로×깊이), 넘친 호실 없음
@@ -135,6 +139,23 @@ function crossChecks(){
       sb[k].forEach(([no, name, , lv]) => { const fl = b.floors.find(x => x.lv === lv), un = fl && fl.units.find(x => x.no === no); if (!un || un.name !== name) errs.push(`Case 4 같은 건물 ${k} ${no}호 '${name}'이 3D 호실(${un ? un.name : '없음'})과 다름`); });
     }
   } catch (e) { errs.push('공통 블록 실행 검사 실패: ' + e.message); }
+  // 도로 형상(Case 2): 시나리오 건물 정면 앞 첫 도로가 그 건물의 도로 이름과 같고, 거리 · 방향이 맞는지(건물 좌표 · 방위가 실제 도로와 어긋나면 실패)
+  try {
+    const t2 = read('case2-3d-floor-twin.html'), a = t2.indexOf('// ── 도로 형상 (OpenStreetMap) 시작'), z = t2.indexOf('// ── 도로 형상 끝 ──');
+    if (!b2 || a < 0 || z < a) throw new Error('Case 2 도로 형상 표시(시작 · 끝 주석)가 없음');
+    const ctx = {}; vm.createContext(ctx);
+    vm.runInContext(b2 + '\n' + t2.slice(a, z) + '\n;globalThis.__R = { BUILDINGS, ROADS, roadLines, frontRoad, llToLocal, localToEN };', ctx);
+    const { BUILDINGS, ROADS, roadLines, frontRoad, llToLocal, localToEN } = ctx.__R;
+    for (const k of ['A', 'B', 'C']){
+      const b = BUILDINGS[k];
+      if (!ROADS[k] || ROADS[k].length < 10) { errs.push(`도로 형상 ${k}: 도로가 거의 없음`); continue; }
+      const f = frontRoad(b, roadLines(b));
+      if (!f || !f.ok) errs.push(`도로 형상 ${k}: 정면 앞 도로가 '${b.road}'와 맞지 않음 (${f ? `${f.n} · ${f.z.toFixed(1)}m · ${f.ang.toFixed(1)}°` : '없음'})`);
+      // 위경도 → 건물 좌표 → 동 · 북이 되돌아오는지(변환식 왕복)
+      const p = llToLocal(b, b.ll[0] + .0003, b.ll[1] - .0002), q = localToEN(b, p.x, p.z), e = -.0002 * 111320 * Math.cos(b.ll[0] * Math.PI / 180), n = .0003 * 111320;
+      if (Math.abs(q.e - e) > .01 || Math.abs(q.n - n) > .01) errs.push(`도로 형상 ${k}: 위경도 ↔ 건물 좌표 변환이 되돌아오지 않음`);
+    }
+  } catch (e) { errs.push('도로 형상 검사 실패: ' + e.message); }
   // 실사 참고 사진 묶음: 사진마다 이미지 · 저작자 · 라이선스 · 원본 링크 · 태그가 어휘 안에 있는지
   try {
     const c5 = read('case5-customer-ledger.html'), a = c5.indexOf('// ── 실사 참고 사진 묶음 (window.PHOTOLIB) 시작'), b = c5.indexOf('// ── 실사 참고 사진 묶음 끝 ──');
@@ -168,7 +189,7 @@ function crossChecks(){
   const browser = await chromium.launch();
   let fails = 0;
   const cross = crossChecks();
-  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점 · 실사 사진 묶음 · PlaceOS 참고 최신)');
+  console.log(cross.length ? '실패  파일 간 데이터 일치' : '통과  파일 간 데이터 일치 (공통 건물 블록 · 좌표 · 공실 치수 · 출입구 · 같은 건물 입점 · 앞 도로와 실제 도로 · 실사 사진 묶음 · PlaceOS 참고 최신)');
   cross.forEach(e => console.log('    - ' + e));
   if (cross.length) fails++;
   for (const pg of PAGES) {

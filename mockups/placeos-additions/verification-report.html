@@ -174,14 +174,15 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     <a href="#photo">11. 실사 참고 사진 · 남은 과제 2차</a>
     <a href="#aigen">12. 업종 실사 사진 · AI 이미지 생성</a>
     <a href="#onefile">13. AI 내려받기 수정 · PlaceOS 참고</a>
-    <a href="#sources">14. 출처</a>
+    <a href="#roads">14. 3D 트윈 실제 도로 · 위치</a>
+    <a href="#sources">15. 출처</a>
   </aside>
 
   <main>
     <div class="eyebrow">PLACEOS 추가사항 시안 · 검증 리포트</div>
     <h1>PlaceOS 추가사항 시안 — 전체 검증 리포트</h1>
-    <p class="lead">Case 1~5 화면, 실사 참고 사진 · 업종 실사 사진 · AI 실사 이미지 만들기 · 미리보기, 한 파일 묶음(PlaceOS 참고)까지 지금까지 만든 모든 결과를 코드 · 화면 · 수치 · 법규 · 접근성 · 보안 · 장애 상황 기준으로 검증했습니다. 0장에 최종 결과를, 1~14장에 요청별 상세 기록을 담았습니다. 바로 고칠 수 있는 문제는 고쳤고, 실데이터 · 외부 서비스가 있어야 하는 부분은 확인하지 못한 것과 다음 할 일로 정리했습니다.</p>
-    <div class="meta"><span>최초 검증 2026-10-26 · 전체 재검증 2026-10-27 (0장) · 요청별 기록 9~13장</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 82개 링크</span></div>
+    <p class="lead">Case 1~5 화면, 실사 참고 사진 · 업종 실사 사진 · AI 실사 이미지 만들기 · 미리보기, 한 파일 묶음(PlaceOS 참고)까지 지금까지 만든 모든 결과를 코드 · 화면 · 수치 · 법규 · 접근성 · 보안 · 장애 상황 기준으로 검증했습니다. 0장에 최종 결과를, 1~14장에 요청별 상세 기록, 15장에 출처를 담았습니다. 바로 고칠 수 있는 문제는 고쳤고, 실데이터 · 외부 서비스가 있어야 하는 부분은 확인하지 못한 것과 다음 할 일로 정리했습니다.</p>
+    <div class="meta"><span>최초 검증 2026-10-26 · 전체 재검증 2026-10-27 (0장) · 실제 도로 · 위치 2026-11-06 (14장) · 요청별 기록 9~14장</span><span>대상: mockups/placeos-additions/*.html</span><span>웹 검색 사실 확인 · 출처 86개 링크</span></div>
 
     <div class="stats">
       <div class="card stat"><div class="l">검증한 화면</div><div class="v">9개</div><div class="d">Case 1~5 · 목차 · 리포트 · PlaceOS 참고 · 종합본</div></div>
@@ -212,6 +213,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
             <tr><td>링크</td><td>14개 화면 상태를 열어 그려진 링크 전부 수집 — 같은 폴더 파일 · #앵커 존재, 새 탭 링크의 rel=noopener</td><td><span class="pill p-ok">깨진 것 0</span></td><td>같은 폴더 링크 · 앵커 60종 모두 있음. 외부 링크 181개(77개 도메인)는 이 작업 환경에서 접속이 막혀 열어 보지 못함</td></tr>
             <tr><td>보안</td><td>위키미디어 응답 · AI 서비스 오류 글에 스크립트 · 이벤트 속성 · javascript: 주소를 섞어 보냄, API 키를 넣고 생성 · 백업 · 주소 · 저장소 확인, 묶음 파일에 바깥 메시지 보냄</td><td><span class="pill p-ok">문제 0 (고친 뒤)</span></td><td>찾아서 고친 것: 실시간 사진의 <code>javascript:</code> 원본 · 라이선스 주소가 링크로 만들어지던 문제(누르면 실행될 수 있었음) → http(s) 위키미디어 · CC 주소만 링크로. 자동 실행된 스크립트 0, API 키는 저장소 · 백업 · 프롬프트 · 주소에 없음('키 기억'을 켤 때만 저장, 끄면 지움), 묶음 파일은 자기 iframe이 보낸 메시지만 처리</td></tr>
             <tr><td>성능</td><td>라이브러리는 로컬 사본, 지도 타일 · 외부 사진은 막고 3회 측정한 가운데 값</td><td><span class="pill p-ok">모두 1.6초 안</span></td><td>아래 표. Case 5(3.4MB, 사진 60장 포함)도 0.7초 안에 열림. 실제 인터넷에서는 CDN · 지도 타일 시간이 더해짐</td></tr>
+            <tr><td>실제 도로 · 건물 위치 (2026-11-06)</td><td>OpenStreetMap 도로 중심선과 건물 정면 · 거리 · 각도 자동 검사, 틀린 위치를 넣어 검사가 잡는지 확인</td><td><span class="pill p-ok">3/3 일치</span></td><td>검사 중 데모 건물 3곳이 실제 도로 앞이 아니었던 것을 찾아 바로잡음(14장)</td></tr>
             <tr><td>장애 상황</td><td>CDN 하나 · 둘 다 막기, 인터넷 없음</td><td><span class="pill p-ok">통과</span></td><td>지도: unpkg가 막히면 jsDelivr로, 둘 다 막히면 지도 없이 목록 · 상세 동작. 3D: jsDelivr가 막히면 unpkg로 다시 열고, 둘 다 막히면 안내 + Case 3 링크. 실시간 사진 · AI는 인터넷이 없으면 한국어 안내</td></tr>
             <tr><td>AI 이미지 생성</td><td>Pollinations · Gemini · OpenAI 응답을 흉내 낸 10가지 상황</td><td><span class="pill p-ok">10/10</span></td><td>붐빔 2번 뒤 성공(자동 재시도), 옛 주소 계속 실패 → 새 주소로 성공, 모두 실패 → 한국어 안내 + '대신 빠른 미리보기', 공개 키 → 새 주소 먼저, Gemini 503 재시도, 할당량 소진은 재시도 없이 안내, 모델 없음 → 모델 목록 확인, [멈추기], 미리보기 창, 비교 화면 → 미리보기 창</td></tr>
             <tr><td>AI 내려받기</td><td>세 서비스 결과 내려받아 파일 머리 확인 · 브라우저로 열기</td><td><span class="pill p-ok">모두 PNG</span></td><td>무료 체험은 서비스 요청 1번뿐(두 번째 요청이 한도에 걸려도 정상 PNG)</td></tr>
@@ -223,7 +225,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
       </div>
 
       <h3>화면별 열기 속도 · 크기</h3>
-      <div class="card tbl"><table class="t"><thead><tr><th>화면</th><th style="text-align:right">크기</th><th style="text-align:right">문서 준비</th><th style="text-align:right">전체 로드</th><th>스크립트 오류</th></tr></thead><tbody><tr><td>목차</td><td style="text-align:right">14 KB</td><td style="text-align:right">23 ms</td><td style="text-align:right">183 ms</td><td>없음</td></tr><tr><td>Case 1 상권 구역 지도</td><td style="text-align:right">57 KB</td><td style="text-align:right">658 ms</td><td style="text-align:right">822 ms</td><td>없음</td></tr><tr><td>Case 2 층별 3D 트윈</td><td style="text-align:right">94 KB</td><td style="text-align:right">513 ms</td><td style="text-align:right">1,519 ms</td><td>없음</td></tr><tr><td>Case 3 거리뷰 · 층별보기</td><td style="text-align:right">84 KB</td><td style="text-align:right">327 ms</td><td style="text-align:right">675 ms</td><td>없음</td></tr><tr><td>Case 4 반경 업종</td><td style="text-align:right">56 KB</td><td style="text-align:right">646 ms</td><td style="text-align:right">894 ms</td><td>없음</td></tr><tr><td>Case 5 손님 모으기</td><td style="text-align:right">3,397 KB</td><td style="text-align:right">534 ms</td><td style="text-align:right">704 ms</td><td>없음</td></tr><tr><td>검증 리포트</td><td style="text-align:right">121 KB</td><td style="text-align:right">27 ms</td><td style="text-align:right">165 ms</td><td>없음</td></tr><tr><td>PlaceOS 참고 (한 파일)</td><td style="text-align:right">3,743 KB</td><td style="text-align:right">298 ms</td><td style="text-align:right">721 ms</td><td>없음</td></tr><tr><td>SpaceOS 종합본</td><td style="text-align:right">10,529 KB</td><td style="text-align:right">756 ms</td><td style="text-align:right">1,209 ms</td><td>없음</td></tr></tbody></table></div>
+      <div class="card tbl"><table class="t"><thead><tr><th>화면</th><th style="text-align:right">크기</th><th style="text-align:right">문서 준비</th><th style="text-align:right">전체 로드</th><th>스크립트 오류</th></tr></thead><tbody><tr><td>목차</td><td style="text-align:right">14 KB</td><td style="text-align:right">23 ms</td><td style="text-align:right">183 ms</td><td>없음</td></tr><tr><td>Case 1 상권 구역 지도</td><td style="text-align:right">57 KB</td><td style="text-align:right">658 ms</td><td style="text-align:right">822 ms</td><td>없음</td></tr><tr><td>Case 2 층별 3D 트윈</td><td>높음</td><td>중간 (도로 · 건물 위치는 실제 OSM에 맞춤, 건물 · 호실 값은 데모)</td><td>자동 · 교차 검사 · 도로 위치 검사 · 키보드 · 장애</td><td>도로 폭 · 횡단보도는 추정, 건물 모양 · 주변 건물은 데모</td></tr><tr><td>Case 3 거리뷰 · 층별보기</td><td style="text-align:right">84 KB</td><td style="text-align:right">327 ms</td><td style="text-align:right">675 ms</td><td>없음</td></tr><tr><td>Case 4 반경 업종</td><td style="text-align:right">56 KB</td><td style="text-align:right">646 ms</td><td style="text-align:right">894 ms</td><td>없음</td></tr><tr><td>Case 5 손님 모으기</td><td style="text-align:right">3,397 KB</td><td style="text-align:right">534 ms</td><td style="text-align:right">704 ms</td><td>없음</td></tr><tr><td>검증 리포트</td><td style="text-align:right">121 KB</td><td style="text-align:right">27 ms</td><td style="text-align:right">165 ms</td><td>없음</td></tr><tr><td>PlaceOS 참고 (한 파일)</td><td style="text-align:right">3,743 KB</td><td style="text-align:right">298 ms</td><td style="text-align:right">721 ms</td><td>없음</td></tr><tr><td>SpaceOS 종합본</td><td style="text-align:right">10,529 KB</td><td style="text-align:right">756 ms</td><td style="text-align:right">1,209 ms</td><td>없음</td></tr></tbody></table></div>
 
       <h3>이번(요청 9)에 고친 것</h3>
       <div class="feats">
@@ -917,8 +919,53 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
     </section>
 
     <!-- 14 -->
+    <section id="roads">
+      <h2><span class="n">14</span>3D 트윈 실제 도로 · 건물 위치 바로잡기 (2026-11-06)</h2>
+      <p class="sub">Case 2 3D 트윈에 카카오맵처럼 실제 도로를 그려 달라는 요청을 처리했습니다. 카카오맵은 도로 모양 데이터를 주지 않고 결과 저장도 막혀 있어, 같은 실제 도로를 담은 OpenStreetMap 데이터로 그리고 카카오맵은 같은 좌표를 여는 링크로 눈 비교만 하게 했습니다.</p>
+      <div class="stats">
+        <div class="card stat"><div class="l">그린 도로</div><div class="v">149구간</div><div class="d">A 42 · B 42 · C 65 · 이름 있는 길 66개</div></div>
+        <div class="card stat"><div class="l">앞 도로 일치</div><div class="v">3 / 3</div><div class="d">거리 오차 0.03m 이하 · 각도 0.4° 이하</div></div>
+        <div class="card stat"><div class="l">바로잡은 건물 위치</div><div class="v">3곳</div><div class="d">A 약 40m · B 약 116m · C 약 30m 이동</div></div>
+        <div class="card stat"><div class="l">자동 점검</div><div class="v">17 / 17</div><div class="d">도로 · 위치 검사 추가 후</div></div>
+      </div>
+
+      <h3>찾은 문제 — 데모 건물이 실제 도로 앞에 있지 않았음</h3>
+      <div class="card tbl"><table class="t"><thead><tr><th>건물</th><th>이전 좌표 · 방위</th><th>실제 도로와 비교</th><th>바로잡은 값</th></tr></thead><tbody>
+        <tr><td>A 성수 아뜰리에빌딩</td><td>37.5427, 127.0560 · 남향 180°</td><td>'연무장길 북측'이라 했지만 연무장길 중심선에서 약 47m 북쪽 블록 안(연무장9길 옆)</td><td>37.54234, 127.055999 · 199° — 연무장길 북측, 연무장9길 교차로에서 30m 동쪽</td></tr>
+        <tr><td>B 성수 테크타워</td><td>37.5466, 127.0567 · 서향 270°</td><td>'성수이로 동측'이라 했지만 성수이로에서 약 90m <b>서쪽</b>(반대편), 건물 가운데가 성수일로12길 위</td><td>37.5469, 127.058114 · 282° — 성수이로 동측, 성수이로26길에서 60m 북쪽</td></tr>
+        <tr><td>C 뚝섬 코너하우스</td><td>37.5462, 127.0485 · 동향 90° · '먹자골목길'</td><td>'먹자골목길'은 실제 도로명이 아님. 가장 가까운 동쪽 도로는 상원길(약 34m)</td><td>37.54627, 127.048775 · 72° — 상원길 서측(도로명을 상원길로)</td></tr>
+      </tbody></table></div>
+      <p class="note" style="margin-top:8px">2026-10-26 검증(4장)에서 '좌표가 화면마다 같은지'는 맞췄지만, 그 좌표가 실제 도로 앞인지는 도로 데이터가 없어 확인하지 못했습니다. 이번에 실제 도로와 겹쳐 보고서야 드러났습니다. 정면 방위는 도로와 평행하게, 도로 중심선까지 거리는 '건물 깊이/2 + 0.5m + 도로 폭/2'로 맞췄고, Case 1 · 2 · 3 · 4 · 5가 모두 같은 값을 씁니다. 새 위치도 각자의 Case 1 상권 구역 안입니다.</p>
+
+      <h3>만든 것</h3>
+      <div class="feats">
+        <div class="card feat"><h4>① 실제 도로 형상</h4><p>OpenFreeMap 벡터 타일(z14, 2026-11-01판)의 OpenStreetMap 도로 중심선을 건물 반경 300m만큼 뽑아(타일 경계 여백 제거, 0.3m 단순화) Case 2에 위경도로 넣었습니다(약 16KB). 이름은 같은 타일의 도로 이름 선을 선분마다 대조해 붙였고, 상하행이 나뉜 큰길은 한쪽 폭으로 그립니다.</p></div>
+        <div class="card feat"><h4>② 3D 도로 그리기</h4><p>위경도 → 건물 좌표(동 · 북 거리를 등거리 근사로 구해 정면 방위만큼 회전) 뒤 보도 · 차도 띠, 노란 중앙선(12m 이상 복선), 흰 점선 차로, 갈래 3개 이상 교차로 안 노면 표시 비우기, 횡단보도, 도로 이름 라벨. [도로] 토글. 주변 건물(무작위)은 도로 띠에서 1m 넘게 떨어지게 다시 배치.</p></div>
+        <div class="card feat"><h4>③ 도로 · 위치 확인 패널</h4><p>북쪽이 위인 도로 지도(반경 110m)와 앞 도로 이름 · 폭 · 중심선 거리 · 정면과의 각도, 자동 판정(✓/✗). [카카오맵에서 위치 비교] · [카카오 로드뷰]가 같은 좌표를 새 창으로 엽니다(카카오 결과는 저장하지 않음). 출처 · 라이선스(ODbL) 표시.</p></div>
+      </div>
+
+      <h3>검증</h3>
+      <div class="card tbl"><table class="t"><thead><tr><th>항목</th><th>결과</th><th>메모</th></tr></thead><tbody>
+        <tr><td>앞 도로 자동 검사 (check-pages 데이터 검사)</td><td><span class="pill p-ok">A · B · C 통과</span></td><td>정면 가운데에서 앞으로 처음 만나는 도로가 건물의 도로 이름과 같고, 각도 3° · 거리 1.5m 안. 실측: A 연무장길 11.53m(목표 11.5) 0.4° · B 성수이로 26.01m(26.0) 0.3° · C 상원길 9.03m(9.0) 0.2°</td></tr>
+        <tr><td>검사가 틀린 위치를 잡는지</td><td><span class="pill p-ok">잡음</span></td><td>A 방위 10° 틀림 → ✗(9.6°), A 이전 좌표 → ✗(49.4m), B 이전 좌표 · 방위 → ✗(122m · 19.6°), C 이전 도로명 → ✗</td></tr>
+        <tr><td>좌표 변환 왕복</td><td><span class="pill p-ok">오차 0.01m 안</span></td><td>위경도 → 건물 좌표 → 동 · 북 거리가 되돌아오는지 자동 검사</td></tr>
+        <tr><td>건물과 도로 겹침</td><td><span class="pill p-ok">0곳</span></td><td>모든 도로 띠(보도 포함)가 세 건물 외곽선에 닿지 않음(처음 계산에서 C가 상원2길 쪽 0.5m 겹쳐, 도로 이름을 선분 단위로 다시 붙여 해결)</td></tr>
+        <tr><td>화면 · 오류</td><td><span class="pill p-ok">통과</span></td><td>데스크톱 · 모바일 스크립트 오류 0, [도로] 토글, 세 시나리오 '✓ 실제 도로와 맞음'. 처음 그린 화면에서 교차로 원이 어둡게 보이던 문제(아래를 향한 삼각형)를 고침</td></tr>
+        <tr><td>Case 4 영향</td><td><span class="pill p-mid">점수 바뀜</span></td><td>정면 방위가 바뀌어 길 건너 판정이 달라짐 — 보행 기준 경쟁 강도 A 37 → 60, B 17 → 19, C 42 → 35 (직선 기준 68 · 34 · 52는 그대로). 주변 점포는 데모 난수 위치라 점수 자체는 참고용</td></tr>
+      </tbody></table></div>
+
+      <h3>한계</h3>
+      <div class="card pad"><ul>
+        <li><b>폭 · 차로 · 횡단보도는 추정</b>: OpenStreetMap 타일에는 폭이 없어 도로 등급별 기본값(앞 도로는 Case 4와 같은 10 · 25 · 6m)을 썼고, 횡단보도는 교차로 규칙으로 그린 것이라 실제 위치와 다를 수 있습니다.</li>
+        <li><b>OpenStreetMap 기준</b>: 2026-11-01 타일 기준이며, 이 작업 환경에서는 카카오맵 화면과 직접 겹쳐 보지 못했습니다. 패널의 링크로 같은 자리를 열어 눈으로 비교해야 합니다.</li>
+        <li><b>건물 · 주변 건물은 여전히 데모</b>: 건물 위치만 실제 도로 앞으로 옮겼고, 건물 크기 · 모양 · 주변 건물은 실제가 아닙니다. 실서비스는 V-World 건물 외곽선 · 높이와 도로명주소 전자지도 실폭도로(도로 면)로 바꿉니다.</li>
+        <li><b>고가 · 지하</b>: 터널은 빼고, 지하철 2호선 고가 등 철도는 그리지 않았습니다.</li>
+      </ul></div>
+    </section>
+
+    <!-- 15 -->
     <section id="sources">
-      <h2><span class="n">14</span>출처</h2>
+      <h2><span class="n">15</span>출처</h2>
       <p class="sub">웹 검색으로 확인한 자료입니다. 날짜가 표시된 것은 기사 · 공지 기준일입니다.</p>
       <div class="card pad">
         <ol class="srcs">
@@ -973,6 +1020,8 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
           <li><a href="https://github.com/pollinations/pollinations/issues/6409" target="_blank" rel="noopener">Pollinations · Legacy API's (옛 주소 유지보수 전환)</a> · <a href="https://github.com/pollinations/pollinations" target="_blank" rel="noopener">gen.pollinations.ai</a> <span>· 2025.12</span></li>
           <li><a href="https://discuss.ai.google.dev/t/gemini-image-api-frequent-503-model-is-overloaded-errors-for-4k-image-generation-in-production/112949" target="_blank" rel="noopener">Gemini 이미지 API 503 "model is overloaded" (재시도 권장)</a></li>
           <li><a href="https://github.com/dequelabs/axe-core" target="_blank" rel="noopener">axe-core (접근성 자동 검사)</a> · <a href="https://html-validate.org/" target="_blank" rel="noopener">html-validate</a> · <a href="https://www.w3.org/TR/WCAG21/" target="_blank" rel="noopener">WCAG 2.1</a></li>
+          <li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap 저작권 · ODbL</a> · <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> <span>· 도로 형상 2026-11-01</span></li>
+          <li><a href="https://devtalk.kakao.com/t/local-api-sdk/150397" target="_blank" rel="noopener">카카오 데브톡 — 카카오맵 API 결과 저장 제한 안내</a> · <a href="https://apis.map.kakao.com/web/sample/drawShape" target="_blank" rel="noopener">카카오맵 도형 그리기 샘플</a></li>
         </ol>
       </div>
     </section>

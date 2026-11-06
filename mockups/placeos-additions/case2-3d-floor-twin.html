@@ -127,6 +127,14 @@ button{cursor:pointer}
 .u-label.on small{color:#e0e7ff}
 .u-label.mini{padding:2px 6px;font-size:10px;opacity:.92}
 .road-label{font:700 11px 'Noto Sans KR',sans-serif;color:#475569;background:rgba(255,255,255,.85);border-radius:6px;padding:2px 6px;white-space:nowrap}
+.road-label.nm{font-weight:600;font-size:10px;color:#64748b;background:rgba(255,255,255,.7)}
+.road-label.front{color:#1e293b;border:1px solid #94a3b8;background:#fff}
+.rmap{display:block;width:100%;max-width:300px;aspect-ratio:1;margin:0 auto 6px;border:1px solid var(--line);border-radius:10px;background:#eef2f7}
+.rlinks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rsrc{margin:8px 0 0;font-size:10.5px;color:var(--text-3)}
+.rsrc a{color:inherit}
+.rok{color:#047857}
+.rbad{color:#b91c1c}
 .ov{position:absolute;z-index:5}
 .ov-tl{top:12px;left:12px;max-width:calc(100% - 140px)}
 .bname{background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:var(--sh)}
@@ -255,7 +263,7 @@ button{cursor:pointer}
     <div class="eyebrow">CASE 2 · 공실 선택 → 건물 층별 3D 디지털 트윈</div>
     <h1>공실을 고르면 그 건물을 층별로 쪼개 3D로 보여줍니다</h1>
     <p>층마다 운영 중 · 공실 · 주거를 색으로 구분하고, 층을 누르면 호실 배치와 임대 조건 · 설비 정보가 열립니다.</p>
-    <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>건물 · 호실 · 임대 조건 · 건축물대장 값은 <b>데모 값</b>입니다. 3D는 바닥 크기 · 층수로 만든 상자 모델이고, 호실 칸은 전용면적으로 계산한 개략 배치입니다.</li><li>실서비스 출처: 건축물대장(층별개요 · 전유공용면적, 건축HUB) · 공실 매물 DB · 관리단 · 현장 확인. 공실 상태 기준일은 호실마다 표시합니다(데모 2026-10-21).</li><li>공실률은 집계 기준(호실 · 점포 · 전용 · 계약 · 미분양 · 미입주)에 따라 달라 범위로 보여줍니다.</li></ul></details>
+    <details class="dsrc"><summary>ⓘ 데이터 출처 · 기준</summary><ul><li>건물 · 호실 · 임대 조건 · 건축물대장 값은 <b>데모 값</b>입니다. 3D는 바닥 크기 · 층수로 만든 상자 모델이고, 호실 칸은 전용면적으로 계산한 개략 배치입니다.</li><li>실서비스 출처: 건축물대장(층별개요 · 전유공용면적, 건축HUB) · 공실 매물 DB · 관리단 · 현장 확인. 공실 상태 기준일은 호실마다 표시합니다(데모 2026-10-21).</li><li>공실률은 집계 기준(호실 · 점포 · 전용 · 계약 · 미분양 · 미입주)에 따라 달라 범위로 보여줍니다.</li><li>도로는 OpenStreetMap 실제 도로 중심선(© OpenStreetMap 기여자, ODbL · OpenFreeMap 2026-11-01)을 건물 좌표로 옮겨 그렸고, 폭 · 차로 · 횡단보도는 도로 등급으로 추정했습니다. 건물 위치 · 정면 방위는 이 도로에 맞춰 바로잡았습니다(2026-11-06). 실서비스는 도로명주소 전자지도 실폭도로 · 도로중심선으로 바꿉니다.</li></ul></details>
   </div>
   <div class="seg" id="scSeg" role="group" aria-label="시나리오">
     <button data-s="A">A · 2층 공실 (근린상가)</button>
@@ -276,6 +284,7 @@ button{cursor:pointer}
       <div class="occ" id="occBar"></div>
       <div class="occ-l" id="occLegend"></div>
     </div>
+    <div class="sec" id="roadChk"></div>
     <div class="sec" id="vacAgg"></div>
     <div class="sec" id="ledgerChk"></div>
     <div class="sec">
@@ -293,6 +302,7 @@ button{cursor:pointer}
         <button data-m="vaconly">공실만 강조</button>
       </div>
       <div class="toggles">
+        <button class="tg on" id="tgRd">도로</button>
         <button class="tg on" id="tgNb">주변 건물</button>
         <button class="tg on" id="tgLb">층 라벨</button>
         <button class="tg" id="tgReset">시점 초기화</button>
@@ -345,7 +355,7 @@ const officeTerms = a => { const rent = Math.round(a / 3.3058 * 4.6); return { r
 const BUILDINGS = {
   A: {
     name:'성수 아뜰리에빌딩', addr:'성동구 성수동2가 · 연무장길 북측', zone:'연무장길 카페·팝업거리', road:'연무장길',
-    ll:[37.5427, 127.0560], face:180, W:16, D:12, core:{ w:3.8, d:3.6 }, corr:0, ev:true,
+    ll:[37.54234, 127.055999], face:199, W:16, D:12, core:{ w:3.8, d:3.6 }, corr:0, ev:true,
     ledger:{ type:'일반건축물', gfa:1190 },
     info:{ '규모':'지하 1층 · 지상 5층', '준공':'1994년 (2021 리모델링)', '용도':'제2종 근린생활시설', '엘리베이터':'1대 (8인승)', '주차':'자주식 3대' },
     start:{ lv:2, no:'201' },
@@ -370,7 +380,7 @@ const BUILDINGS = {
   },
   B: {
     name:'성수 테크타워', addr:'성동구 성수동2가 · 성수이로 동측 지식산업센터', zone:'성수역 지식산업센터 오피스', road:'성수이로',
-    ll:[37.5466, 127.0567], face:270, W:48, D:26, core:{ w:12, d:8 }, corr:2.4, fd:11.8, ev:true,
+    ll:[37.5469, 127.058114], face:282, W:48, D:26, core:{ w:12, d:8 }, corr:2.4, fd:11.8, ev:true,
     ledger:{ type:'집합건물 (구분소유)', gfa:18420, rooms:34 },
     info:{ '규모':'지하 2층 · 지상 12층', '준공':'2018년', '용도':'지식산업센터 · 근린생활시설', '엘리베이터':'승객 6대 · 화물 1대', '주차':'자주식 186대' },
     start:{ lv:1, no:'102' },
@@ -426,13 +436,13 @@ const BUILDINGS = {
     })()
   },
   C: {
-    name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 먹자골목 코너', zone:'뚝섬역 먹자골목', road:'먹자골목길',
-    ll:[37.5462, 127.0485], face:90, W:14, D:11, core:{ w:3.5, d:3.2 }, corr:0, ev:false,
+    name:'뚝섬 코너하우스', addr:'성동구 성수동1가 · 뚝섬역 남동쪽 상원길', zone:'뚝섬역 먹자골목', road:'상원길',
+    ll:[37.54627, 127.048775], face:72, W:14, D:11, core:{ w:3.5, d:3.2 }, corr:0, ev:false,
     ledger:{ type:'일반건축물', gfa:798 },
     info:{ '규모':'지하 1층 · 지상 4층', '준공':'1989년', '용도':'근린생활시설 + 다가구주택', '엘리베이터':'없음 (계단)', '주차':'없음' },
     start:{ lv:-1, no:'B01' },
     ai:'지하 1층 B01호는 이전 이자카야의 <b style="display:inline">배기 덕트 · 그리스트랩이 남아 있어</b> 주점 · 요리주점으로 들어가면 초기 공사비를 줄일 수 있습니다. 1층 오른쪽 끝 계단이 유일한 입구라 입구 노출이 관건입니다.',
-    shot:'먹자골목길 건너편 · 서쪽 방향', facade:{ 2019:'#c2a383' }, kind:'brick',
+    shot:'상원길 건너편 · 서쪽 방향', facade:{ 2019:'#c2a383' }, kind:'brick',
     floors:[
       { lv:-1, h:3.2, use:'근생', rest:'창고 · 공용', units:[u('B01','공실',95,'vac',{ prev:'이자카야 (2019.06~2026.01)', months:9, dep:2000, rent:160, fee:15,
         fac:{ elec:'25kW', water:'급배수 · 그리스트랩 있음', gas:'LNG 인입', duct:'배기 덕트 남아 있음 (재사용 가능)', ceil:'3.0m', window:'창 없음 · 계단 채광', sign:'계단 입구 돌출간판 · 입간판' },
@@ -623,7 +633,197 @@ function pastName(un, year){
 }
 // ── 공통 건물 블록 끝 ──
 
-// 3D는 바닥 크기 · 층수 · 층고로 만든 상자 모델이고, 호실 칸은 위 layoutFloor가 전용면적으로 계산한 배치입니다. 주변 건물은 무작위 배치입니다.
+// ── 도로 형상 (OpenStreetMap) 시작 ──
+// 출처: © OpenStreetMap 기여자(ODbL) — OpenFreeMap 벡터 타일 2026-11-01판(z14)에서 시나리오 건물 반경 300m 도로 중심선을 뽑아
+//       타일 경계 여백을 자르고 0.3m 오차로 단순화했습니다. 이름은 같은 타일의 도로 이름 선에서 붙였습니다.
+// 폭(m)은 보도 포함 전체 폭과 한쪽 보도 폭으로, 도로 등급별 추정치입니다(앞 도로는 Case 4 보행 거리 계산과 같은 값). 실측이 아닙니다.
+// 실서비스: 도로명주소 전자지도 '실폭도로'(도로 면 그대로) 또는 국토교통부 도로중심선 + 도로폭으로 바꿉니다.
+//          카카오맵 화면 · API 결과는 저장 · 복제하지 않고, 위치를 눈으로 비교하는 링크로만 씁니다.
+// 한 줄 = [이름, 등급, 전체 폭, 한쪽 보도 폭, 일방통행(1), 위도, 경도, 위도, 경도, …]
+const ROAD_SRC = { by:'© OpenStreetMap 기여자', lic:'ODbL', licUrl:'https://www.openstreetmap.org/copyright', via:'OpenFreeMap 벡터 타일', date:'2026-11-01', r:300 };
+const ROADS = {
+  A:[
+    ["아차산로",'secondary',16,3,1,37.545109,127.054063,37.544769,127.055168,37.544577,127.055808],
+    ["아차산로",'secondary',16,3,1,37.544577,127.055809,37.544377,127.056477],
+    ["아차산로",'secondary',16,3,1,37.544203,127.057094,37.543276,127.060168],
+    ["아차산로",'secondary',16,3,1,37.544331,127.057137,37.544577,127.056313],
+    ["아차산로",'secondary',16,3,1,37.543735,127.059041,37.544139,127.057781,37.544331,127.057137],
+    ["아차산로",'secondary',16,3,1,37.544377,127.056477,37.544203,127.057094],
+    ["성수이로",'tertiary',25,3,0,37.544577,127.05719,37.544854,127.057249,37.545649,127.057486],
+    ["성수이로",'tertiary',25,3,0,37.539388,127.055098,37.544203,127.057094],
+    ["성수이로",'tertiary',25,3,0,37.544331,127.057137,37.544577,127.05719],
+    ["",'minor',8,1.2,0,37.544896,127.055238,37.545394,127.055485],
+    ["",'minor',8,1.2,0,37.539716,127.051681,37.540294,127.052411,37.541545,127.054031],
+    ["뚝섬로13길",'minor',8,1.2,0,37.539337,127.057786,37.539843,127.057732,37.540549,127.057593,37.540707,127.057593,37.540881,127.0577,37.541621,127.058049],
+    ["성수이로10길",'minor',8,1.2,0,37.540992,127.057357,37.540737,127.057244,37.539932,127.055865,37.539665,127.055216],
+    ["성수이로12길",'minor',8,1.2,0,37.540052,127.055377,37.539456,127.057775],
+    ["성수이로14길",'minor',8,1.2,0,37.541111,127.055812,37.540928,127.056482,37.541961,127.056912],
+    ["성수이로16길",'minor',8,1.2,1,37.541234,127.056606,37.540881,127.0577,37.540443,127.059106],
+    ["성수이로18길",'minor',8,1.2,0,37.542714,127.057212,37.54237,127.058381],
+    ["성수이로20길",'minor',8,1.2,0,37.543667,127.056879,37.542676,127.060168],
+    ["성수이로7가길",'minor',8,1.2,0,37.540307,127.054701,37.540392,127.054787,37.5416,127.055334],
+    ["성수이로7길",'minor',8,1.2,0,37.543093,127.053221,37.542901,127.053135,37.542072,127.053634],
+    ["성수이로7길",'minor',8,1.2,0,37.539388,127.055098,37.540307,127.054701],
+    ["성수이로7길",'minor',8,1.2,0,37.540307,127.054701,37.541183,127.054315,37.541434,127.054133,37.541545,127.054031,37.542072,127.053634],
+    ["성수일로4가길",'minor',8,1.2,0,37.54126,127.054256,37.541494,127.054648,37.541766,127.054777],
+    ["성수일로4가길",'minor',8,1.2,0,37.542268,127.053967,37.541966,127.054149,37.541919,127.054256,37.5416,127.055334],
+    ["성수일로4길",'minor',8,1.2,1,37.542748,127.05424,37.542268,127.053967,37.542072,127.053634],
+    ["성수일로6길",'minor',8,1.2,1,37.543667,127.056879,37.543829,127.056321,37.54388,127.056252,37.544263,127.054937,37.544577,127.053889],
+    ["아차산로11길",'minor',8,1.2,0,37.543795,127.059073,37.544577,127.05942],
+    ["아차산로9길",'minor',8,1.2,0,37.544577,127.057984,37.544139,127.057781],
+    ["연무장11길",'minor',8,1.2,0,37.541961,127.056912,37.543471,127.057523,37.544007,127.057754],
+    ["연무장13길",'minor',8,1.2,0,37.541621,127.058049,37.54237,127.058381,37.543795,127.059073],
+    ["연무장5가길",'minor',8,1.2,0,37.543063,127.055152,37.543323,127.055275],
+    ["연무장5가길",'minor',8,1.2,0,37.54311,127.055951,37.543531,127.054599,37.544046,127.052819],
+    ["연무장7가길",'minor',8,1.2,0,37.542846,127.055844,37.543063,127.055152,37.543263,127.054476],
+    ["연무장7길",'minor',8,1.2,0,37.544577,127.05508,37.544769,127.055168],
+    ["연무장7길",'minor',8,1.2,0,37.542748,127.05424,37.544577,127.05508],
+    ["연무장9길",'minor',8,1.2,0,37.5416,127.055334,37.54311,127.055951,37.54388,127.056252,37.544377,127.056477],
+    ["연무장길",'minor',10,1.5,0,37.543203,127.052829,37.543399,127.052899,37.543973,127.052727],
+    ["연무장길",'minor',10,1.5,0,37.542901,127.053789,37.543659,127.054149],
+    ["연무장길",'minor',10,1.5,0,37.542987,127.053537,37.543739,127.053875],
+    ["연무장길",'minor',10,1.5,0,37.542855,127.053934,37.543616,127.054294],
+    ["연무장길",'minor',10,1.5,0,37.542161,127.056246,37.542332,127.055635,37.542748,127.05424,37.543093,127.053221],
+    ["",'service',4.5,0,0,37.542395,127.058612,37.542081,127.059669,37.542251,127.059749,37.542276,127.059658],
+  ],
+  B:[
+    ["",'secondary',24,3.5,0,37.548724,127.05829,37.548801,127.058312],
+    ["",'secondary',13,3,1,37.548303,127.060087,37.548397,127.060109],
+    ["",'secondary',13,3,1,37.548409,127.060007,37.548316,127.059991],
+    ["광나루로",'secondary',16,3,1,37.548303,127.060087,37.548137,127.061455],
+    ["광나루로",'secondary',16,3,1,37.548801,127.058312,37.549277,127.056692,37.549503,127.056128],
+    ["광나루로",'secondary',16,3,1,37.549434,127.056085,37.549247,127.056504,37.548724,127.05829,37.548333,127.059889,37.548316,127.059991],
+    ["광나루로",'secondary',16,3,1,37.548316,127.059991,37.548303,127.060087],
+    ["광나루로",'secondary',16,3,1,37.548409,127.060007,37.548439,127.059835,37.548801,127.058312],
+    ["광나루로",'secondary',16,3,1,37.548397,127.060109,37.548409,127.060007],
+    ["광나루로",'secondary',16,3,1,37.548141,127.062512,37.548205,127.061428,37.548397,127.060109],
+    ["아차산로",'secondary',16,3,1,37.544331,127.057137,37.544577,127.056313],
+    ["아차산로",'secondary',16,3,1,37.543735,127.059041,37.544139,127.057781,37.544331,127.057137],
+    ["",'tertiary',16,3,0,37.548091,127.06005,37.54812,127.060087,37.548158,127.060093,37.548197,127.060071,37.548205,127.06005,37.54821,127.059996,37.548188,127.059953,37.54815,127.059937,37.548129,127.059943,37.548095,127.059975,37.548086,127.060023,37.548091,127.06005],
+    ["",'tertiary',9,3,1,37.548197,127.060071,37.548303,127.060087],
+    ["",'tertiary',9,3,1,37.548316,127.059991,37.548188,127.059953],
+    ["성수이로",'tertiary',25,3,0,37.544577,127.05719,37.544854,127.057249,37.545649,127.057486,37.548724,127.05829],
+    ["성수이로",'tertiary',25,3,0,37.544331,127.057137,37.544577,127.05719],
+    ["아차산로7길",'tertiary',16,3,0,37.549434,127.056085,37.547363,127.055088,37.546189,127.054567,37.545717,127.054326],
+    ["",'minor',8,1.2,0,37.544896,127.055238,37.545394,127.055485],
+    ["광나루로2길",'minor',8,1.2,0,37.548163,127.055061,37.548035,127.05541],
+    ["광나루로4가길",'minor',8,1.2,0,37.549724,127.054106,37.548809,127.055136,37.548597,127.055683],
+    ["광나루로6길",'minor',8,1.2,0,37.548137,127.060093,37.547193,127.060731,37.546942,127.061504],
+    ["성수이로",'minor',25,3,0,37.547657,127.058017,37.547236,127.05939],
+    ["성수이로22길",'minor',8,1.2,1,37.544854,127.057249,37.544637,127.058011],
+    ["성수이로22길",'minor',8,1.2,1,37.544637,127.058011,37.544577,127.058205],
+    ["성수이로22길",'minor',8,1.2,1,37.544577,127.058206,37.54425,127.059277],
+    ["성수이로24길",'minor',8,1.2,0,37.544981,127.059599,37.545373,127.058312],
+    ["성수이로24길",'minor',8,1.2,1,37.544577,127.060952,37.544981,127.059599],
+    ["성수이로26길",'minor',8,1.2,0,37.546419,127.057689,37.546126,127.058639,37.54573,127.059964],
+    ["성수일로12길",'minor',8,1.2,0,37.547363,127.055088,37.546955,127.055844,37.546653,127.056552,37.546419,127.057689],
+    ["성수일로8길",'minor',8,1.2,0,37.545717,127.054326,37.545394,127.055485,37.544854,127.057249],
+    ["송정길",'minor',8,1.2,0,37.548401,127.060071,37.548711,127.06028,37.548597,127.061026,37.548558,127.061418,37.548567,127.061788,37.548609,127.062244],
+    ["아차산로11가길",'minor',8,1.2,0,37.546453,127.060372,37.546023,127.061756],
+    ["아차산로11길",'minor',8,1.2,0,37.544577,127.05942,37.544981,127.059599,37.54573,127.059964,37.546453,127.060372,37.547193,127.060731],
+    ["아차산로11길",'minor',8,1.2,0,37.543795,127.059073,37.544577,127.05942],
+    ["아차산로7길",'minor',8,1.2,0,37.546649,127.055265,37.546776,127.054825],
+    ["아차산로7나길",'minor',8,1.2,0,37.548597,127.055683,37.547657,127.058017],
+    ["아차산로9길",'minor',8,1.2,0,37.54815,127.059937,37.547831,127.059765,37.547236,127.05939,37.54616,127.058655,37.545373,127.058312,37.544577,127.057983],
+    ["아차산로9길",'minor',8,1.2,0,37.544577,127.057984,37.544139,127.057781],
+    ["",'service',4.5,0,0,37.545394,127.055485,37.545619,127.055597],
+    ["",'service',4.5,0,0,37.547899,127.055903,37.546036,127.055066,37.545955,127.055066,37.545738,127.055281,37.545619,127.055597,37.545428,127.056279],
+    ["",'service',4.5,0,0,37.547946,127.059969,37.548086,127.059996],
+  ],
+  C:[
+    ["아차산로",'secondary',16,3,1,37.548086,127.044418,37.547637,127.045898],
+    ["아차산로",'secondary',16,3,1,37.546721,127.048758,37.54624,127.050329],
+    ["아차산로",'secondary',16,3,1,37.546355,127.050372,37.546857,127.048731,37.547542,127.046617,37.547747,127.045898],
+    ["아차산로",'secondary',16,3,1,37.547636,127.045898,37.547414,127.046623,37.546883,127.04828,37.546721,127.048758],
+    ["성수일로",'tertiary',20,3,0,37.544577,127.049729,37.546126,127.050281,37.54687,127.050592,37.548435,127.051193],
+    ["성수일로",'tertiary',20,3,0,37.544143,127.049573,37.544577,127.049728],
+    ["",'minor',8,1.2,0,37.546853,127.046446,37.546666,127.047041],
+    ["",'minor',8,1.2,0,37.545938,127.04732,37.546423,127.047594],
+    ["",'minor',8,1.2,0,37.546632,127.0474,37.546019,127.047062],
+    ["뚝섬로1길",'minor',8,1.2,0,37.544577,127.047104,37.544918,127.047175,37.54513,127.047229,37.545475,127.047368,37.545798,127.047492,37.546172,127.047679,37.546883,127.04828],
+    ["뚝섬로1길",'minor',8,1.2,0,37.543208,127.046676,37.543263,127.046682,37.544322,127.047052,37.544577,127.047104],
+    ["뚝섬로1나길",'minor',8,1.2,0,37.544386,127.047068,37.543739,127.049412],
+    ["상원10길",'minor',8,1.2,0,37.548933,127.048098,37.549549,127.049214],
+    ["상원1길",'minor',8,1.2,0,37.547414,127.046623,37.547333,127.046698,37.546904,127.047148,37.545904,127.048071,37.545394,127.048591,37.545028,127.048978,37.544577,127.049329],
+    ["상원1길",'minor',8,1.2,0,37.544577,127.049329,37.544467,127.049412],
+    ["상원2길",'minor',8,1.2,0,37.546049,127.048972,37.546011,127.049138,37.545823,127.04968,37.545713,127.050136],
+    ["상원2길",'minor',8,1.2,0,37.545823,127.04968,37.546355,127.049954],
+    ["상원2길",'minor',8,1.2,0,37.545921,127.049396,37.54644,127.049675],
+    ["상원2길",'minor',8,1.2,0,37.546011,127.049138,37.546525,127.049385],
+    ["상원4길",'minor',8,1.2,0,37.547529,127.048506,37.54687,127.050592],
+    ["상원6가길",'minor',8,1.2,0,37.548324,127.049632,37.548022,127.049122,37.548482,127.048709],
+    ["상원6길",'minor',8,1.2,0,37.548239,127.048302,37.549371,127.050233],
+    ["상원6길",'minor',8,1.2,0,37.548171,127.049369,37.548626,127.048951],
+    ["상원6나길",'minor',8,1.2,0,37.547759,127.050936,37.548018,127.049911,37.54878,127.049214],
+    ["상원6나길",'minor',8,1.2,0,37.547214,127.049514,37.548018,127.049911],
+    ["상원8길",'minor',8,1.2,0,37.548763,127.048152,37.549183,127.04894,37.54943,127.049428,37.549256,127.049627],
+    ["상원길",'minor',6,0,0,37.548933,127.048098,37.547529,127.048506,37.546857,127.048731,37.546721,127.048758],
+    ["상원길",'minor',6,0,0,37.549183,127.04894,37.548971,127.049101,37.548426,127.048248],
+    ["상원길",'minor',6,0,0,37.546313,127.048865,37.546236,127.049106,37.546202,127.049112,37.546164,127.049214],
+    ["상원길",'minor',6,0,0,37.546721,127.048758,37.546313,127.048865,37.546049,127.048972,37.545492,127.049117,37.544577,127.049382],
+    ["상원길",'minor',6,0,0,37.544143,127.049573,37.544254,127.049476,37.544577,127.049383],
+    ["성수일로",'minor',20,3,0,37.547508,127.050839,37.546985,127.05093,37.546742,127.051005],
+    ["성수일로",'minor',20,3,0,37.544029,127.048361,37.544382,127.048624,37.544003,127.049519],
+    ["성수일로6길",'minor',8,1.2,1,37.544794,127.053167,37.545062,127.052604,37.545258,127.051928,37.545713,127.050136],
+    ["아차산로",'minor',30,4,0,37.547708,127.046027,37.547844,127.046076,37.548068,127.045898],
+    ["아차산로",'minor',30,4,0,37.546742,127.051005,37.546466,127.051182,37.546096,127.051558,37.545938,127.051982],
+    ["아차산로1가길",'minor',8,1.2,0,37.548439,127.046784,37.548546,127.046735,37.549145,127.045936],
+    ["아차산로3길",'minor',8,1.2,0,37.547542,127.046617,37.54804,127.046944,37.548503,127.047191],
+    ["아차산로5길",'minor',8,1.2,0,37.545879,127.05196,37.547265,127.05254],
+    ["연무장1길",'minor',8,1.2,0,37.544599,127.050378,37.544577,127.050408],
+    ["연무장1길",'minor',8,1.2,0,37.544577,127.050841,37.544747,127.050587],
+    ["연무장1길",'minor',8,1.2,0,37.544577,127.050341,37.544747,127.050587,37.544871,127.050732],
+    ["연무장1길",'minor',8,1.2,0,37.544577,127.050408,37.544241,127.050893],
+    ["연무장1길",'minor',8,1.2,0,37.544267,127.051536,37.544356,127.051172,37.544577,127.050841],
+    ["연무장1길",'minor',8,1.2,0,37.544071,127.049831,37.544292,127.049932,37.544577,127.050342],
+    ["연무장3길",'minor',8,1.2,0,37.544577,127.05166,37.545692,127.0521],
+    ["연무장길",'minor',10,1.5,0,37.544471,127.05019,37.544012,127.05086,37.543799,127.050764],
+    ["왕십리로10길",'minor',8,1.2,0,37.547146,127.044648,37.547078,127.044911,37.546819,127.045823,37.546793,127.045898],
+    ["왕십리로10길",'minor',8,1.2,0,37.546793,127.045898,37.546394,127.047062],
+    ["왕십리로14길",'minor',8,1.2,0,37.548631,127.045898,37.548499,127.046183,37.548443,127.046467,37.548435,127.046757,37.548469,127.04702,37.548537,127.047363,37.548933,127.048098],
+    ["왕십리로14길",'minor',8,1.2,0,37.54804,127.046944,37.548218,127.046537,37.548439,127.046612],
+    ["왕십리로4가길",'minor',8,1.2,0,37.545539,127.045759,37.545499,127.045898],
+    ["왕십리로4가길",'minor',8,1.2,0,37.5455,127.045898,37.54513,127.047229],
+    ["왕십리로4길",'minor',8,1.2,0,37.545788,127.045898,37.545539,127.045759,37.545504,127.045678,37.545636,127.045035,37.545624,127.044858],
+    ["왕십리로4길",'minor',8,1.2,0,37.545788,127.045898,37.546296,127.046183,37.546853,127.046446,37.547414,127.046623],
+    ["왕십리로6길",'minor',8,1.2,0,37.546198,127.044766,37.546121,127.045357,37.545968,127.045646,37.545911,127.045898],
+    ["왕십리로6길",'minor',8,1.2,0,37.545911,127.045898,37.545696,127.046708,37.545475,127.047368,37.545079,127.048414,37.544862,127.048919,37.544696,127.04924],
+    ["왕십리로8길",'minor',8,1.2,0,37.546581,127.044718,37.546351,127.045898],
+    ["왕십리로8길",'minor',8,1.2,0,37.546352,127.045898,37.546296,127.046183,37.545938,127.04732,37.545845,127.047518],
+    ["",'service',4.5,0,0,37.548205,127.048275,37.547865,127.048135],
+    ["",'service',4.5,0,0,37.548193,127.048318,37.548337,127.047856,37.547963,127.047658,37.548099,127.047148,37.548269,127.047213],
+    ["",'service',4.5,0,0,37.544577,127.046916,37.544675,127.046955,37.544849,127.046285,37.544986,127.046333,37.545054,127.046038,37.544722,127.045898],
+    ["",'service',4.5,0,0,37.544594,127.04621,37.544577,127.046203],
+    ["",'service',4.5,0,0,37.544577,127.046203,37.544301,127.046092],
+    ["",'service',4.5,0,0,37.544577,127.046916,37.544475,127.046875,37.544407,127.046821,37.544577,127.046272],
+  ],
+};
+// 위경도 → 건물 좌표(m): 건물 가운데에서 동 · 북 거리를 구한 뒤(좁은 범위 등거리 근사) localToEN의 역변환으로 돌립니다.
+function llToLocal(b, lat, lng){
+  const e = (lng - b.ll[1]) * 111320 * Math.cos(b.ll[0] * Math.PI / 180), n = (lat - b.ll[0]) * 111320;
+  const r = b.face * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  return { x: -c * e + s * n, z: s * e + c * n };
+}
+// 시나리오 도로를 건물 좌표 선으로 바꿉니다.
+function roadLines(b){
+  return ROADS[b.key].map(([n, c, w, sw, ow, ...p]) => ({ n, c, w, sw, ow, pts: Array.from({ length: p.length / 2 }, (_, i) => llToLocal(b, p[2 * i], p[2 * i + 1])) }));
+}
+// 앞 도로 검사: 정면 가운데(x = 0)에서 앞(+z)으로 처음 만나는 도로 중심선의 이름 · 거리 · 정면과 이루는 각도
+function frontRoad(b, lines){
+  let best = null;
+  lines.forEach(L => L.pts.forEach((p, i) => {
+    const q = L.pts[i + 1]; if (!q || (p.x > 0) === (q.x > 0)) return;
+    const t = -p.x / (q.x - p.x), z = p.z + t * (q.z - p.z);
+    if (z > 0 && (!best || z < best.z)) best = { n:L.n, w:L.w, sw:L.sw, z, ang:((Math.atan2(q.z - p.z, q.x - p.x) * 180 / Math.PI) + 450) % 180 - 90 };
+  }));
+  if (!best) return null;
+  best.ang = Math.abs(best.ang);   // 정면과 도로가 평행이면 0°
+  best.ok = best.n === b.road && best.ang <= 3 && Math.abs(best.z - (b.D / 2 + .5 + best.w / 2)) <= 1.5;
+  return best;
+}
+// ── 도로 형상 끝 ──
+
+// 3D는 바닥 크기 · 층수 · 층고로 만든 상자 모델이고, 호실 칸은 위 layoutFloor가 전용면적으로 계산한 배치입니다. 도로는 위 실제 도로 형상, 주변 건물은 도로를 피한 무작위 배치입니다.
 // 실제 서비스: 건축물대장(층별개요 · 전유부 · 전유공용면적) + 공실 매물 DB + 소상공인 상가정보로 층/호실을 채웁니다.
 
 const COL = { op:'#7fb2f0', part:'#fdba74', vac:'#f97316', res:'#d6dde6', park:'#c4ccd8', sel:'#6366f1' };
@@ -745,12 +945,13 @@ const WIN_TEX = windowTexture();
 
 // ── 상태 ─────────────────────────────────────────────────────
 const params = new URLSearchParams(location.search);
-const state = { s: BUILDINGS[params.get('s')] ? params.get('s') : 'A', lv:null, no:null, mode:'normal', nb:true, lb:true };
+const state = { s: BUILDINGS[params.get('s')] ? params.get('s') : 'A', lv:null, no:null, mode:'normal', nb:true, lb:true, rd:true };
 let world = null;          // 현재 건물 루트
 let floors = [];           // {data, group, vol, mat, edges, slab, label, baseY, off, units:[]}
 let labels = [];           // CSS2DObject 목록 (교체 시 수동 제거)
 let unitObjs = [];         // 선택 층 호실 메쉬
 let neighbors = null;
+let roads = null;          // { group, lines, front, junctions, crosswalks }
 let ground = null;
 let tween = null;
 
@@ -771,6 +972,179 @@ function clearLabels(list){
 }
 
 function prng(seed){ let a = seed; return () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// ── 도로 그리기: 중심선 → 보도 · 차도 띠, 중앙선 · 차선, 교차로 횡단보도, 도로 이름 ─────────────
+const ROAD_COL = { walk:'#d4dae2', car:'#a9b2bf', yellow:'#f2c230', white:'#ffffff' };
+function segDist(px, pz, a, b){
+  const dx = b.x - a.x, dz = b.z - a.z, L = dx * dx + dz * dz || 1e-9;
+  const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (pz - a.z) * dz) / L));
+  return { d:Math.hypot(px - a.x - t * dx, pz - a.z - t * dz), t };
+}
+// 선 위 위치 s(m) ↔ 점
+function arcOf(pts){ const c = [0]; for (let i = 1; i < pts.length; i++) c.push(c[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z)); return c; }
+function projectS(pts, cum, x, z){
+  let best = { d:Infinity, s:0 };
+  for (let i = 0; i < pts.length - 1; i++){ const r = segDist(x, z, pts[i], pts[i + 1]); if (r.d < best.d) best = { d:r.d, s:cum[i] + r.t * (cum[i + 1] - cum[i]) }; }
+  return best;
+}
+function buildRoads(b){
+  const lines = roadLines(b).filter(L => L.pts.length > 1);
+  lines.forEach(L => { L.cum = arcOf(L.pts); L.len = L.cum[L.cum.length - 1]; L.cw = L.w / 2 - L.sw; L.gaps = []; });
+  const tri = { walk:[], car:[], yellow:[], white:[] };
+  const quad = (arr, a, b2, c, d) => arr.push(a, b2, c, a, c, d);
+  const disc = (arr, x, z, r) => { for (let i = 0; i < 12; i++){ const a0 = i / 12 * Math.PI * 2, a1 = (i + 1) / 12 * Math.PI * 2; arr.push([x, z], [x + Math.cos(a0) * r, z + Math.sin(a0) * r], [x + Math.cos(a1) * r, z + Math.sin(a1) * r]); } };
+  const band = (arr, pts, hw) => {
+    if (hw <= 0) return;
+    for (let i = 0; i < pts.length - 1; i++){
+      const p = pts[i], q = pts[i + 1], dx = q.x - p.x, dz = q.z - p.z, L = Math.hypot(dx, dz); if (L < 1e-3) continue;
+      const nx = -dz / L * hw, nz = dx / L * hw;
+      quad(arr, [p.x + nx, p.z + nz], [q.x + nx, q.z + nz], [q.x - nx, q.z - nz], [p.x - nx, p.z - nz]);
+    }
+    pts.forEach(p => disc(arr, p.x, p.z, hw));   // 꺾인 곳 · 끝을 둥글게 메움
+  };
+  // 선 위 [s0, s1] 구간을 옆으로 o만큼 띄운 폭 lw 띠
+  const strip = (arr, L, s0, s1, o, lw) => {
+    for (let i = 0; i < L.pts.length - 1; i++){
+      const a = Math.max(s0, L.cum[i]), c = Math.min(s1, L.cum[i + 1]); if (c - a < .05) continue;
+      const p = L.pts[i], q = L.pts[i + 1], seg = L.cum[i + 1] - L.cum[i], dx = (q.x - p.x) / seg, dz = (q.z - p.z) / seg;
+      const P = t => [p.x + dx * (t - L.cum[i]), p.z + dz * (t - L.cum[i])], nx = -dz, nz = dx;
+      const [ax, az] = P(a), [cx, cz] = P(c), h0 = o - lw / 2, h1 = o + lw / 2;
+      quad(arr, [ax + nx * h0, az + nz * h0], [cx + nx * h0, cz + nz * h0], [cx + nx * h1, cz + nz * h1], [ax + nx * h1, az + nz * h1]);
+    }
+  };
+  // 교차로: 한 도로의 꼭짓점이 다른 도로 선 1m 안에 있고, 그 점에서 갈래가 3개 이상인 곳
+  const J = new Map();
+  lines.forEach((L, i) => L.pts.forEach(p => lines.forEach((M, j) => {
+    if (i === j) return;
+    for (let k = 0; k < M.pts.length - 1; k++) if (segDist(p.x, p.z, M.pts[k], M.pts[k + 1]).d < 1){
+      const key = `${Math.round(p.x / 1.5)},${Math.round(p.z / 1.5)}`;
+      if (!J.has(key)) J.set(key, { x:p.x, z:p.z, ids:new Set() });
+      J.get(key).ids.add(i).add(j); break;
+    }
+  })));
+  const junctions = [], crosswalks = [];
+  J.forEach(j => {
+    const at = [...j.ids].map(i => { const L = lines[i], r = projectS(L.pts, L.cum, j.x, j.z); return { L, s:r.s }; });
+    const arms = at.reduce((n, a) => n + (a.s > 1.5) + (a.s < a.L.len - 1.5), 0);
+    if (arms < 3) return;                                 // 길이 이어지기만 한 곳(이름 · 타일 경계)은 교차로가 아님
+    junctions.push(j);
+    at.forEach(a => {
+      const others = at.filter(o => o.L !== a.L);
+      const r = Math.max(...others.map(o => o.L.w / 2)) + 1;
+      a.L.gaps.push([a.s - r, a.s + r]);
+      // 횡단보도: 차도 6.5m 이상 도로가 서비스 도로가 아닌 길과 만나는 교차로의 각 갈래
+      if (a.L.cw * 2 >= 6.5 && a.L.c !== 'service' && others.some(o => o.L.c !== 'service' && o.L.c !== 'pedestrian'))
+        [a.s - r - 2, a.s + r + 2].filter(s0 => s0 > 2 && s0 < a.L.len - 2).forEach(s0 => crosswalks.push({ L:a.L, s:s0 }));
+    });
+  });
+  // 띠 쌓기
+  lines.forEach(L => { if (L.sw > 0) band(tri.walk, L.pts, L.w / 2); if (L.c !== 'pedestrian') band(tri.car, L.pts, L.cw); });
+  // 노면 표시: 교차로 안은 비움
+  const visible = L => {
+    const g = L.gaps.map(([a, c]) => [Math.max(0, a), Math.min(L.len, c)]).sort((x, y) => x[0] - y[0]); const out = []; let s0 = 0;
+    g.forEach(([a, c]) => { if (a > s0) out.push([s0, a]); s0 = Math.max(s0, c); }); if (s0 < L.len) out.push([s0, L.len]);
+    return out.filter(([a, c]) => c - a > 1);
+  };
+  const dashed = (arr, L, o, lw) => visible(L).forEach(([a, c]) => { for (let t = a; t < c; t += 8) strip(arr, L, t, Math.min(t + 3, c), o, lw); });   // 3m 선 · 5m 띄움
+  lines.forEach(L => {
+    if (L.c === 'pedestrian' || L.c === 'service') return;
+    const carW = L.cw * 2;
+    if (!L.ow && carW >= 5.5){
+      if (carW >= 12) visible(L).forEach(([a, c]) => { strip(tri.yellow, L, a, c, -.18, .15); strip(tri.yellow, L, a, c, .18, .15); });   // 복선 중앙선
+      else visible(L).forEach(([a, c]) => strip(tri.yellow, L, a, c, 0, .15));
+      const n = Math.floor(L.cw / 3.1);                     // 한 방향 차로 수
+      for (let k = 1; k < n; k++) [1, -1].forEach(sg => dashed(tri.white, L, sg * k * L.cw / n, .15));
+    } else if (L.ow){
+      const n = Math.floor(carW / 3.1);
+      for (let k = 1; k < n; k++) dashed(tri.white, L, -L.cw + k * carW / n, .15);
+    }
+  });
+  crosswalks.forEach(({ L, s }) => { for (let o = -L.cw + .45; o < L.cw - .3; o += .9) strip(tri.white, L, s - 1.5, s + 1.5, o, .45); });
+  // 삼각형 → 메쉬(높이를 조금씩 달리 + polygonOffset 으로 겹침 깜빡임 방지)
+  const group = new THREE.Group(); group.name = 'roads';
+  const mesh = (arr, color, y, off, lit = true) => {
+    if (!arr.length) return;
+    // 모든 삼각형이 위(+y)를 보게 꼭짓점 순서를 맞춤 — 뒤집힌 면이 어둡게 칠해지지 않도록
+    for (let i = 0; i < arr.length; i += 3){
+      const [A, B, C] = [arr[i], arr[i + 1], arr[i + 2]];
+      if ((B[1] - A[1]) * (C[0] - A[0]) - (B[0] - A[0]) * (C[1] - A[1]) < 0){ arr[i + 1] = C; arr[i + 2] = B; }
+    }
+    const pos = new Float32Array(arr.length * 3), nor = new Float32Array(arr.length * 3);
+    arr.forEach(([x, z], i) => { pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z; nor[i * 3 + 1] = 1; });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    const opt = { color, polygonOffset:true, polygonOffsetFactor:off, polygonOffsetUnits:off };
+    const m = new THREE.Mesh(g, lit ? new THREE.MeshStandardMaterial({ ...opt, roughness:1 }) : new THREE.MeshBasicMaterial(opt));
+    m.receiveShadow = lit; group.add(m);
+  };
+  mesh(tri.walk, ROAD_COL.walk, .04, -1); mesh(tri.car, ROAD_COL.car, .08, -2); mesh(tri.yellow, ROAD_COL.yellow, .11, -3, false); mesh(tri.white, ROAD_COL.white, .11, -3, false);
+  // 도로 이름: 이름마다 건물에서 25~230m 사이 가장 가까운 곳 하나, 가까운 순 9개 + 앞 도로
+  const front = frontRoad(b, lines);
+  const byName = new Map();
+  lines.forEach(L => { if (!L.n) return; L.pts.forEach((p, i) => { const q = L.pts[i + 1] || p, m = { x:(p.x + q.x) / 2, z:(p.z + q.z) / 2 }, d = Math.hypot(m.x, m.z);
+    if (d < 25 || d > 230 || Math.abs(m.x) > 380 || Math.abs(m.z) > 380) return; const o = byName.get(L.n); if (!o || d < o.d) byName.set(L.n, { ...m, d }); }); });
+  [...byName.entries()].filter(([n]) => !front || n !== front.n).sort((a, c) => a[1].d - c[1].d).slice(0, 9).forEach(([n, p]) => {
+    const el = document.createElement('div'); el.className = 'road-label nm'; el.textContent = n;
+    addLabel(group, el, new THREE.Vector3(p.x, .3, p.z));
+  });
+  if (front){
+    const el = document.createElement('div'); el.className = 'road-label front'; el.textContent = `${front.n} · 앞 도로 · 폭 ${front.w}m`;
+    const FL = lines.filter(L => L.n === front.n), tx = -b.W * 1.3;
+    let best = null; FL.forEach(L => L.pts.forEach((p, i) => { const q = L.pts[i + 1]; if (!q) return; const r = segDist(tx, front.z, p, q); if (!best || r.d < best.d) best = { d:r.d, x:p.x + (q.x - p.x) * r.t, z:p.z + (q.z - p.z) * r.t }; }));
+    if (best) addLabel(group, el, new THREE.Vector3(best.x, .3, best.z));
+  }
+  return { group, lines, front, junctions, crosswalks };
+}
+// 상자(가운데 x, z · 가로 w · 깊이 d)가 모든 도로 띠에서 pad 이상 떨어져 있는지
+function clearOfRoads(lines, x, z, w, d, pad){
+  return lines.every(L => L.pts.every((p, i) => {
+    const q = L.pts[i + 1]; if (!q) return true;
+    const hw = L.w / 2 + pad, minX = Math.min(p.x, q.x) - hw, maxX = Math.max(p.x, q.x) + hw, minZ = Math.min(p.z, q.z) - hw, maxZ = Math.max(p.z, q.z) + hw;
+    if (x + w / 2 < minX || x - w / 2 > maxX || z + d / 2 < minZ || z - d / 2 > maxZ) return true;
+    const L2 = Math.hypot(q.x - p.x, q.z - p.z), n = Math.max(1, Math.ceil(L2));
+    for (let k = 0; k <= n; k++){
+      const sx = p.x + (q.x - p.x) * k / n, sz = p.z + (q.z - p.z) * k / n;
+      if (Math.hypot(Math.max(Math.abs(sx - x) - w / 2, 0), Math.max(Math.abs(sz - z) - d / 2, 0)) < hw) return false;
+    }
+    return true;
+  }));
+}
+// 위에서 본 도로 지도(북쪽 위) — 카카오맵과 같은 방향으로 눈 비교
+function roadMapSvg(b, R){
+  const V = 110, toEN = (x, z) => localToEN(b, x, z), f = v => v.toFixed(1);
+  const path = pts => pts.map((p, i) => { const q = toEN(p.x, p.z); return `${i ? 'L' : 'M'}${f(q.e)} ${f(-q.n)}`; }).join('');
+  const near = R.lines.filter(L => L.pts.some(p => Math.abs(p.x) < V * 1.6 && Math.abs(p.z) < V * 1.6));
+  const fp = [[-b.W / 2, -b.D / 2], [b.W / 2, -b.D / 2], [b.W / 2, b.D / 2], [-b.W / 2, b.D / 2]].map(([x, z]) => toEN(x, z));
+  const fr = toEN(0, b.D / 2 + 3), ctr = R.front ? toEN(0, R.front.z) : null;
+  const names = new Map(); near.forEach(L => { if (!L.n) return; L.pts.forEach(p => { const q = toEN(p.x, p.z), d = Math.hypot(q.e, q.n); if (d > 20 && d < V * .9 && (!names.has(L.n) || d < names.get(L.n).d)) names.set(L.n, { e:Math.max(-V + 24, Math.min(V - 24, q.e)), n:Math.max(-V + 12, Math.min(V - 8, q.n)), d }); }); });
+  return `<svg class="rmap" viewBox="${-V} ${-V} ${V * 2} ${V * 2}" role="img" aria-label="위에서 본 주변 도로와 건물 위치 (북쪽이 위)">
+    <rect x="${-V}" y="${-V}" width="${V * 2}" height="${V * 2}" fill="#eef2f7"/>
+    ${near.filter(L => L.sw > 0).map(L => `<path d="${path(L.pts)}" fill="none" stroke="${ROAD_COL.walk}" stroke-width="${L.w}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+    ${near.filter(L => L.c !== 'pedestrian').map(L => `<path d="${path(L.pts)}" fill="none" stroke="${L.n === b.road ? '#8b95a5' : ROAD_COL.car}" stroke-width="${L.cw * 2}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+    <polygon points="${fp.map(q => `${f(q.e)},${f(-q.n)}`).join(' ')}" fill="#6366f1" stroke="#312e81" stroke-width="1"/>
+    <line x1="0" y1="0" x2="${f(fr.e)}" y2="${f(-fr.n)}" stroke="#312e81" stroke-width="1.2"/>
+    ${ctr ? `<circle cx="${f(ctr.e)}" cy="${f(-ctr.n)}" r="2.2" fill="#dc2626"/>` : ''}
+    ${[...names.entries()].sort((a, c) => a[1].d - c[1].d).slice(0, 6).map(([n, q]) => `<text x="${f(q.e)}" y="${f(-q.n)}" font-size="${n === b.road ? 8.5 : 7}" font-weight="${n === b.road ? 800 : 600}" fill="#1e293b" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2.4">${n}</text>`).join('')}
+    <g transform="translate(${V - 14} ${-V + 16})"><path d="M0 -10 L4 2 L0 0 L-4 2 Z" fill="#dc2626"/><text y="11" font-size="8" font-weight="800" text-anchor="middle" fill="#1e293b">N</text></g>
+    <g transform="translate(${-V + 8} ${V - 10})"><line x1="0" y1="0" x2="50" y2="0" stroke="#1e293b" stroke-width="1.5"/><text x="25" y="-4" font-size="7" text-anchor="middle" fill="#1e293b">50m</text></g>
+  </svg>`;
+}
+function renderRoadChk(){
+  const b = BUILDINGS[state.s], R = roads, F = R && R.front;
+  const lat = b.ll[0], lng = b.ll[1], named = new Set(R ? R.lines.filter(L => L.n).map(L => L.n) : []).size;
+  $('#roadChk').innerHTML = `
+    <div class="sec-h"><h3>도로 · 위치 확인</h3><small>북쪽이 위 · 반경 110m</small></div>
+    ${R ? roadMapSvg(b, R) : ''}
+    <ul class="anote">
+      ${F ? `<li>앞 도로 <b>${F.n || '이름 없음'}</b> · 폭 ${F.w}m (보도 포함 추정) · 건물 정면 ${dirName(b.face)}향 ${b.face}°</li>
+      <li>정면에서 도로 중심선(빨간 점)까지 ${F.z.toFixed(1)}m · 정면과 도로 각도 차 ${F.ang.toFixed(1)}° ${F.ok ? '<b class="rok">✓ 실제 도로와 맞음</b>' : '<b class="rbad">✗ 위치 · 방향 다시 확인</b>'}</li>` : '<li><b class="rbad">앞 도로를 찾지 못함 — 좌표 · 방위 확인 필요</b></li>'}
+      <li>3D에 그린 도로 ${R ? R.lines.length : 0}구간 · 이름 있는 길 ${named}개 · 교차로 ${R ? R.junctions.length : 0}곳 · 횡단보도 ${R ? R.crosswalks.length : 0}곳 (반경 ${ROAD_SRC.r}m)</li>
+    </ul>
+    <div class="rlinks">
+      <a class="btn sm" href="https://map.kakao.com/link/map/${encodeURIComponent(b.name)},${lat},${lng}" target="_blank" rel="noopener noreferrer">카카오맵에서 위치 비교 ↗</a>
+      <a class="btn sm" href="https://map.kakao.com/link/roadview/${lat},${lng}" target="_blank" rel="noopener noreferrer">카카오 로드뷰 ↗</a>
+    </div>
+    <p class="rsrc">도로: ${ROAD_SRC.by} (<a href="${ROAD_SRC.licUrl}" target="_blank" rel="noopener noreferrer">${ROAD_SRC.lic}</a>) · ${ROAD_SRC.via} ${ROAD_SRC.date}. 폭 · 차로 · 횡단보도는 도로 등급으로 추정한 그림입니다. 카카오맵은 화면 · 결과를 저장할 수 없어 같은 좌표를 여는 링크로 눈 비교만 합니다. 실서비스는 도로명주소 전자지도 실폭도로 · 도로중심선으로 바꿉니다.</p>`;
+}
 
 function buildWorld(key){
   const b = BUILDINGS[key];
@@ -800,20 +1174,9 @@ function buildWorld(key){
     world.add(pit);
   }
 
-  // 도로: 건물 앞면(+z)에 큰길, 오른쪽(+x)에 골목. 실제 방위는 b.face (나침반이 맞춰 돕니다)
-  const roadMat = new THREE.MeshStandardMaterial({ color:'#c9d1dc', roughness:1 });
-  const lineMat = new THREE.MeshBasicMaterial({ color:'#ffffff' });
-  const frontZ = D/2 + 8, sideX = W/2 + 9;
-  const r1 = new THREE.Mesh(new THREE.PlaneGeometry(800, 12), roadMat); r1.rotation.x = -Math.PI/2; r1.position.set(0,.02,frontZ); r1.receiveShadow = true; world.add(r1);
-  const r2 = new THREE.Mesh(new THREE.PlaneGeometry(7, 800), roadMat); r2.rotation.x = -Math.PI/2; r2.position.set(sideX,.025,0); r2.receiveShadow = true; world.add(r2);
-  for (let x = -390; x < 390; x += 9){
-    const dash = new THREE.Mesh(new THREE.PlaneGeometry(4, .3), lineMat); dash.rotation.x = -Math.PI/2; dash.position.set(x,.03,frontZ); world.add(dash);
-  }
-  const cross = new THREE.Group();
-  for (let i = 0; i < 7; i++){ const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 5), lineMat); s.rotation.x = -Math.PI/2; s.position.set(-6 + i*2, .035, frontZ); cross.add(s); }
-  world.add(cross);
-  const rl = document.createElement('div'); rl.className = 'road-label'; rl.textContent = `${b.road} (건물 ${dirName(b.face)}쪽)`;
-  addLabel(world, rl, new THREE.Vector3(-W*1.6, .2, frontZ));
+  // 도로: 실제 도로 중심선(OpenStreetMap)을 건물 좌표로 옮겨 그립니다. 방위는 b.face (나침반이 맞춰 돕니다)
+  roads = buildRoads(b); world.add(roads.group); roads.group.visible = state.rd;
+  const frontZ = roads.front ? roads.front.z : D / 2 + 8;
 
   // 주변 건물
   neighbors = new THREE.Group(); world.add(neighbors);
@@ -826,15 +1189,18 @@ function buildWorld(key){
     for (let gz = -R; gz <= R; gz++){
       const cx = gx * CELL, cz = gz * CELL;
       if (Math.abs(cx) < W/2 + 12 && Math.abs(cz) < D/2 + 12) continue;      // 대상 건물 주변 비움
-      if (Math.abs(cz - frontZ) < 16 || Math.abs(cx - sideX) < 13) continue; // 도로
       if (rnd() < .18) continue;
-      const w = 9 + rnd() * 9, d = 8 + rnd() * 9;
+      let w = 9 + rnd() * 9, d = 8 + rnd() * 9;
+      const ox = (rnd() - .5) * 4, oz = (rnd() - .5) * 4;
+      // 도로 띠(보도 포함)에서 1m 넘게 떨어지게 — 안 되면 작게 줄여 보고, 그래도 안 되면 빈 땅
+      while (w > 5 && !clearOfRoads(roads.lines, cx + ox, cz + oz, w, d, 1)){ w *= .75; d *= .75; }
+      if (!clearOfRoads(roads.lines, cx + ox, cz + oz, w, d, 1)) continue;
       let h = (6 + rnd() * 18 + (rnd() < .15 ? 20 : 0)) * tall;
       // 기본 카메라 방향(도로 쪽 앞-오른쪽) 길 건너편은 저층으로 — 대상 건물을 가리지 않게
       if (cx > -W && cz > frontZ && Math.hypot(cx, cz) < 170) h = Math.min(h, 7);
       const geo = new THREE.BoxGeometry(w, h, d);
       const m = new THREE.Mesh(geo, nbMat[Math.floor(rnd() * nbMat.length)]);
-      m.position.set(cx + (rnd() - .5) * 4, h/2, cz + (rnd() - .5) * 4);
+      m.position.set(cx + ox, h/2, cz + oz);
       m.castShadow = true; m.receiveShadow = true;
       const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat);
       m.add(e);
@@ -1141,6 +1507,7 @@ function renderBuilding(){
     <ul class="anote">${notes.map(x => `<li>${x}</li>`).join('')}</ul>`;
   $('#aiNote').innerHTML = `<b>🤖 AI 한 줄 분석</b>${b.ai}`;
   renderLedger();
+  renderRoadChk();
 }
 
 const LST = { ok:['일치', 'ok'], near:['근접 (3~5%)', 'near'], diff:['면적 차이', 'diff'], miss:['대장에 없음', 'diff'], extra:['3D에 없음', 'diff'] };
@@ -1277,6 +1644,7 @@ $('#modeSeg').addEventListener('click', e => {
     tween = { t0:performance.now(), dur:900, fT:controls.target.clone(), tT:new THREE.Vector3(0, H * .55, 0), fP:camera.position.clone(), tP:new THREE.Vector3(0, H * .55, 0).add(dir.multiplyScalar(dist * 1.15)) };
   }
 });
+$('#tgRd').onclick = e => { state.rd = !state.rd; e.currentTarget.classList.toggle('on', state.rd); roads.group.visible = state.rd; };
 $('#tgNb').onclick = e => { state.nb = !state.nb; e.currentTarget.classList.toggle('on', state.nb); neighbors.visible = state.nb; };
 $('#tgLb').onclick = e => { state.lb = !state.lb; e.currentTarget.classList.toggle('on', state.lb); applyVisuals(); };
 $('#tgReset').onclick = () => {
