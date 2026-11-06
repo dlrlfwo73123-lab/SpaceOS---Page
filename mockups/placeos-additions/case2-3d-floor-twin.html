@@ -1112,10 +1112,14 @@ function clearOfRoads(lines, x, z, w, d, pad){
 function roadMapSvg(b, R){
   const V = 110, toEN = (x, z) => localToEN(b, x, z), f = v => v.toFixed(1);
   const path = pts => pts.map((p, i) => { const q = toEN(p.x, p.z); return `${i ? 'L' : 'M'}${f(q.e)} ${f(-q.n)}`; }).join('');
-  const near = R.lines.filter(L => L.pts.some(p => Math.abs(p.x) < V * 1.6 && Math.abs(p.z) < V * 1.6));
+  // 꼭짓점이 모두 멀어도 선분이 가까이 지나가면 넣는다(긴 직선 도로)
+  const near = R.lines.filter(L => L.pts.some((p, i) => L.pts[i + 1] && segDist(0, 0, p, L.pts[i + 1]).d < V * 1.5));
   const fp = [[-b.W / 2, -b.D / 2], [b.W / 2, -b.D / 2], [b.W / 2, b.D / 2], [-b.W / 2, b.D / 2]].map(([x, z]) => toEN(x, z));
   const fr = toEN(0, b.D / 2 + 3), ctr = R.front ? toEN(0, R.front.z) : null;
-  const names = new Map(); near.forEach(L => { if (!L.n) return; L.pts.forEach(p => { const q = toEN(p.x, p.z), d = Math.hypot(q.e, q.n); if (d > 20 && d < V * .9 && (!names.has(L.n) || d < names.get(L.n).d)) names.set(L.n, { e:Math.max(-V + 24, Math.min(V - 24, q.e)), n:Math.max(-V + 12, Math.min(V - 8, q.n)), d }); }); });
+  // 이름 자리: 선을 6m 간격으로 짚어 건물에서 30m 넘게 떨어진 가장 가까운 곳(앞 도로는 55m 근처) — 꼭짓점이 드문 긴 직선 도로도 이름이 나오게
+  const names = new Map(); near.forEach(L => { if (!L.n) return; L.pts.forEach((p, i) => { const r = L.pts[i + 1]; if (!r) return; const n = Math.max(1, Math.ceil(Math.hypot(r.x - p.x, r.z - p.z) / 6));
+    for (let k = 0; k <= n; k++){ const q = toEN(p.x + (r.x - p.x) * k / n, p.z + (r.z - p.z) * k / n), d = Math.hypot(q.e, q.n), sc = L.n === b.road ? Math.abs(d - 55) : d;
+      if (d > 30 && Math.abs(q.e) < V - 20 && Math.abs(q.n) < V - 10 && (!names.has(L.n) || sc < names.get(L.n).sc)) names.set(L.n, { e:q.e, n:q.n, d, sc }); } }); });
   return `<svg class="rmap" viewBox="${-V} ${-V} ${V * 2} ${V * 2}" role="img" aria-label="위에서 본 주변 도로와 건물 위치 (북쪽이 위)">
     <rect x="${-V}" y="${-V}" width="${V * 2}" height="${V * 2}" fill="#eef2f7"/>
     ${near.filter(L => L.sw > 0).map(L => `<path d="${path(L.pts)}" fill="none" stroke="${ROAD_COL.walk}" stroke-width="${L.w}" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
@@ -1123,7 +1127,7 @@ function roadMapSvg(b, R){
     <polygon points="${fp.map(q => `${f(q.e)},${f(-q.n)}`).join(' ')}" fill="#6366f1" stroke="#312e81" stroke-width="1"/>
     <line x1="0" y1="0" x2="${f(fr.e)}" y2="${f(-fr.n)}" stroke="#312e81" stroke-width="1.2"/>
     ${ctr ? `<circle cx="${f(ctr.e)}" cy="${f(-ctr.n)}" r="2.2" fill="#dc2626"/>` : ''}
-    ${[...names.entries()].sort((a, c) => a[1].d - c[1].d).slice(0, 6).map(([n, q]) => `<text x="${f(q.e)}" y="${f(-q.n)}" font-size="${n === b.road ? 8.5 : 7}" font-weight="${n === b.road ? 800 : 600}" fill="#1e293b" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2.4">${n}</text>`).join('')}
+    ${[...names.entries()].sort((a, c) => (a[0] !== b.road) - (c[0] !== b.road) || a[1].d - c[1].d).filter(([, q], i, arr) => arr.slice(0, i).every(([, o]) => Math.abs(o.e - q.e) > 34 || Math.abs(o.n - q.n) > 10)).slice(0, 6).map(([n, q]) => `<text x="${f(q.e)}" y="${f(-q.n)}" font-size="${n === b.road ? 8.5 : 7}" font-weight="${n === b.road ? 800 : 600}" fill="#1e293b" text-anchor="middle" paint-order="stroke" stroke="#fff" stroke-width="2.4">${n}</text>`).join('')}
     <g transform="translate(${V - 14} ${-V + 16})"><path d="M0 -10 L4 2 L0 0 L-4 2 Z" fill="#dc2626"/><text y="11" font-size="8" font-weight="800" text-anchor="middle" fill="#1e293b">N</text></g>
     <g transform="translate(${-V + 8} ${V - 10})"><line x1="0" y1="0" x2="50" y2="0" stroke="#1e293b" stroke-width="1.5"/><text x="25" y="-4" font-size="7" text-anchor="middle" fill="#1e293b">50m</text></g>
   </svg>`;
