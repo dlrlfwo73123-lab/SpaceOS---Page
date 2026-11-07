@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { VacancyMarker } from '@/lib/marketData';
 import { getMarketStats, getRecommendations } from '@/lib/marketData';
+import { SHOW_VACANCY_RATE } from '@/lib/displayConfig';
 
 type Props = {
   vacancy: VacancyMarker;
@@ -192,12 +193,14 @@ export default function VacancyModal({ vacancy, guCode, guName, onClose }: Props
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">상권 지표 (동 기준)</p>
                 <div className="grid grid-cols-2 gap-2">
                   <InfoCell label="유동인구" value={`${Math.round(stats.floatingPop).toLocaleString()}명`} />
-                  <InfoCell
-                    label="공실률"
-                    value={`${stats.vacancyRate.toFixed(1)}%`}
-                    accent={stats.vacancyRate >= 15}
-                    good={stats.vacancyRate < 12}
-                  />
+                  {SHOW_VACANCY_RATE && (
+                    <InfoCell
+                      label="공실률"
+                      value={`${stats.vacancyRate.toFixed(1)}%`}
+                      accent={stats.vacancyRate >= 15}
+                      good={stats.vacancyRate < 12}
+                    />
+                  )}
                   <InfoCell label="인구밀도" value={`${Math.round(stats.popDensity).toLocaleString()}명/km²`} />
                   <InfoCell label="임대시세" value={`${stats.rentPer33.toFixed(1)}만/3.3㎡`} />
                 </div>
@@ -229,7 +232,7 @@ export default function VacancyModal({ vacancy, guCode, guName, onClose }: Props
                 <p className="text-[11px] font-semibold text-amber-700 mb-1">📍 {guName} {vacancy.dongName} 상권 분석</p>
                 <p className="text-[11px] text-amber-600 leading-relaxed">
                   일평균 유동인구 <b>{Math.round(stats.floatingPop).toLocaleString()}명</b>,
-                  공실률 <b>{stats.vacancyRate.toFixed(1)}%</b>,
+                  {SHOW_VACANCY_RATE && <>공실률 <b>{stats.vacancyRate.toFixed(1)}%</b>,{' '}</>}
                   임대시세 <b>{stats.rentPer33.toFixed(1)}만원/3.3㎡</b> 기준으로
                   다음 업종을 AI가 추천합니다. 아래 카드를 클릭하면 상세 분석을 확인하세요.
                 </p>
@@ -240,7 +243,7 @@ export default function VacancyModal({ vacancy, guCode, guName, onClose }: Props
               ))}
 
               <p className="text-[10px] text-slate-400 pt-1">
-                ※ AI 추천 점수는 유동인구·공실률·임대료·생존율 기반 알고리즘입니다. 실제 창업 결정 시 전문가 상담을 병행하세요.
+                ※ AI 추천 점수는 {SHOW_VACANCY_RATE ? '유동인구·공실률·임대료·생존율' : '유동인구·임대료·생존율 등 상권 지표'} 기반 알고리즘입니다. 실제 창업 결정 시 전문가 상담을 병행하세요.
               </p>
             </div>
           )}

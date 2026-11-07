@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { getStartupAreaRecs, type StartupAreaRec } from '@/lib/marketData';
 import { SEOUL_GU } from '@/lib/seoul';
+import { SHOW_VACANCY_RATE } from '@/lib/displayConfig';
 
 type Props = {
   guCode: string;
@@ -92,8 +93,7 @@ function AreaCard({ rec, onSelect }: { rec: StartupAreaRec; onSelect: () => void
         </div>
         <div className="flex items-center gap-3 text-right">
           <div className="hidden 2xl:block text-[11px] text-slate-500">
-            <span className="text-red-500 font-medium">공실 {rec.vacancyRate}%</span>
-            {' · '}
+            {SHOW_VACANCY_RATE && <><span className="text-red-500 font-medium">공실 {rec.vacancyRate}%</span>{' · '}</>}
             <span>{Math.round(rec.floatingPop).toLocaleString()}명</span>
             {' · '}
             <span>{rec.rentPer33}만원/3.3㎡</span>
@@ -105,11 +105,13 @@ function AreaCard({ rec, onSelect }: { rec: StartupAreaRec; onSelect: () => void
 
       {expanded && (
         <div className="border-t border-slate-100 px-4 py-3 bg-slate-50">
-          <div className="grid grid-cols-3 gap-3 mb-3 text-center">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">공실률</p>
-              <p className="text-sm font-bold text-red-600">{rec.vacancyRate}%</p>
-            </div>
+          <div className={`grid gap-3 mb-3 text-center ${SHOW_VACANCY_RATE ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            {SHOW_VACANCY_RATE && (
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">공실률</p>
+                <p className="text-sm font-bold text-red-600">{rec.vacancyRate}%</p>
+              </div>
+            )}
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">유동인구</p>
               <p className="text-sm font-bold text-slate-700">{Math.round(rec.floatingPop).toLocaleString()}명</p>
@@ -153,7 +155,7 @@ export default function StartupRecommendation({ guCode, guName, industryCode, do
 
   const title = guCode ? `${guName} 내 창업 지역 추천` : '서울 전체 창업 지역 추천';
   const subtitle = guCode
-    ? `${guName} 동별 유동인구·공실률·임대시세 종합 점수 기준 · 데모 데이터`
+    ? `${guName} 동별 ${SHOW_VACANCY_RATE ? '유동인구·공실률·임대시세' : '유동인구·임대시세 등'} 종합 점수 기준 · 데모 데이터`
     : '서울 25개 구 전체에서 상위 5개 동 추출 · 데모 데이터';
 
   return (
@@ -164,7 +166,8 @@ export default function StartupRecommendation({ guCode, guName, industryCode, do
           <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <ScoreFormula />
+          {/* 계산법은 공실률 점수를 그대로 드러내므로 공실률을 숨기면 함께 숨긴다(lib/displayConfig) */}
+          {SHOW_VACANCY_RATE && <ScoreFormula />}
           <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">Top {recs.length}</span>
         </div>
       </div>
@@ -180,7 +183,7 @@ export default function StartupRecommendation({ guCode, guName, industryCode, do
       </div>
 
       <p className="text-[10px] text-slate-400">
-        ※ 점수 = 유동인구(30점) + 저공실률(40점) + 저임대료(30점) 최대 100점. 데모 합성 데이터 기반이며 실제 창업 판단에 직접 사용하지 마십시오.
+        ※ {SHOW_VACANCY_RATE ? '점수 = 유동인구(30점) + 저공실률(40점) + 저임대료(30점) 최대 100점.' : '점수는 유동인구·임대시세 등 상권 지표를 합산한 값입니다(최대 100점).'} 데모 합성 데이터 기반이며 실제 창업 판단에 직접 사용하지 마십시오.
       </p>
     </section>
   );

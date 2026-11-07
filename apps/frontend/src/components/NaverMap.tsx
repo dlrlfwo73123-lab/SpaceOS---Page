@@ -4,6 +4,7 @@ import { SEOUL_GU } from '@/lib/seoul';
 import { loadNaverMaps, onNaverMapsAuthFailure } from '@/lib/loadNaverMaps';
 import { GU_POLYGONS, getAllDongCenters } from '@/lib/seoulBoundaries';
 import type { NaverMapInstance, NaverMarker, NaverInfoWindow, NaverPolygon } from '@/types/naver-maps';
+import { SHOW_VACANCY_RATE } from '@/lib/displayConfig';
 
 const GU_CENTER: Record<string, [number, number]> = {
   '11680': [37.5172, 127.0473], '11740': [37.5301, 127.1238],
@@ -36,6 +37,9 @@ function guColor(code: string) {
   const hex = GU_COLOR_LIST[idx < 0 ? 0 : idx % GU_COLOR_LIST.length];
   return hex.startsWith('#') ? hex : `#${hex}`;
 }
+
+// 공실률을 숨기면(lib/displayConfig) 동 마커를 공실률 색 대신 한 가지 색으로 그린다
+const NEUTRAL_DONG_COLOR = '#6366f1';
 
 function vacancyColor(rate: number): string {
   if (rate >= 15) return '#dc2626';
@@ -213,7 +217,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
 
     centers.forEach(({ code, name, center }) => {
       const stats = getMarketStats(guCode, code, industryCode);
-      const color = vacancyColor(stats.vacancyRate);
+      const color = SHOW_VACANCY_RATE ? vacancyColor(stats.vacancyRate) : NEUTRAL_DONG_COLOR;
       const isSelected = code === dongCode;
 
       const marker = new window.naver.maps.Marker({
@@ -234,7 +238,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
         infoWindowRef.current.setContent(`
           <div style="padding:10px 12px;min-width:160px;font-size:12px;line-height:1.6;">
             <p style="font-weight:700;margin-bottom:4px;">${gu?.name ?? ''} ${name}</p>
-            <p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>
+            ${SHOW_VACANCY_RATE ? `<p>공실률: <b style="color:${color}">${stats.vacancyRate.toFixed(1)}%</b></p>` : ''}
             <p>유동인구: ${Math.round(stats.floatingPop).toLocaleString()}명</p>
             <p>인구밀도: ${Math.round(stats.popDensity).toLocaleString()}명/km²</p>
             <p>임대시세: ${stats.rentPer33.toFixed(1)}만원/3.3㎡</p>
@@ -322,7 +326,7 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
             <p style="font-weight:700;margin-bottom:2px;">⭐ 창업 추천 ${label}위</p>
             <p style="color:#64748b;">${rec.guName} ${rec.dongName}</p>
             <p>추천 점수: <b>${rec.score}점</b></p>
-            <p>공실률: ${rec.vacancyRate}% · 임대: ${rec.rentPer33}만/3.3㎡</p>
+            <p>${SHOW_VACANCY_RATE ? `공실률: ${rec.vacancyRate}% · ` : ''}임대: ${rec.rentPer33}만/3.3㎡</p>
             <p>유동인구: ${Math.round(rec.floatingPop).toLocaleString()}명</p>
             ${vDongCode === rec.dongCode ? '<p style="color:#6366f1;font-size:10px;">← 현재 공실 위치</p>' : ''}
           </div>
@@ -374,10 +378,19 @@ export function NaverMap({ guCode, dongCode = '', industryCode = 'ALL', guDongs 
         <div className="absolute bottom-3 left-3 z-10 rounded-xl bg-white/90 px-3 py-2 shadow text-[11px] space-y-1 backdrop-blur-sm">
           {guCode ? (
             <>
-              <p className="font-semibold text-slate-500 mb-1">동별 공실 현황</p>
-              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실 (&lt;12%)</span>
-              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간 (12~15%)</span>
-              <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실 (&gt;15%)</span>
+              {SHOW_VACANCY_RATE ? (
+                <>
+                  <p className="font-semibold text-slate-500 mb-1">동별 공실 현황</p>
+                  <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#16a34a',border:'1px solid white'}}></span>저공실 (&lt;12%)</span>
+                  <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'1px solid white'}}></span>중간 (12~15%)</span>
+                  <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#dc2626',border:'1px solid white'}}></span>고공실 (&gt;15%)</span>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold text-slate-500 mb-1">동별 상권 현황</p>
+                  <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:NEUTRAL_DONG_COLOR,border:'1px solid white'}}></span>동 중심 (클릭 → 유동인구·임대시세)</span>
+                </>
+              )}
               <span className="flex items-center gap-1 text-slate-600 pt-1 border-t border-slate-100"><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:'#ef4444',border:'1px solid white'}}></span>공실 매물</span>
               <span className="flex items-center gap-1 text-slate-600"><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#f59e0b',border:'2px solid white'}}></span>창업 추천</span>
             </>

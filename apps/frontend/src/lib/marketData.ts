@@ -6,6 +6,7 @@
 //  - 인구밀도: 행정안전부 주민등록 인구통계 (https://jumin.mois.go.kr)
 // is_demo=true — 모든 수치는 시드 기반 합성이며 실제 시장 상황과 다를 수 있습니다.
 import { SEOUL_GU } from './seoul';
+import { SHOW_VACANCY_RATE } from './displayConfig';
 
 // ── 시드 기반 PRNG (mulberry32) — 같은 구/동/업종 조합은 항상 같은 값을 반환 ──
 function hashSeed(str: string): number {
@@ -435,7 +436,7 @@ export function getStartupAreaRecs(
     rentPer33: Math.round(stats.rentPer33 * 10) / 10,
     reasons: [
       `일평균 유동인구 ${Math.round(stats.floatingPop).toLocaleString()}명으로 상권 유입 우수`,
-      `공실률 ${stats.vacancyRate.toFixed(1)}% — 안정적 상권 유지 중`,
+      ...(SHOW_VACANCY_RATE ? [`공실률 ${stats.vacancyRate.toFixed(1)}% — 안정적 상권 유지 중`] : []),
       `임대시세 3.3㎡당 ${stats.rentPer33.toFixed(1)}만원으로 초기 비용 부담 적정`,
     ],
   }));

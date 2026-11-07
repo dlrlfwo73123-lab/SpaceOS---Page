@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { getMarketStats, getMetricTrend, METRIC_LABELS, type MarketStats } from '@/lib/marketData';
+import { SHOW_VACANCY_RATE } from '@/lib/displayConfig';
 
 const MetricTrendChart = lazy(() => import('./MetricTrendChart'));
 
@@ -43,7 +44,7 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-4 gap-2">
+      <div className={`grid gap-2 ${SHOW_VACANCY_RATE ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <StatCard
           label="유동인구"
           value={Math.round(s.floatingPop).toLocaleString()}
@@ -53,15 +54,17 @@ export default function StatsPanel({ guCode = '11680', dongCode = '', industryCo
           trendGood="up"
           onClick={() => setActiveMetric('floatingPop')}
         />
-        <StatCard
-          label="공실률"
-          value={`${s.vacancyRate.toFixed(1)}%`}
-          sub="공실 비율"
-          color={s.vacancyRate >= 15 ? 'text-red-600' : s.vacancyRate >= 12 ? 'text-amber-600' : 'text-emerald-600'}
-          trend={s.vacancyRate >= 15 ? 'up' : 'down'}
-          trendGood="down"
-          onClick={() => setActiveMetric('vacancyRate')}
-        />
+        {SHOW_VACANCY_RATE && (
+          <StatCard
+            label="공실률"
+            value={`${s.vacancyRate.toFixed(1)}%`}
+            sub="공실 비율"
+            color={s.vacancyRate >= 15 ? 'text-red-600' : s.vacancyRate >= 12 ? 'text-amber-600' : 'text-emerald-600'}
+            trend={s.vacancyRate >= 15 ? 'up' : 'down'}
+            trendGood="down"
+            onClick={() => setActiveMetric('vacancyRate')}
+          />
+        )}
         <StatCard
           label="인구밀도"
           value={Math.round(s.popDensity).toLocaleString()}

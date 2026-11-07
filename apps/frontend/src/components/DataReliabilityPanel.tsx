@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SHOW_VACANCY_RATE } from '@/lib/displayConfig';
 
 type ReliabilityLevel = 'high' | 'medium' | 'low' | 'demo';
 
@@ -111,6 +112,16 @@ STEP 3 — 두 데이터 결합 → 공실 추정
   },
 ];
 
+// 공실률을 숨기면(lib/displayConfig) 공실률 행을 빼고, 추천 점수 행에서 공실률 산식을 드러내는 설명을 걷는다.
+const VISIBLE_METRICS: MetricInfo[] = SHOW_VACANCY_RATE ? METRICS : METRICS
+  .filter((m) => m.name !== '공실률')
+  .map((m) => m.name === '창업 추천 점수' ? {
+    ...m,
+    source: '내부 알고리즘 (유동인구·임대료 등 상권 지표 가중합산)',
+    note: '유동인구·임대료 등 상권 지표 단순 합산. 경쟁업체 수·배후인구 특성·접근성·계절성 미반영.',
+    improvePath: undefined,
+  } : m);
+
 const LEVEL_STYLE: Record<ReliabilityLevel, { label: string; bar: string; text: string; bg: string; border: string }> = {
   high:   { label: '높음', bar: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
   medium: { label: '중간', bar: 'bg-amber-400',   text: 'text-amber-700',   bg: 'bg-amber-50',  border: 'border-amber-200' },
@@ -192,8 +203,8 @@ function MetricRow({ m }: { m: MetricInfo }) {
 export default function DataReliabilityPanel() {
   const [open, setOpen] = useState(false);
 
-  const avgPct = Math.round(METRICS.reduce((s, m) => s + m.pct, 0) / METRICS.length);
-  const counts = METRICS.reduce((acc, m) => {
+  const avgPct = Math.round(VISIBLE_METRICS.reduce((s, m) => s + m.pct, 0) / VISIBLE_METRICS.length);
+  const counts = VISIBLE_METRICS.reduce((acc, m) => {
     acc[m.level] = (acc[m.level] ?? 0) + 1;
     return acc;
   }, {} as Record<ReliabilityLevel, number>);
@@ -238,7 +249,7 @@ export default function DataReliabilityPanel() {
             </div>
           </div>
 
-          {METRICS.map((m) => <MetricRow key={m.name} m={m} />)}
+          {VISIBLE_METRICS.map((m) => <MetricRow key={m.name} m={m} />)}
 
           <p className="text-[10px] text-slate-400 pt-1">
             실제 서비스 전환 시 공공데이터포털(data.go.kr) · 서울 열린데이터광장(data.seoul.go.kr) · 서울시 상권분석서비스(golmok.seoul.go.kr) API 연동이 필요합니다.
