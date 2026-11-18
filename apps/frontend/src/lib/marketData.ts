@@ -312,11 +312,11 @@ export function getRecommendations(
 
   const picked = [...candidates].sort(() => rng() - 0.5).slice(0, 3);
 
-  return picked.map((code, idx) => {
+  // RNG는 선택 순서대로 소비되어야 같은 구/동/업종에서 동일한 값이 나온다 — 정렬은 값을 모두 생성한 뒤에 수행
+  const recs: Omit<Recommendation, 'rank'>[] = picked.map((code) => {
     const indStats = getMarketStats(guCode, dongCode, code);
     const score = Math.round(60 + rng() * 35 - (indStats.closeRate - 2) * 3);
     return {
-      rank: idx + 1,
       industry: industryNameOf(code),
       industryCode: code,
       score: Math.max(50, Math.min(99, score)),
@@ -336,6 +336,11 @@ export function getRecommendations(
       ],
     };
   });
+
+  // 점수 내림차순으로 정렬한 뒤 순위 부여 (getStartupAreaRecs와 동일한 방식, 동점은 선택 순서 유지)
+  recs.sort((a, b) => b.score - a.score);
+
+  return recs.map((rec, i) => ({ rank: i + 1, ...rec }));
 }
 
 // ── 공실 마커 데이터 (지도 표시용) ──
