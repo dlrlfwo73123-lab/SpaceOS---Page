@@ -32,6 +32,17 @@ function rngFor(...parts: string[]) {
   return mulberry32(hashSeed(parts.join('|')));
 }
 
+// 시드 기반 Fisher–Yates 셔플 — rng() 호출 횟수가 배열 길이로 고정되어 JS 엔진(브라우저)과 무관하게 같은 결과를 낸다.
+// `sort(() => rng() - 0.5)`는 비교 함수가 일관되지 않아 엔진의 정렬 구현에 따라 결과와 rng() 소비량이 달라지므로 사용하지 않는다.
+function seededShuffle<T>(items: readonly T[], rng: () => number): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 // 구별 기준치 (소상공인시장진흥공단 통계 기반 더미 베이스라인)
 const GU_BASE: Record<string, MarketStats> = {
   '11680': { floatingPop: 187400, popDensity: 18500, vacancyRate: 12.4, totalStores: 22310, openRate: 3.2, closeRate: 2.1, avgOpMonths: 38, revenueIdx: 168, survivalRate3y: 54.2, rentPer33: 18.5 },
@@ -310,13 +321,13 @@ export function getRecommendations(
   const candidates = ALL_INDUSTRY_CODES.filter((c) => c !== industryCode);
   const stats = getMarketStats(guCode, dongCode, industryCode);
 
-  const picked = [...candidates].sort(() => rng() - 0.5).slice(0, 3);
+  const picked = seededShuffle(candidates, rng).slice(0, 3);
 
-  return picked.map((code, idx) => {
+  // RNG는 선택 순서대로 소비되어야 같은 구/동/업종에서 동일한 값이 나온다 — 정렬은 값을 모두 생성한 뒤에 수행
+  const recs: Omit<Recommendation, 'rank'>[] = picked.map((code) => {
     const indStats = getMarketStats(guCode, dongCode, code);
     const score = Math.round(60 + rng() * 35 - (indStats.closeRate - 2) * 3);
     return {
-      rank: idx + 1,
       industry: industryNameOf(code),
       industryCode: code,
       score: Math.max(50, Math.min(99, score)),
@@ -336,6 +347,11 @@ export function getRecommendations(
       ],
     };
   });
+
+  // 점수 내림차순으로 정렬한 뒤 순위 부여 (getStartupAreaRecs와 동일한 방식, 동점은 선택 순서 유지)
+  recs.sort((a, b) => b.score - a.score);
+
+  return recs.map((rec, i) => ({ rank: i + 1, ...rec }));
 }
 
 // ── 공실 마커 데이터 (지도 표시용) ──
