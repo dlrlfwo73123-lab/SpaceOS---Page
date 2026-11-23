@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>창업 가능 공실 건물주 구분</title>
+<meta name="description" content="PlaceOS 서울 창업 가능 빈 층을 건물주가 직접 올린 공실(직거래 매물)과 자료로 찾은 빈 층으로 나눈 보고서">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/*__CSS__*/
+.olist{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.ocard b{display:block;font-size:15px;margin:6px 0 2px}
+.ocard p{margin:2px 0;font-size:13.5px}
+.ohead{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chips-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;width:100%}
+.chips-row .lbl{font-size:12.5px;color:var(--ink-3);font-weight:600}
+.tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.tiles.t3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">PlaceOS 데이터 리포트 · <!--TODAY--></p>
+    <h1>창업 가능 공실 <!--N-->개 중 건물주가 직접 올린 공실</h1>
+    <p class="lede">앞 보고서 「공실 창업 가능성 분류」에서 <b>창업 여력 있음</b> <!--A1-->개 · <b>창업 가능 · 여력 얇음</b> <!--A2-->개로 나온 빈 층을, 건물주가 PlaceOS 직거래로 <b>직접 올린 공실</b>(소유자 확인 · 게시 중)과 PlaceOS가 <b>자료로 찾은 빈 층</b>으로 나눴습니다.</p>
+    <ul class="basis">
+      <li>창업 가능 분류: 확인 빈 층 <!--ALLN-->개 중 <!--N-->개 (<!--TODAY--> 분류)</li>
+      <li>건물주 매물: PlaceOS 공개 API <code>/api/v1/direct/listings</code> · <!--AT--> · <!--CODE--></li>
+      <li>행위제한 토지이음 <!--EUM--></li>
+    </ul>
+    <p class="note-box"><b>이 보고서는 매물을 고르거나 추천하지 않습니다.</b> 건물주 매물은 공개된 조건을 그대로 옮기고, PlaceOS 직거래 원칙(성사 수수료 없음 · 조건을 대신 조율하지 않음)을 따릅니다. 앞 보고서: <a href="PlaceOS%20%EA%B3%B5%EC%8B%A4%20%EC%B0%BD%EC%97%85%20%EA%B0%80%EB%8A%A5%EC%84%B1%20%EB%B6%84%EB%A5%98.html">공실 창업 가능성 분류</a>(같은 폴더).</p>
+  </div>
+</header>
+<nav class="toc" aria-label="목차"><div class="wrap">
+  <a href="#status">지금 상태</a><a href="#diff">두 공실의 차이</a><a href="#rule">가르는 규칙</a><a href="#hubs">상권별</a><a href="#owners">건물주 매물</a><a href="#floors">층별 목록</a><a href="#method">한계 · 재현</a>
+</div></nav>
+<main class="wrap">
+
+<section id="status" aria-labelledby="h-status">
+  <h2 id="h-status">지금 상태</h2>
+  <p class="sub">건물주 매물은 보고서를 만든 시각에 PlaceOS 공개 API 에서 읽었습니다. 읽지 못하면 0 으로 세지 않고 「모름」으로 둡니다.</p>
+  <!--STATUS-->
+  <div style="margin-top:14px"><!--TILES--></div>
+</section>
+
+<section id="diff" aria-labelledby="h-diff">
+  <h2 id="h-diff">두 공실은 무엇이 다른가</h2>
+  <p class="sub">같은 「빈 층」이라도 누가 올렸는지에 따라 아는 것이 다릅니다.</p>
+  <div class="tablewrap">
+    <table class="cmp">
+      <thead><tr><th scope="col"></th><th scope="col"><span class="badge src own"><i class="sw" aria-hidden="true">⌂</i>건물주가 직접 올린 공실</span></th><th scope="col"><span class="badge src data"><i class="sw" aria-hidden="true">▦</i>PlaceOS가 자료로 찾은 빈 층</span></th></tr></thead>
+      <tbody>
+        <tr><td>누가 올리나</td><td>건물주 본인(또는 위임받은 대리인 · 관리단)</td><td>PlaceOS 가 공공 자료를 대조해 자동으로</td></tr>
+        <tr><td>비었다는 근거</td><td>건물주가 직접 올리고, 관리자가 인터넷등기소로 소유자를 확인한 뒤 게시</td><td>건축물대장 층별개요의 상업층 중 상가정보 점포 층 · 인허가로 확인되지 않는 층(현장 미확인)</td></tr>
+        <tr><td>단위</td><td>층 · 호실</td><td>층 전체(어느 호실이 비었는지는 모름)</td></tr>
+        <tr><td>임대 조건</td><td>보증금 · 월세 · 관리비 · 렌트프리 · 입주 가능일을 건물주가 적음</td><td>없음 — 수지의 임대료는 R-ONE 1층 임대료 × 층 계수 추정(실제 호가 아님)</td></tr>
+        <tr><td>배치도</td><td>건물주가 층 배치도 사진을 올리면 그 층이 실제 배치도로 바뀜</td><td>개략 배치도</td></tr>
+        <tr><td>창업자가 할 수 있는 것</td><td>입점 희망서 보내기 · 문의 · 방문 · 조건 제안서 · 팝업 신청(PlaceOS Posting)</td><td>위치 · 대장 · 수지 확인까지. PlaceOS 안에는 건물주와 이을 길이 없어 직접 확인해야 함</td></tr>
+        <tr><td>등급(법·용도 · 수지)</td><td>같은 건물 ID + 층이면 이번 분류를 그대로 붙이고, 수지는 건물주가 적은 월세로 다시 봐야 함</td><td>이번 분류 그대로(대장 · 행위제한 · 3-Tier 추정)</td></tr>
+        <tr><td>공개 범위</td><td>게시 중 + 소유자 확인 매물만 공개 · 소유자 이름 · 등기 정보는 비공개</td><td>PlaceOS Gold 산출물</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="rule" aria-labelledby="h-rule">
+  <h2 id="h-rule">어떻게 가르나</h2>
+  <p class="sub">건물주 매물의 <b>건물 ID + 층</b>을 빈 층 목록과 맞춥니다. PlaceOS 앱이 3D 트윈 · 자리 상세에서 「이 건물에 건물주가 직접 올린 매물이 있어요」를 붙이는 키와 같습니다.</p>
+  <!--CATS-->
+</section>
+
+<section id="hubs" aria-labelledby="h-hubs">
+  <h2 id="h-hubs">상권별</h2>
+  <p class="sub">창업 가능 층이 있거나 건물주 매물이 있는 상권입니다. 열 제목을 누르면 정렬합니다. 「건물주 매물(상권 전체)」은 이번 분류 밖 매물까지 센 값입니다.</p>
+  <div class="tablewrap">
+    <table id="hubTable">
+      <thead><tr>
+        <th scope="col"><button type="button" data-k="name">상권</button></th>
+        <th scope="col" class="r"><button type="button" data-k="total">창업 가능 층</button></th>
+        <th scope="col" class="r"><button type="button" data-k="c0"><i class="sw c0" aria-hidden="true" style="width:16px;height:16px;font-size:10px">✓</i>여력</button></th>
+        <th scope="col" class="r"><button type="button" data-k="c1"><i class="sw c1" aria-hidden="true" style="width:16px;height:16px;font-size:10px">!</i>얇음</button></th>
+        <th scope="col" class="r"><button type="button" data-k="o1">건물주 등록<br><span class="muted">겹친 층</span></button></th>
+        <th scope="col" class="r"><button type="button" data-k="own">건물주 매물<br><span class="muted">상권 전체</span></button></th>
+        <th scope="col" class="r"><button type="button" data-k="d">자료로 찾은<br><span class="muted">빈 층</span></button></th>
+      </tr></thead>
+      <tbody>
+      <!--HUBROWS-->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="owners" aria-labelledby="h-owners">
+  <h2 id="h-owners">건물주가 올린 매물</h2>
+  <p class="sub">공개 API 가 돌려준 매물 전부입니다(게시 중 + 소유자 확인). 창업 가능 층과 겹치는지, 아니면 왜 분류 밖인지 매물마다 적습니다.</p>
+  <!--OWNERS-->
+</section>
+
+<section id="floors" aria-labelledby="h-floors">
+  <h2 id="h-floors">창업 가능 층 목록</h2>
+  <p class="sub">출처(건물주 직접 등록 / 자료로 찾은 빈 층)와 등급으로 거르고 건물 이름으로 찾습니다. 줄을 누르면 건물주 등록 여부, 등급 이유, 지도 링크가 열립니다.</p>
+  <noscript><p class="empty">층별 목록은 자바스크립트가 켜져 있어야 보입니다. 위의 상태 · 상권별 표는 그대로 읽을 수 있습니다.</p></noscript>
+  <div class="filters" id="filters">
+    <div class="chips-row"><span class="lbl">출처</span><div class="chips" id="srcChips" role="group" aria-label="출처"></div></div>
+    <div class="chips-row"><span class="lbl">등급</span><div class="chips" id="clsChips" role="group" aria-label="등급"></div></div>
+    <div class="fl-row">
+      <select id="fHub" aria-label="상권"><option value="">상권 전체</option></select>
+      <select id="fFloor" aria-label="층"><option value="">층 전체</option><option value="1">1층</option><option value="2">2층</option><option value="3">3층 이상</option></select>
+      <select id="fInd" aria-label="들어갈 수 있는 업종"><option value="">업종 전체</option></select>
+      <select id="fReason" aria-label="이유"><option value="">이유 전체</option></select>
+      <select id="fSort" aria-label="정렬">
+        <option value="owner">건물주 등록 먼저</option>
+        <option value="cls">등급순</option>
+        <option value="margin">순익률 높은 순</option>
+        <option value="areaAsc">면적 작은 순</option>
+        <option value="areaDesc">면적 큰 순</option>
+        <option value="floor">층 낮은 순</option>
+      </select>
+      <input type="search" id="fQ" placeholder="건물 이름 · 대장 용도로 찾기" aria-label="건물 이름 · 대장 용도로 찾기">
+    </div>
+  </div>
+  <div class="resbar"><span id="resCount" aria-live="polite"></span><button type="button" class="btn" id="csvBtn">지금 목록 CSV 내려받기</button></div>
+  <ol class="flist" id="flist"></ol>
+  <div class="pager"><button type="button" class="btn" id="prevBtn">이전</button><span id="pageInfo"></span><button type="button" class="btn" id="nextBtn">다음</button></div>
+</section>
+
+<section id="method" aria-labelledby="h-method">
+  <h2 id="h-method">한계 · 재현</h2>
+  <div class="cols">
+    <div class="card"><h3 style="margin-top:0">이렇게 읽지 마세요</h3><ol class="lim">
+      <li><b>공개 API 는 게시 중 + 소유자 확인 매물만 돌려줍니다.</b> 초안 · 확인 대기 · 반려 매물은 세지 않습니다 — 소유자 확인 전 매물을 공개하지 않는 것이 PlaceOS 직거래 규칙입니다.</li>
+      <li><b>소유자 이름 · 등기 번호 · 연락처는 이 보고서에 없습니다.</b> 공개 API 에도 오지 않습니다.</li>
+      <li><b>매칭은 건물 ID + 층입니다.</b> 건물 ID 없이 주소만 있는 매물과 지하층 매물은 「분류 밖」으로 둡니다. 한 층에 호실 매물이 여럿이면 그 층에 모두 붙습니다.</li>
+      <li><b>등급은 앞 보고서의 추정 임대료 기준 그대로입니다.</b> 건물주 매물이 붙은 층은 건물주가 적은 월세로 수지를 다시 봐야 하고, 이 보고서는 그 재계산을 하지 않습니다(PlaceOS Posting 「이 조건이면 얼마나 팔아야 하나」에서 합니다).</li>
+      <li><b>매물을 고르거나 순위를 매기지 않습니다.</b> 건물주 매물과 자료로 찾은 빈 층을 나눠 보여 줄 뿐입니다.</li>
+      <li><b>숫자는 만든 시각 기준입니다.</b> 건물주 매물은 조회 시각, 분류는 Gold 2026-10-11 빌드 기준이라 다시 만들면 바뀔 수 있습니다.</li>
+      <li><b>허가 판정이 아닙니다.</b> 등급의 법·용도 판단은 건축물대장 · 토지이음 기재 기준입니다(앞 보고서와 같음).</li>
+    </ol></div>
+    <div class="card"><h3 style="margin-top:0">출처 · 재현</h3><ul class="srcs">
+      <li>창업 가능 분류: 앞 보고서와 같은 결과(<code>classify.py</code> → <code>out/</code>)</li>
+      <li>건물주 매물: <code>GET https://placeos.co.kr/api/v1/direct/listings</code> — 공개 목록(<code>apps/backend/app/api/v1/direct.py</code> · <code>services/direct_listings.card</code>)</li>
+      <li>매칭 키: <code>apps/frontend/src/components/twin/ownerListings.ts</code> · <code>flow/screens/Direct.tsx</code>(BuildingDirectCard)와 같은 건물 ID</li>
+      <li>재현: SpaceOS---Page 저장소 <code>integrations/placeos-vacancy-classification/</code> — <code>classify.py</code> 다음 <code>owner_split.py</code>. 건물주 매물이 생긴 뒤 다시 돌리면 이 파일이 채워집니다.</li>
+    </ul></div>
+  </div>
+</section>
+
+<footer>PlaceOS · 창업 가능 공실 건물주 직접 등록 구분 · <!--TODAY--> 생성(건물주 매물 조회 <!--AT-->).</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+<script type="application/json" id="payload">/*__DATA__*/</script>
+<script>/*__LIB__*/</script>
+<script>VacancyReport(JSON.parse(document.getElementById("payload").textContent), {classes:[0,1], csvName:"placeos-창업가능공실-건물주구분-"});</script>
+</body>
+</html>

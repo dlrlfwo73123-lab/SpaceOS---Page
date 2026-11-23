@@ -98,19 +98,18 @@ def seg(counts, total, kind="thin", label_prefix="") -> str:
     return f'<div class="seg {kind}" role="img" aria-label="{E(aria)}">{"".join(parts)}</div>'
 
 
-def build(dest: Path) -> None:
-    rows = json.loads((OUT / "rows.json").read_text(encoding="utf-8"))
-    hubs = json.loads((OUT / "hubs.json").read_text(encoding="utf-8"))
-    val = json.loads((OUT / "validation.json").read_text(encoding="utf-8"))
-    uci = json.loads((PLACEOS / "data/gold/page_use_check_inputs.json").read_text(encoding="utf-8"))
-    rates = json.loads((PLACEOS / "data/gold/platform_posting_cost_rates.json").read_text(encoding="utf-8"))["tiers"]
-    area = json.loads((PLACEOS / "data/gold/platform_posting_store_area.json").read_text(encoding="utf-8"))["tiers"]
-    floor_factor = json.loads((PLACEOS / "data/gold/platform_posting_inputs.json").read_text(encoding="utf-8")).get("floor_factor") or {}
-    zone_names = uci["zone_names"]
-    kp = {t: rates[t]["profit_rate"] for t in TI}
-    kr = {t: rates[t]["rent_rate"] for t in TI}
-    ox = {t: rates[t]["opex_rate_ex_rent"] for t in TI}
+def inline_assets(html: str) -> str:
+    """공용 CSS · 스크립트를 HTML 안에 넣는다(한 파일로 열리게)."""
+    return (html.replace("/*__CSS__*/", (HERE / "report.css").read_text(encoding="utf-8"))
+                .replace("/*__LIB__*/", (HERE / "report_lib.js").read_text(encoding="utf-8")))
 
+
+def encode_rows(rows: list, hubs: dict, uci: dict, ox: dict):
+    """분류 행 → 보고서용 압축 배열. 두 보고서(전체 분류 · 건물주 등록 구분)가 같은 모양을 쓴다.
+
+    반환: (hub_ids, out_rows, purps_l, zone_l, was_l, by_hub). out_rows[i] 는 rows[i] 와 같은 층이다.
+    """
+    zone_names = uci["zone_names"]
     hub_ids = list(hubs.keys())
     hub_ix = {h: i for i, h in enumerate(hub_ids)}
     purps_l, zone_l, was_l = [], [], []
@@ -153,6 +152,24 @@ def build(dest: Path) -> None:
             [bp(x) for x in m1], [bp(x) for x in mh], bp(need[0]) if need else None, need[1] if need else -1,
         ])
         by_hub[r["hub"]].append(r)
+
+    return hub_ids, out_rows, purps_l, zone_l, was_l, by_hub
+
+
+def build(dest: Path) -> None:
+    rows = json.loads((OUT / "rows.json").read_text(encoding="utf-8"))
+    hubs = json.loads((OUT / "hubs.json").read_text(encoding="utf-8"))
+    val = json.loads((OUT / "validation.json").read_text(encoding="utf-8"))
+    uci = json.loads((PLACEOS / "data/gold/page_use_check_inputs.json").read_text(encoding="utf-8"))
+    rates = json.loads((PLACEOS / "data/gold/platform_posting_cost_rates.json").read_text(encoding="utf-8"))["tiers"]
+    area = json.loads((PLACEOS / "data/gold/platform_posting_store_area.json").read_text(encoding="utf-8"))["tiers"]
+    floor_factor = json.loads((PLACEOS / "data/gold/platform_posting_inputs.json").read_text(encoding="utf-8")).get("floor_factor") or {}
+    zone_names = uci["zone_names"]
+    kp = {t: rates[t]["profit_rate"] for t in TI}
+    kr = {t: rates[t]["rent_rate"] for t in TI}
+    ox = {t: rates[t]["opex_rate_ex_rent"] for t in TI}
+
+    hub_ids, out_rows, purps_l, zone_l, was_l, by_hub = encode_rows(rows, hubs, uci, ox)
 
     n = len(rows)
     total_all = sum(int(v) for v in val["ho_all"].values())
@@ -411,7 +428,7 @@ def build(dest: Path) -> None:
         "<!--VALIDATION-->": validation, "<!--LIMITS-->": "".join(f"<li>{x}</li>" for x in limits),
         "<!--SOURCES-->": "".join(f"<li>{x}</li>" for x in sources),
     }
-    html = (HERE / "template.html").read_text(encoding="utf-8")
+    html = inline_assets((HERE / "template.html").read_text(encoding="utf-8"))
     for k, v in rep.items():
         html = html.replace(k, v)
     html = html.replace("/*__DATA__*/", data)

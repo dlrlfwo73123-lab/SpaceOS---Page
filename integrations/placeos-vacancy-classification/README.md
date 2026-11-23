@@ -34,10 +34,28 @@ PLACEOS_ROOT=/path/to/placeos .venv/bin/python classify.py          # → out/ro
 PLACEOS_ROOT=/path/to/placeos .venv/bin/python build_report.py "../../mockups/placeos-additions/PlaceOS 공실 창업 가능성 분류.html"
 ```
 
-2026-11-23 · placeos `main` 9fb2a2c 기준으로 돌리면 지금 파일과 바이트 단위로 같게 나온다(날짜가 바뀌면 생성일만 달라진다).
+2026-11-23 · placeos `main` 9fb2a2c 기준으로 돌리면 전체 분류 보고서는 지금 파일과 바이트 단위로 같게 나온다(날짜가 바뀌면 생성일만 달라진다). 건물주 구분 보고서는 조회 시각이 들어가 매번 조금 달라진다.
+
+## 건물주 직접 등록 구분 (owner_split.py)
+
+창업 가능 층(여력 있음 · 가능)을 **건물주가 PlaceOS 직거래로 직접 올린 공실**과 **자료로 찾은 빈 층**으로 나눈다.
+결과물: [`mockups/placeos-additions/PlaceOS 창업 가능 공실 건물주 등록 구분.html`](../../mockups/placeos-additions/PlaceOS%20%EC%B0%BD%EC%97%85%20%EA%B0%80%EB%8A%A5%20%EA%B3%B5%EC%8B%A4%20%EA%B1%B4%EB%AC%BC%EC%A3%BC%20%EB%93%B1%EB%A1%9D%20%EA%B5%AC%EB%B6%84.html)
+
+- 건물주 매물은 만들 때 공개 API `GET https://placeos.co.kr/api/v1/direct/listings` 에서 읽는다(게시 중 + 소유자 확인 매물만 온다 · 소유자 정보는 오지 않는다).
+- 매칭 키는 앱과 같은 **건물 ID + 층**. 창업 가능 층과 겹치면 「건물주 직접 등록」, 아니면 매물마다 「이번 분류 밖」 이유(조건부·어려움 층 · 추정 층 · 지하 · 다른 층 · 목록에 없는 건물 · 건물 ID 없음)를 적는다.
+- API 가 503(직거래 DB 표 없음)이면 0 이 아니라 「올릴 수 없는 상태」로, 실패하면 「모름」으로 적는다.
+- 2026-11-23 21:38 KST 기준 API 503 — 건물주 매물 0건, 창업 가능 6,243층 모두 「자료로 찾은 빈 층」.
+
+```bash
+PLACEOS_ROOT=/path/to/placeos .venv/bin/python owner_split.py "../../mockups/placeos-additions/PlaceOS 창업 가능 공실 건물주 등록 구분.html"
+# 오프라인 점검: 같은 모양({"items": [...]})의 파일로 — 보고서에 「파일에서 읽음」으로 적힌다
+PLACEOS_ROOT=/path/to/placeos .venv/bin/python owner_split.py /tmp/test.html --listings 점검용.json
+```
 
 ## 파일
 
 - `classify.py` — 층마다 use_check(6업종) · 3-Tier(1층 기준 · 이 층 기준)를 돌리고 등급과 이유 코드를 낸다
 - `build_report.py` — 요약 · 기준 · 이유 · 상권 표 · 검증은 정적 HTML 로, 층별 목록은 데이터(JSON)로 `template.html` 에 넣는다
-- `template.html` — 보고서 틀(CSS · 층별 목록 필터 · CSV 내려받기). 자바스크립트가 꺼져도 요약 · 상권 표는 읽힌다
+- `template.html` — 전체 분류 보고서 틀. 자바스크립트가 꺼져도 요약 · 상권 표는 읽힌다
+- `owner_split.py` · `template_owner.html` — 건물주 직접 등록 구분 보고서
+- `report.css` · `report_lib.js` — 두 보고서가 함께 쓰는 디자인 · 층별 목록(거르기 · 이유 · CSV) — 만들 때 HTML 안에 넣는다
