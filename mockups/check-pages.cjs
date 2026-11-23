@@ -10,6 +10,7 @@
 //      특이사항 부정어 처리, 추천 3장이 서로 다른 장소 · 점수 순서 · 0~100점, 사진이 실제로 그려지는지,
 //      업종 실시간 사진(위키미디어 커먼즈 응답 해석 · 라이선스 거르기 · 태그), AI 이미지 생성(프롬프트 길이 · 오류 안내 · 재시도 규칙 · 빠른 미리보기 · 미리보기 창).
 //   ⑧ PlaceOS 참고.html(Case 1~5 한 파일): 원본과 같은 최신 내용인지, 카드 · 화면 안 메뉴 · 주소(#case4?s=C)로 화면이 바뀌는지.
+//   ⑨ PlaceOS 공실 창업 가능성 분류.html: 등급 합 = 층 수, 상권 표 줄 수, 층별 목록 거르기 · 이유 펼치기.
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
 const fs = require('fs');
@@ -95,6 +96,12 @@ const PAGES = [
       ['eval', `(async () => { location.hash = '#case4?s=C'; if (!(await (${WAIT_FRAME('case4', '.poi')}))) return false;
         return document.querySelector('iframe[data-id=case4]').contentDocument.querySelector('#scSeg button.on').dataset.s === 'C'; })()`, '주소(#case4?s=C)로 화면 · 시나리오가 열리지 않음'],
       ['eval', `(() => { document.querySelector('iframe[data-id=case4]').contentDocument.querySelector('.gnb .logo').click(); return new Promise(r => setTimeout(() => r(!document.body.classList.contains('in-case')), 300)); })()`, '화면 안 로고로 목차에 돌아오지 않음']] },
+  // 공실 창업 가능성 분류(실데이터 보고서): 등급 합 = 층 수 · 상권 표 줄 수 = 상권 수 · 걸러진 목록 · 이유 펼치기
+  { file: 'PlaceOS 공실 창업 가능성 분류.html', must: ['.seg.tall .part', '#hubTable tbody tr', '#flist .fitem'],
+    act: [['eval', `(() => { const d = JSON.parse(document.getElementById('payload').textContent); return d.meta.classCounts.reduce((a, b) => a + b, 0) === d.rows.length
+        && document.querySelectorAll('#hubTable tbody tr').length === d.hubs.length; })()`, '등급 수 합이 층 수와 다르거나 상권 표 줄이 빠짐'],
+      ['click', '#clsChips .chip'], ['click', '#flist .fitem summary'],
+      ['eval', `!!document.querySelector('#flist details[open] .fbody li') && !/NaN|undefined/.test(document.getElementById('flist').textContent)`, '층별 목록 이유가 그려지지 않거나 값이 비어 있음']] },
 ];
 // 묶음 파일(PlaceOS 참고.html) 안 iframe에 요소가 생길 때까지 기다리는 식 (최대 15초)
 function WAIT_FRAME(id, sel){
