@@ -127,6 +127,7 @@ def build(dest: Path, listings_path: str | None) -> None:
     a_idx = [i for i, r in enumerate(rows) if r["cls"] in A_CLS]
     out_rows = [enc[i] + [group_of_row.get(i, -1)] for i in a_idx]
     n = len(a_idx)
+    uniq_a = len({(rows[i]["u"]["building_id"], rows[i]["u"]["floor"]) for i in a_idx})
     c_a1 = sum(1 for i in a_idx if rows[i]["cls"] == "A1")
     c_a2 = n - c_a1
     o1_floors = sum(1 for i in a_idx if i in group_of_row)
@@ -185,6 +186,8 @@ def build(dest: Path, listings_path: str | None) -> None:
         empty_note = "건물주가 직접 올린 공실이 아직 없습니다 — 직거래 데이터베이스 표가 없어 공개 API 가 503 을 돌려줍니다(위 「지금 상태」)."
     elif res["status"] == "error":
         empty_note = "건물주 매물을 읽지 못해 이 거르기는 비어 있습니다(위 「지금 상태」)."
+    elif not owner:
+        empty_note = "건물주가 직접 올린 확인 매물(게시 중)이 아직 없습니다 — 공개 API 가 0건을 돌려줍니다(위 「지금 상태」)."
     elif not o1_floors:
         empty_note = f"창업 가능 층과 겹치는 건물주 매물이 없습니다 — 건물주 매물 {B.f(len(owner))}건은 모두 이번 분류 밖입니다(위 「건물주가 올린 매물」)."
     else:
@@ -203,6 +206,11 @@ def build(dest: Path, listings_path: str | None) -> None:
     elif res["status"] == "error":
         status_h = "건물주 매물을 읽지 못했습니다"
         status_p = f"공개 API 조회가 실패했습니다({code_txt} · {E(res['detail'])} · {at_txt}). 0 으로 세지 않고 「모름」으로 둡니다."
+    elif res["status"] == "ok" and not total_own:
+        status_h = "0건 — 직거래는 열렸지만 아직 게시된 건물주 확인 매물이 없습니다"
+        status_p = (f"공개 API 가 {code_txt} · 0건을 돌려줍니다({at_txt} 조회). 2026-11-23 에는 503(직거래 데이터베이스 표 없음)이었는데 "
+                    f"그 사이 표가 준비됐습니다. 그래서 이 0 은 「아직 아무 건물주도 게시하지 않았다」는 뜻입니다. 건물주가 등록 → 소유자 확인 → 게시하면 "
+                    f"이 보고서를 다시 만들어(<code>owner_split.py</code>) 채웁니다. 창업 가능 층 {B.f(n)}개는 지금 모두 PlaceOS 가 자료로 찾은 빈 층입니다.")
     else:
         status_h = f"건물주 직접 등록 {B.f(total_own)}건 — 창업 가능 층과 겹치는 층 {B.f(o1_floors)}개"
         status_p = (f"{'파일에서 읽은 매물입니다(오프라인 점검용). ' if res['status'] == 'file' else ''}"
@@ -247,7 +255,7 @@ def build(dest: Path, listings_path: str | None) -> None:
     basis = uci.get("basis") or {}
     rep = {
         "<!--TODAY-->": date.today().isoformat(), "<!--N-->": B.f(n), "<!--A1-->": B.f(c_a1), "<!--A2-->": B.f(c_a2),
-        "<!--ALLN-->": B.f(len(rows)), "<!--AT-->": E(at_txt), "<!--CODE-->": E(code_txt), "<!--EUM-->": E(basis.get("eum_fetched", "")),
+        "<!--ALLN-->": B.f(len(rows)), "<!--UNIQA-->": B.f(uniq_a), "<!--AT-->": E(at_txt), "<!--CODE-->": E(code_txt), "<!--EUM-->": E(basis.get("eum_fetched", "")),
         "<!--STATUS-->": status_html, "<!--TILES-->": tiles, "<!--CATS-->": cats, "<!--HUBROWS-->": "\n".join(hub_rows),
         "<!--OWNERS-->": owner_html,
     }

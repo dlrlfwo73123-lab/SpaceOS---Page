@@ -173,6 +173,9 @@ def build(dest: Path) -> None:
 
     n = len(rows)
     total_all = sum(int(v) for v in val["ho_all"].values())
+    # 상권 반경이 겹치면 같은 층이 상권마다 들어간다(같은 vfu id · 상권마다 다른 수지) — 서로 다른 층은 (건물 ID, 층)으로 센다
+    uniq = len({(r["u"]["building_id"], r["u"]["floor"]) for r in rows})
+    uniq_a = len({(r["u"]["building_id"], r["u"]["floor"]) for r in rows if r["cls"] in ("A1", "A2")})
     cc = [sum(1 for r in rows if r["cls"] == c) for c in CLS]
     in_cls = {c: [r for r in rows if r["cls"] == c] for c in CLS}
 
@@ -400,6 +403,8 @@ def build(dest: Path) -> None:
         f"<b>{zmiss_names}는 행위제한을 받지 않아</b> 법·용도 판정을 미뤘습니다(조건부). 받으면 다시 나뉩니다(PlaceOS 입점 점검도 같은 곳을 「자료 부족」으로 답합니다).",
         "<b>건물주 확인 매물(직거래)은 이 보고서에 없습니다.</b> 프로덕션 DB 표가 아직 없어(2026-11-23 <code>/api/v1/direct/listings</code> 503) 0건입니다.",
         f"<b>추정(probable) 빈 층 {f(total_all - n)}개는 뺐습니다.</b> 층 미상 점포가 앉았을 수 있는 층이라 「검증된 공실」로 보지 않았습니다.",
+        f"<b>층 수는 상권별로 셌습니다(2026-11-25 정정).</b> 상권 반경이 겹치는 곳의 층은 상권마다 한 번씩 들어가 있어 {f(n)}개 중 서로 다른 (건물, 층)은 "
+        f"{f(uniq)}개이고, 「여력 있음 · 가능」 {f(cc[0] + cc[1])}개 중 서로 다른 층은 {f(uniq_a)}개입니다. 같은 층도 상권마다 수지(그 상권 매출 · 임대료)가 달라 등급이 갈릴 수 있습니다.",
         "<b>공실 예측(LSTM)·상권 순위는 쓰지 않았습니다.</b> KPI① 검증 전(보호 게이트 · 참고 판정)이라 등급 근거로 삼지 않습니다.",
         "<b>PlaceOS 점검과 다르게 둔 두 곳:</b> 판매시설 층은 「용도변경 필요」 대신 조건부, 공공·기반 시설 층은 대장상 근생이어도 어려움으로 뒀습니다(이 분류의 판단).",
     ]
@@ -421,7 +426,7 @@ def build(dest: Path) -> None:
 
     basis = uci.get("basis") or {}
     rep = {
-        "<!--TODAY-->": date.today().isoformat(), "<!--N-->": f(n), "<!--HUBS-->": str(len(hub_ids)),
+        "<!--TODAY-->": date.today().isoformat(), "<!--N-->": f(n), "<!--HUBS-->": str(len(hub_ids)), "<!--UNIQ-->": f(uniq),
         "<!--PROB-->": f(total_all - n), "<!--VW-->": E(basis.get("vworld_updated_max", "")), "<!--EUM-->": E(basis.get("eum_fetched", "")),
         "<!--TILES-->": tiles, "<!--SEG-->": seg_top, "<!--POINTS-->": points_html, "<!--BANDS-->": bands_html,
         "<!--RULES-->": rules, "<!--AXES-->": axes, "<!--REASONBARS-->": rb, "<!--HUBROWS-->": "\n".join(hub_rows),

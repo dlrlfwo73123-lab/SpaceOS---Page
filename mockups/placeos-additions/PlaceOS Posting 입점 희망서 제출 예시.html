@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Posting 희망서 제출 예시</title>
+<meta name="description" content="PlaceOS Posting 마지막 단계에서 입점 희망서를 작성해 건물주에게 제출하는 흐름 — 분석 정리와 예시 화면">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{
+  color-scheme:light;
+  --bg:#f2f4f6;--surface:#fff;--surface-2:#f8fafb;--line:#e5e8eb;--line-2:#d1d6db;
+  --ink:#191f28;--ink-2:#4e5968;--ink-3:#6b7684;--muted:#8b95a1;
+  --posting:#a23c9f;--posting-pressed:#863284;--posting-soft:#fbf0fb;
+  --page:#753da6;--page-soft:#f6f0fb;
+  --primary:#0b7a87;--primary-soft:#e8f5f6;
+  --ok:#0f7a55;--ok-soft:#e3f5ee;--ok-line:#b7e3d2;
+  --warn-ink:#8a5a00;--warn-soft:#fdf5e3;--warn-line:#f0dcae;
+  --note-ink:#8a6d3b;--note-soft:#fdf8ec;--note-line:#f3e6c4;
+  --bad:#b91c1c;--bad-soft:#fef2f2;--bad-line:#fecaca;
+  --shadow:0 1px 3px rgba(11,27,51,.08),0 4px 12px rgba(11,27,51,.06);
+  --r:14px;
+  --font:"Pretendard","Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d0d0d;--surface:#1a1a19;--surface-2:#222221;--line:#2c2c2a;--line-2:#383835;
+    --ink:#f0efec;--ink-2:#c3c2b7;--ink-3:#a8a79f;--muted:#898781;
+    --posting:#d77cd4;--posting-pressed:#e8a6e6;--posting-soft:#2b1a2b;
+    --page:#b28ad8;--page-soft:#231a2c;
+    --primary:#3fb8c6;--primary-soft:#11313a;
+    --ok:#4cc79a;--ok-soft:#0f2a20;--ok-line:#1d4a39;
+    --warn-ink:#e0b062;--warn-soft:#2c2412;--warn-line:#4a3b17;
+    --note-ink:#d9bf8e;--note-soft:#29230f;--note-line:#463b1c;
+    --bad:#f08a8a;--bad-soft:#2c1515;--bad-line:#4d2222;
+    --shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d0d0d;--surface:#1a1a19;--surface-2:#222221;--line:#2c2c2a;--line-2:#383835;
+  --ink:#f0efec;--ink-2:#c3c2b7;--ink-3:#a8a79f;--muted:#898781;
+  --posting:#d77cd4;--posting-pressed:#e8a6e6;--posting-soft:#2b1a2b;
+  --page:#b28ad8;--page-soft:#231a2c;
+  --primary:#3fb8c6;--primary-soft:#11313a;
+  --ok:#4cc79a;--ok-soft:#0f2a20;--ok-line:#1d4a39;
+  --warn-ink:#e0b062;--warn-soft:#2c2412;--warn-line:#4a3b17;
+  --note-ink:#d9bf8e;--note-soft:#29230f;--note-line:#463b1c;
+  --bad:#f08a8a;--bad-soft:#2c1515;--bad-line:#4d2222;
+  --shadow:0 1px 2px rgba(0,0,0,.5);
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--posting-pressed)}
+:focus-visible{outline:2px solid var(--posting);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.top{background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{padding-top:26px;padding-bottom:22px}
+.eyebrow{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--posting-pressed)}
+h1{margin:6px 0 8px;font-size:clamp(22px,3.2vw,30px);line-height:1.3;letter-spacing:-.025em;font-weight:800;text-wrap:balance}
+.lede{margin:0;max-width:860px;color:var(--ink-2);font-size:15px}
+.note-box{margin:14px 0 0;padding:10px 14px;border-radius:10px;background:var(--posting-soft);color:var(--ink-2);font-size:13.5px}
+.note-box b{color:var(--ink)}
+nav.toc{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-top:8px;padding-bottom:8px}
+nav.toc .wrap::-webkit-scrollbar{display:none}
+nav.toc a{flex-shrink:0;padding:6px 12px;border-radius:999px;color:var(--ink-2);text-decoration:none;font-size:13.5px;font-weight:500}
+nav.toc a:hover{background:var(--surface);color:var(--ink)}
+main{padding:8px 0 56px}
+section{margin-top:32px;scroll-margin-top:56px}
+h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em}
+.sub{margin:0 0 14px;color:var(--ink-3);font-size:14px}
+h3{margin:0 0 8px;font-size:15.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.muted{color:var(--ink-3)}
+.num{font-variant-numeric:tabular-nums}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:0 4px;overflow-wrap:anywhere}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--surface-2);font-size:12.5px;color:var(--ink-3);font-weight:600;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-pub{background:var(--ok-soft);color:var(--ok);border:1px solid var(--ok-line)}
+.p-con{background:var(--warn-soft);color:var(--warn-ink);border:1px solid var(--warn-line)}
+.p-pri{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
+.steps-now{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.steps-now li{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:13px}
+.steps-now li b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--surface-2);font-size:11px}
+.steps-now li.is-brief{border-color:var(--posting);background:var(--posting-soft)}
+.steps-now li.is-brief b{background:var(--posting);color:#fff}
+.arrow-row{display:flex;align-items:center;gap:8px;margin:10px 0;color:var(--ink-3);font-size:13px}
+.points{margin:0;padding-left:20px}
+.points li{margin:6px 0}
+.lim{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink-2)}
+.lim li{margin:5px 0}
+
+/* ── 예시 화면(PlaceOS 지도 탐색 안 Posting 칸을 흉내) ── */
+.app{display:grid;grid-template-columns:72px minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.rail{background:var(--surface-2);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0}
+.rail .logo{width:34px;height:34px;border-radius:10px;background:#1e3a5f;color:#fff;display:grid;place-items:center;font-weight:800;margin-bottom:6px}
+.rail span{display:flex;flex-direction:column;align-items:center;gap:2px;width:60px;padding:7px 0;border-radius:10px;font-size:11px;color:var(--ink-3)}
+.rail span i{font-style:normal;font-size:15px}
+.rail span.on{background:var(--posting);color:#fff}
+.appmain{min-width:0;padding:14px 16px 18px}
+.stephead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.stephead .t1{font-size:12px;font-weight:700;color:var(--posting-pressed)}
+.stephead h3{margin:2px 0 0;font-size:18px}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;margin:10px 0 12px;padding-bottom:4px}
+.tabs span{flex-shrink:0;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;color:var(--ink-3);background:var(--surface)}
+.tabs span.on{border-color:var(--posting);color:var(--posting-pressed);background:var(--posting-soft);font-weight:700}
+.scen{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px;padding:8px 10px;border:1px dashed var(--line-2);border-radius:10px;font-size:12.5px;color:var(--ink-3)}
+.scen button{font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);cursor:pointer}
+.scen button[aria-pressed="true"]{border-color:var(--posting);background:var(--posting-soft);color:var(--posting-pressed);font-weight:700}
+.cols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);margin-bottom:12px}
+.box h4{margin:0 0 6px;font-size:14.5px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.box .hint{margin:0 0 8px;font-size:12.5px;color:var(--ink-3)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:0;font-size:13px}
+.facts dt{color:var(--ink-3);font-size:12px}
+.facts dd{margin:0 0 4px;font-weight:600}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:1px 8px 1px 2px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid transparent;white-space:nowrap}
+.badge i{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:5px;font-style:normal;font-size:10px;color:#fff}
+.g-A2{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn-ink)}
+.g-A2 i{background:var(--warn-ink)}
+.own-on{background:var(--primary-soft);color:var(--primary);border-color:var(--primary)}
+.own-on i{background:var(--primary)}
+.own-off{background:var(--surface-2);color:var(--ink-3);border-color:var(--line-2)}
+.own-off i{background:var(--muted)}
+.field{display:grid;grid-template-columns:120px minmax(0,1fr);gap:4px 10px;align-items:center;margin:7px 0;font-size:13px}
+.field label{color:var(--ink-2)}
+.field .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+input[type=number],input[type=month],input[type=text],select,textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:5px 8px;min-width:0;max-width:100%}
+input[type=number]{width:96px}
+textarea{width:100%;min-height:64px;resize:vertical}
+.chk{display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.mini{font:inherit;font-size:12px;padding:3px 8px;border-radius:8px;border:1px solid var(--posting);background:var(--surface);color:var(--posting-pressed);cursor:pointer}
+.calc{font-size:12px;color:var(--ink-3)}
+.calc b{color:var(--ink)}
+.lock{font-size:12px;color:var(--ink-3)}
+.req{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}
+.req li.ok{color:var(--ok)}
+.req li.no{color:var(--bad)}
+.listing{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:6px 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;cursor:pointer}
+.listing.on{border-color:var(--posting);background:var(--posting-soft)}
+.listing input{margin-top:3px}
+.listing .lt{font-weight:700;font-size:13.5px}
+.listing .lm{font-size:12.5px;color:var(--ink-3)}
+.fit{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px}
+.fit li.ok::before{content:"✓ ";color:var(--ok);font-weight:800}
+.fit li.no::before{content:"✕ ";color:var(--bad);font-weight:800}
+.fit li.q::before{content:"? ";color:var(--warn-ink);font-weight:800}
+.empty{padding:12px;border:1px dashed var(--line-2);border-radius:10px;font-size:13px;color:var(--ink-2);background:var(--surface-2)}
+.preview{border:1px solid var(--line-2);border-radius:12px;overflow:hidden}
+.preview .ph{padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.preview .pb{padding:10px 12px;font-size:13px}
+.preview dl{display:grid;grid-template-columns:112px minmax(0,1fr);gap:4px 10px;margin:0}
+.preview dt{color:var(--ink-3)}
+.preview dd{margin:0}
+.preview .sect{margin:10px 0 4px;font-size:12px;font-weight:700;color:var(--ink-3)}
+.preview .hidden-row{color:var(--ink-3);font-style:italic}
+.trust{margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--surface-2);font-size:12px;color:var(--ink-2)}
+.submit{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.btn{font:inherit;font-size:14px;font-weight:700;padding:10px 16px;border-radius:10px;border:0;background:var(--posting);color:#fff;cursor:pointer}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:var(--surface);color:var(--posting-pressed);border:1px solid var(--posting)}
+.notice{margin:10px 0 0;font-size:12px;color:var(--ink-3)}
+.timeline{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.timeline li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;font-size:13px;align-items:start}
+.timeline li i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font-style:normal;font-size:11px;font-weight:800;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-2)}
+.timeline li.done i{background:var(--ok);color:#fff;border-color:var(--ok)}
+.timeline li.now i{background:var(--posting);color:#fff;border-color:var(--posting)}
+dialog{border:0;border-radius:16px;padding:0;max-width:min(560px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(0,0,0,.3);background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(15,20,30,.45)}
+.dlg{padding:18px 20px}
+.dlg h3{margin:0 0 8px}
+.dlg ul{margin:6px 0;padding-left:18px;font-size:13.5px}
+.dlg .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+footer{margin-top:36px;padding:18px 0 36px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+@media (max-width:980px){.cols{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  .grid2{grid-template-columns:1fr}
+  .app{grid-template-columns:1fr}
+  .rail{flex-direction:row;justify-content:center;border-right:0;border-bottom:1px solid var(--line);padding:6px}
+  .rail .logo{display:none}
+  .rail span{width:auto;padding:5px 10px;flex-direction:row;gap:4px}
+  .field{grid-template-columns:1fr}
+  .facts{grid-template-columns:1fr 1fr}
+  .preview dl{grid-template-columns:96px minmax(0,1fr)}
+}
+@media print{nav.toc,.scen{display:none}.card,.app{box-shadow:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">PlaceOS Posting · 분석 정리와 예시 화면 · 2026-11-25</p>
+    <h1>Posting 마지막에 입점 희망서를 쓰고 건물주에게 제출하기</h1>
+    <p class="lede">지금 PlaceOS Posting 은 「입점 희망서 · 계약」이 <b>첫 화면</b>이라, 희망서에 들어갈 숫자(면적 · 층 · 월세 상한 · 요구 판매량)를 계산하기 <b>전에</b> 희망서를 쓰게 됩니다. 이 문서는 지금 구조와 규칙을 정리하고, 계산을 마친 <b>마지막 단계에서 희망서를 채워 그 층의 건물주에게 제출</b>하는 화면을 예시로 보입니다.</p>
+    <p class="note-box"><b>예시 화면의 건물 · 매물 · 숫자는 모두 합성값입니다.</b> 실제 건물주 · 매물이 아닙니다. 규칙(공개 단계 · 동의 · 수수료 없음)은 PlaceOS 저장소의 현재 구현(<code>services/direct_briefs.py</code> · <code>direct_connect.py</code> · <code>PostingMatch.tsx</code>)을 그대로 따랐습니다.</p>
+  </div>
+</header>
+<nav class="toc" aria-label="목차"><div class="wrap">
+  <a href="#now">지금 구조</a><a href="#problem">문제</a><a href="#proposal">제안</a><a href="#mapping">칸 채우기</a><a href="#rules">지킬 규칙</a><a href="#demo">예시 화면</a><a href="#build">구현 계획</a>
+</div></nav>
+<main class="wrap">
+
+<section id="now" aria-labelledby="h-now">
+  <h2 id="h-now">지금 Posting 구조 (main · 2026-11-25)</h2>
+  <p class="sub"><code>apps/frontend/src/pages/PostingConsole.tsx</code> 의 단계 순서입니다. 11-22 사용자 지적으로 희망서가 첫 화면이 됐습니다.</p>
+  <ol class="steps-now">
+    <li class="is-brief"><b>1</b>입점 희망서 · 계약</li>
+    <li><b>2</b>시뮬레이션 결과(자리 · 비용 조건)</li>
+    <li><b>3</b>상권 맞춤 인테리어</li>
+    <li><b>4</b>주변 업종 지도</li>
+    <li><b>5</b>찾아오는 길</li>
+    <li><b>6</b>위험 확인</li>
+    <li><b>7</b>메뉴 설정(객단가 · 하루 몇 개)</li>
+    <li><b>8</b>비용 비교 및 결정</li>
+  </ol>
+  <div class="grid3" style="margin-top:12px">
+    <div class="card"><h3>희망서 칸(11-21 결정)</h3>
+      <p style="margin:0 0 6px"><span class="pill p-pub">① 공개</span> 업종 · 필요 면적 · 희망 층 · 설비 · 월세 · 보증금 상한 · 희망 시기 · 희망 상권 1~3곳 · 팝업 먼저 · 제안 받기 — <b>자유 서술 칸 없음</b></p>
+      <p style="margin:0 0 6px"><span class="pill p-con">② 동의 공개</span> 사업 개요(500자) · 사업 단계 · 총 자금 · 자기 자금 — 창업자가 연 건물주 한 명에게만, 대화가 이어지는 동안만</p>
+      <p style="margin:0"><span class="pill p-pri">③ 비공개</span> 객단가 · 변동비율 · 기타 고정비 · 영업일 · 목표 판매량 — 본인 계산(요구 판매량)에만</p></div>
+    <div class="card"><h3>「희망서 보내기」가 하는 일</h3>
+      <ol class="points" style="font-size:13.5px">
+        <li>그 매물로 <b>문의</b>를 연다(<code>POST /direct/listings/{id}/inquiries</code> · 종류 「문의」)</li>
+        <li>그 건물주에게 희망서 ②를 연다(<code>POST /direct/inquiries/{id}/disclose</code>) — <b>누르는 순간이 동의</b></li>
+        <li>이후 방문 예약 · 조건 제안서 · 계약 진행 방법(직접 / 제휴 공인중개사 정액) · 결과 자기보고</li>
+      </ol></div>
+    <div class="card"><h3>지금 프로덕션 상태</h3>
+      <p style="margin:0;font-size:13.5px">11-23 에는 직거래 표가 없어 <code>/direct/*</code> 가 503 이었고, <b>11-25 에는 200 · 0건</b>입니다 — 표는 준비됐고 게시된 건물주 확인 매물이 아직 없습니다. 오늘 연 <a href="https://github.com/seoghyeonbag36-max/placeos/pull/274">placeos#274</a> 가 배포되면 Page 빈 층마다 「건물주 등록 없음 / N건」이 실시간으로 붙습니다.</p></div>
+  </div>
+</section>
+
+<section id="problem" aria-labelledby="h-problem">
+  <h2 id="h-problem">문제 — 숫자가 나오기 전에 희망서를 쓴다</h2>
+  <div class="grid2">
+    <div class="card"><ul class="points">
+      <li>희망서 필수 칸(업종 · 면적 범위 · 희망 층 · 월세 · 보증금 상한 · 시기 · 상권)의 근거는 2 · 7 · 8단계에서 나온다. 첫 화면에서 쓰면 <b>나중에 다시 고쳐야</b> 한다.</li>
+      <li>「이 층」을 Page 에서 골라 넘어와도 첫 화면 희망서는 그 층을 모른다 — 「같은 건물 먼저」 목록만 보인다.</li>
+      <li>요구 판매량(「이 조건이면 하루 몇 개」)이 희망서의 월세 상한과 이어지지 않는다 — 창업자가 둘을 따로 맞춘다.</li>
+    </ul></div>
+    <div class="card"><ul class="points">
+      <li>그렇다고 PlaceOS 가 계산값으로 상한을 <b>채워 넣으면</b> 안 된다 — 직거래 규칙상 PlaceOS 는 조건을 대신 쓰거나 권하지 않는다(L16 · 직거래 연결 규칙).</li>
+      <li>희망서는 <b>희망 상권에 확인 매물이 있는 건물주에게만</b> 보인다(L12). 그 층에 확인 매물이 없으면 「보낼 곳 없음」을 솔직하게 말해야 한다.</li>
+      <li>첫 화면을 없애면 11-22 「Posting 이 보이지 않는다」 지적이 되살아난다 — 화면 안 기능을 줄이려면 사용자 지시가 필요하다(PPPP 보존 규칙).</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="proposal" aria-labelledby="h-proposal">
+  <h2 id="h-proposal">제안 — 마지막 9단계 「입점 희망서 제출」을 더한다</h2>
+  <p class="sub">첫 화면은 「매칭 · 계약 현황」(보낸 희망서 · 대화 · 조건 제안 상태)으로 두고, <b>쓰고 보내는 일은 계산을 마친 뒤 마지막 단계</b>로 옮깁니다.</p>
+  <ol class="steps-now">
+    <li><b>1</b>매칭 · 계약 현황</li><li><b>2</b>시뮬레이션 결과</li><li><b>3</b>인테리어</li><li><b>4</b>주변 업종</li><li><b>5</b>찾아오는 길</li><li><b>6</b>위험 확인</li><li><b>7</b>메뉴 설정</li><li><b>8</b>비용 비교 및 결정</li>
+    <li class="is-brief"><b>9</b>입점 희망서 제출</li>
+  </ol>
+  <div class="grid3" style="margin-top:12px">
+    <div class="card"><h3>A. 이 자리 확인</h3><p style="margin:0;font-size:13.5px">Page 에서 고른 건물 · 층, 그 층의 <b>창업 가능 등급</b>과 <b>건물주 등록</b>(placeos#274 <code>/startup-fit</code>), 시뮬레이션의 요구 판매량을 한 칸에 보인다.</p></div>
+    <div class="card"><h3>B. 희망서 채우기</h3><p style="margin:0;font-size:13.5px">① · ② · ③ 칸을 나눠 보인다. 계산에서 온 값은 <b>창업자가 「내 계산 값 넣기」를 누를 때만</b> 들어간다(PlaceOS 가 채우지 않는다). 필수 칸 체크리스트.</p></div>
+    <div class="card"><h3>C. 보낼 곳 · 미리보기 · 제출</h3><p style="margin:0;font-size:13.5px">이 층 확인 매물 → 같은 건물 → 같은 상권 순. 조건표(희망서 × 매물), 「건물주가 보는 화면」 미리보기, 무엇이 넘어가고 무엇이 안 넘어가는지 확인 창, 보낸 뒤 진행 단계.</p></div>
+  </div>
+</section>
+
+<section id="mapping" aria-labelledby="h-mapping">
+  <h2 id="h-mapping">희망서 칸 ← Posting 계산 (무엇이 어디서 오나)</h2>
+  <p class="sub">「채움 방식」이 <b>버튼</b>인 칸은 창업자가 눌러야 값이 들어갑니다. ③ 칸은 어디에도 보내지 않습니다.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>희망서 칸</th><th>공개 단계</th><th>근거(Posting 단계)</th><th>채움 방식</th></tr></thead>
+    <tbody>
+      <tr><td>업종</td><td><span class="pill p-pub">① 공개</span></td><td>내 사업 설정 · 7 메뉴 설정의 업종</td><td>자동(바꿀 수 있음)</td></tr>
+      <tr><td>필요 면적(최소~최대 ㎡)</td><td><span class="pill p-pub">① 공개</span></td><td>2 시뮬레이션의 이 자리 면적</td><td>이 자리 면적으로 시작 · 창업자가 범위를 넓힘</td></tr>
+      <tr><td>희망 층</td><td><span class="pill p-pub">① 공개</span></td><td>Page 에서 고른 층(1층 / 2층 이상 / 지하)</td><td>자동</td></tr>
+      <tr><td>필요 설비(배기 · 급수 · 전력)</td><td><span class="pill p-pub">① 공개</span></td><td>업종 상세 입력</td><td>자동(바꿀 수 있음)</td></tr>
+      <tr><td>월세 상한</td><td><span class="pill p-pub">① 공개</span></td><td>7 메뉴 설정의 내 객단가 · 판매량으로 본 「본전까지 낼 수 있는 월세」</td><td><b>버튼</b> 「내 계산 값 넣기」</td></tr>
+      <tr><td>보증금 상한</td><td><span class="pill p-pub">① 공개</span></td><td>8 결정 단계의 자기 자금 메모</td><td>창업자가 적음</td></tr>
+      <tr><td>희망 시기 · 희망 상권 1~3 · 팝업 먼저</td><td><span class="pill p-pub">① 공개</span></td><td>8 결정 · 「입점 준비」 후보 3곳 · 6 위험 확인</td><td>자동 제안 · 창업자 확인</td></tr>
+      <tr><td>사업 개요 · 단계 · 총 자금 · 자기 자금</td><td><span class="pill p-con">② 동의 공개</span></td><td>창업자 메모</td><td>창업자가 적음 · <b>보낼 때 「② 열기」 따로 동의</b>(기본 꺼짐)</td></tr>
+      <tr><td>객단가 · 변동비율 · 기타 고정비 · 영업일 · 목표 판매량</td><td><span class="pill p-pri">③ 비공개</span></td><td>7 메뉴 설정 · 2 시뮬레이션 입력</td><td>자동 · 본인 계산(요구 판매량)에만</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="rules" aria-labelledby="h-rules">
+  <h2 id="h-rules">지킬 규칙 — 이미 테스트로 잠겨 있는 것</h2>
+  <div class="grid2">
+    <div class="card"><ol class="lim">
+      <li><b>성사 · 중개 수수료 없음.</b> 보내기 · 제안 · 수락 · 계약 진행 어디에도 돈이 붙지 않는다(L14). 고지문: 「PlaceOS는 부동산 중개를 하지 않으며 중개보수·성사 수수료를 받지 않습니다…」</li>
+      <li><b>희망서는 희망 상권에 확인 매물이 있는 건물주에게만</b>(L12) · 소유자 이름 · 등기 정보는 화면에 없다(L5).</li>
+      <li><b>③ 칸 · 요구 판매량은 본인 경로에만</b>(L11) — 제출 요청에 실리지 않는다.</li>
+      <li><b>창업자가 먼저 연 대화에 희망서를 말없이 붙이지 않는다</b>(L17) — 「보내기」를 누르는 것이 동의이고, ②는 따로 체크한다.</li>
+    </ol></div>
+    <div class="card"><ol class="lim" start="5">
+      <li><b>②는 대화가 이어지는 동안만</b>(L18) — 대화가 끝나면 서버가 거두고, 창업자는 언제든 「② 거두기」.</li>
+      <li><b>PlaceOS 는 값을 채우거나 권하지 않는다</b>(L16) — 계산값은 창업자가 누를 때만 들어간다.</li>
+      <li><b>신용 점수 · 등급 · 순위 없음</b>(L13) — 건물주 화면은 「PlaceOS 가 확인한 것 / 창업자가 적은 것」만.</li>
+      <li><b>창업 가능 등급은 허가 판정이 아니다</b> — 대장 · 토지이음 기재와 PlaceOS 계산(추정 임대료 · 실제 호가 아님)으로 본 1차 분류.</li>
+    </ol></div>
+  </div>
+</section>
+
+<section id="demo" aria-labelledby="h-demo">
+  <h2 id="h-demo">예시 화면 — Posting 9단계 「입점 희망서 제출」</h2>
+  <p class="sub">값을 바꾸면 체크리스트 · 조건표 · 건물주 미리보기가 바로 바뀝니다. 위 점선 칸에서 세 가지 상황을 바꿔 볼 수 있습니다. <b>모든 값은 합성 예시</b>이고 아무 데도 보내지 않습니다.</p>
+  <div class="app">
+    <aside class="rail" aria-label="PlaceOS 레일(예시)"><div class="logo">P</div>
+      <span><i>◎</i>Platform</span><span><i>▦</i>Page</span><span class="on"><i>✎</i>Posting</span><span><i>✦</i>Program</span></aside>
+    <div class="appmain">
+      <div class="stephead"><div><div class="t1">3 / 4 · POSTING</div><h3>이 자리로 입점 희망서를 보낼까요?</h3></div>
+        <span class="muted" style="font-size:12.5px">시뮬레이션 · 메뉴 설정 · 결정에서 계산한 값으로 채웁니다</span></div>
+      <div class="tabs" aria-label="Posting 단계(예시)">
+        <span>1 매칭 · 계약 현황</span><span>2 시뮬레이션 결과</span><span>3 인테리어</span><span>4 주변 업종</span><span>5 찾아오는 길</span><span>6 위험 확인</span><span>7 메뉴 설정</span><span>8 비용 비교 및 결정</span><span class="on">9 입점 희망서 제출</span>
+      </div>
+      <div class="scen" role="group" aria-label="예시 상황 바꾸기">예시 상황:
+        <button type="button" data-s="here" aria-pressed="true">이 층에 건물주 확인 매물 있음</button>
+        <button type="button" data-s="near" aria-pressed="false">같은 건물 · 상권의 다른 확인 매물만</button>
+        <button type="button" data-s="none" aria-pressed="false">확인 매물 없음(지금 프로덕션)</button>
+      </div>
+      <div class="cols">
+        <div>
+          <div class="box" aria-labelledby="hA"><h4 id="hA">A. 이 자리 <span class="muted" style="font-weight:400;font-size:12.5px">Page 에서 고른 층 · 시뮬레이션 결과</span></h4>
+            <dl class="facts">
+              <dt>건물 · 층</dt><dd>가로수 예시빌딩 2층 <span class="muted" style="font-weight:400">(합성)</span></dd>
+              <dt>면적</dt><dd class="num">66㎡ (20.0평)</dd>
+              <dt>창업 가능 등급</dt><dd><span class="badge g-A2"><i aria-hidden="true">!</i>창업 가능 · 여력 얇음</span></dd>
+              <dt>건물주 등록</dt><dd id="ownBadge"></dd>
+              <dt>추정 월세</dt><dd class="num">월 198만원 <span class="muted" style="font-weight:400">· R-ONE × 층 계수 · 실제 호가 아님</span></dd>
+              <dt>요구 판매량(7단계)</dt><dd class="num" id="needLine"></dd>
+            </dl>
+          </div>
+
+          <div class="box" aria-labelledby="hB1"><h4 id="hB1"><span class="pill p-pub">① 공개</span> 건물주가 보는 조건</h4>
+            <p class="hint">희망 상권에 확인 매물이 있는 건물주만 봅니다. 이름 · 이메일은 싣지 않고, 자유 서술 칸은 없습니다.</p>
+            <div class="field"><label for="fInd">업종</label><select id="fInd"><option value="cafe" selected>카페·디저트</option><option value="restaurant">음식점</option><option value="beauty">미용·네일</option><option value="education">학원·교육</option></select></div>
+            <div class="field"><label>필요 면적(㎡)</label><div class="row"><input type="number" id="fAmin" value="66" min="1" aria-label="필요 면적 최소"> ~ <input type="number" id="fAmax" value="66" min="1" aria-label="필요 면적 최대"><button type="button" class="mini" id="widen">범위 ±15% 넓히기</button></div></div>
+            <div class="field"><label>희망 층</label><div class="row"><label class="chk"><input type="checkbox" id="fF1"> 1층</label><label class="chk"><input type="checkbox" id="fFu" checked> 2층 이상</label><label class="chk"><input type="checkbox" id="fFb"> 지하</label></div></div>
+            <div class="field"><label>필요 설비</label><div class="row"><label class="chk"><input type="checkbox" id="fEx" checked> 배기</label><label class="chk"><input type="checkbox" id="fWa" checked> 급수</label><span class="calc">전력 <input type="number" id="fKw" value="15" min="1" aria-label="필요 전력 kW"> kW 이상</span></div></div>
+            <div class="field"><label for="fRent">월세 상한(만원)</label><div class="row"><input type="number" id="fRent" placeholder="비어 있음" min="1"><button type="button" class="mini" id="useCalc">내 계산 값 넣기</button><span class="calc" id="calcHint"></span></div></div>
+            <div class="field"><label for="fDep">보증금 상한(만원)</label><input type="number" id="fDep" placeholder="비어 있음" min="0"></div>
+            <div class="field"><label for="fStart">희망 시기</label><input type="month" id="fStart" value="2027-02"></div>
+            <div class="field"><label>희망 상권</label><div class="row"><label class="chk"><input type="checkbox" id="fD1" checked disabled> 신사동 가로수길</label><label class="chk"><input type="checkbox" id="fD2"> 압구정로데오</label><label class="chk"><input type="checkbox" id="fD3"> 한남동·용리단길</label></div></div>
+            <div class="field"><label>기타</label><div class="row"><label class="chk"><input type="checkbox" id="fPop"> 팝업으로 먼저 해 보기</label><label class="chk"><input type="checkbox" id="fInv" checked> 건물주 제안 받기</label></div></div>
+            <ul class="req" id="reqList" aria-live="polite"></ul>
+          </div>
+
+          <div class="box" aria-labelledby="hB2"><h4 id="hB2"><span class="pill p-con">② 동의 공개</span> 내가 연 건물주에게만</h4>
+            <p class="hint">보낼 때 아래 「② 도 이 건물주에게 열기」를 따로 체크해야 넘어갑니다. 대화가 끝나면 서버가 거두고, 언제든 거둘 수 있습니다.</p>
+            <div class="field"><label for="fSum">사업 개요</label><textarea id="fSum" maxlength="500">동네 직장인 대상 테이크아웃 중심 디저트 카페. 오전 커피 · 오후 구움과자. (합성 예시)</textarea></div>
+            <div class="field"><label for="fStage">사업 단계</label><select id="fStage"><option value="pre" selected>예비 창업(사업자등록 전)</option><option value="registered">사업자등록 함(개업 전)</option><option value="operating">지금 영업 중(옮기기·바꾸기)</option></select></div>
+            <div class="field"><label>자금(만원)</label><div class="row">총 <input type="number" id="fFund" value="9000" min="0" aria-label="총 창업 자금"> · 자기 <input type="number" id="fOwn" value="6000" min="0" aria-label="자기 자금"></div></div>
+          </div>
+
+          <div class="box" aria-labelledby="hB3"><h4 id="hB3"><span class="pill p-pri">③ 비공개</span> 나만 보는 계산</h4>
+            <p class="lock">🔒 아무에게도 보내지 않습니다 — 매물마다 「이 조건이면 하루 몇 잔」(요구 판매량) 계산에만 씁니다.</p>
+            <div class="field"><label>객단가 · 변동비율</label><div class="row"><input type="number" id="pPrice" value="5000" min="1" aria-label="객단가(원)">원 · <input type="number" id="pVar" value="38" min="0" max="95" aria-label="변동비율(%)">%</div></div>
+            <div class="field"><label>기타 고정비(인건비 등) · 영업일</label><div class="row"><input type="number" id="pFix" value="600" min="0" aria-label="기타 월 고정비(만원)">만원 · <input type="number" id="pDays" value="26" min="1" max="31" aria-label="월 영업일">일</div></div>
+            <div class="field"><label for="pTarget">목표 하루 판매량</label><div class="row"><input type="number" id="pTarget" value="100" min="1">잔</div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="box" aria-labelledby="hC"><h4 id="hC">C. 보낼 곳</h4>
+            <p class="hint">이 층 확인 매물 → 같은 건물 → 같은 상권 순입니다. 보내기 = 그 매물로 문의를 열고 희망서를 그 건물주에게 보입니다.</p>
+            <div id="targets"></div>
+          </div>
+          <div class="box" aria-labelledby="hD"><h4 id="hD">D. 건물주가 보는 화면(미리보기)</h4>
+            <div class="preview"><div class="ph">입점 희망서 · <span id="pvInd"></span> · <span class="muted" style="font-weight:400">창업자 이름 · 이메일은 보이지 않아요</span></div>
+              <div class="pb" id="preview"></div></div>
+          </div>
+          <div class="box" aria-labelledby="hE"><h4 id="hE">E. 제출</h4>
+            <label class="chk"><input type="checkbox" id="openB2"> ② 도 이 건물주에게 열기(사업 개요 · 단계 · 자금)</label>
+            <div class="field" style="margin-top:8px"><label for="fMsg">첫 메시지</label><textarea id="fMsg">입점 희망서를 보냅니다. 조건을 맞춰 보시고 문의함으로 답 주세요.</textarea></div>
+            <div class="submit"><button type="button" class="btn" id="sendBtn">이 건물주에게 입점 희망서 보내기</button><button type="button" class="btn ghost" id="publishBtn">희망서를 건물주에게 보이게 올려 두기</button></div>
+            <p class="notice" id="sendWhy" role="status"></p>
+            <p class="notice">PlaceOS는 부동산 중개를 하지 않으며 중개보수·성사 수수료를 받지 않습니다. 임대 조건은 건물주와 직접 정하고, 계약서 검토가 필요하면 변호사·법무사 등 전문가와 상의하세요.</p>
+          </div>
+          <div class="box" aria-labelledby="hF" id="afterBox" hidden><h4 id="hF">보낸 뒤 — 매칭 · 계약 진행</h4>
+            <ol class="timeline" id="timeline"></ol>
+            <div class="submit"><button type="button" class="btn ghost" id="revokeBtn">② 거두기</button></div>
+            <p class="notice">계약 전에: 등기부등본으로 소유자 · 근저당 확인 · 건축물대장에서 그 층 · 호 용도 재확인 · 사업자등록 + 확정일자(상가건물 임대차보호법 · 보증금 규모에 따라 적용이 달라요) · 원상복구 · 렌트프리 · 관리비 항목은 특약으로. (일반 안내 · 법률 자문 아님)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="build" aria-labelledby="h-build">
+  <h2 id="h-build">구현 계획 — 서버는 거의 있고, 화면 단계 하나를 더한다</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>할 일</th><th>어디</th><th>새로 만드나</th></tr></thead>
+    <tbody>
+      <tr><td>9단계 「입점 희망서 제출」 추가 · 1단계 이름을 「매칭 · 계약 현황」으로</td><td><code>pages/PostingConsole.tsx</code> 단계 목록 · <code>components/posting/</code> 새 컴포넌트</td><td>화면 새로(사용자 지시 필요 — 화면 안 탭 순서 변경)</td></tr>
+      <tr><td>Posting 계산 → 희망서 초안(①·③ 채움, 월세 상한은 버튼)</td><td>프론트 훅 <code>useBriefDraftFromPosting</code></td><td>새로(순수 함수 · 테스트 쉬움)</td></tr>
+      <tr><td>희망서 읽기 · 저장 · 보이기</td><td><code>GET/PATCH /direct/me/brief</code> · <code>POST /direct/me/brief/status</code></td><td>있음</td></tr>
+      <tr><td>이 층 · 같은 건물 · 상권 확인 매물</td><td><code>/commercial-districts/{id}/startup-fit?building_id=</code>(placeos#274) · <code>GET /direct/listings?building_id=&amp;district_id=</code></td><td>있음(#274 머지 뒤)</td></tr>
+      <tr><td>조건표 · 요구 판매량(희망서 × 매물)</td><td><code>GET /direct/me/brief/fit/{listing_id}</code>(본인 경로)</td><td>있음</td></tr>
+      <tr><td>보내기 · ② 열기 / 거두기</td><td><code>POST /direct/listings/{id}/inquiries</code> → <code>POST · DELETE /direct/inquiries/{id}/disclose</code></td><td>있음</td></tr>
+      <tr><td>이후 진행(방문 · 조건 제안 · 계약 방법 · 결과)</td><td><code>/direct/inquiries/{id}/visit · offers · contract-path · outcome</code></td><td>있음</td></tr>
+      <tr><td>시험</td><td>③ 칸이 제출 요청에 없음(L11) · ② 체크 없이 보내면 disclose 안 부름(L17) · 계산값은 버튼 전엔 비어 있음(L16) · 503 이면 「준비 중」 · PPPP 가드</td><td>새로</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card" style="margin-top:12px"><h3>미리 정할 것(사용자 결정)</h3><ol class="lim">
+    <li>1단계 「입점 희망서 · 계약」을 「매칭 · 계약 현황」으로 바꾸고 쓰기 · 보내기를 9단계로 옮길지 — 화면 안 탭 순서를 바꾸는 일이라 지시가 필요합니다(PPPP 화면 · 레일 · 진입로는 그대로).</li>
+    <li>「내 계산 값 넣기」가 넣는 월세 상한의 정의 — 제안: 7단계 내 객단가 · 판매량 · 변동비율 · 고정비로 「목표 판매량이면 본전까지 낼 수 있는 월세」(창업자 입력만으로 계산 · PlaceOS 추정 임대료는 쓰지 않음).</li>
+    <li>확인 매물이 없을 때 「이 건물에 확인 매물이 올라오면 이메일로 알려 주기」를 둘지 — 알림은 이메일 먼저(가벼운 대안 규칙) · 건물주에게 PlaceOS 가 연락하지는 않습니다.</li>
+  </ol></div>
+</section>
+
+<footer>PlaceOS Posting 「입점 희망서 제출」 분석 정리 · 예시 화면 · 2026-11-25. 예시의 건물 · 매물 · 숫자는 모두 합성값이며 실제 건물주 · 매물과 관계없습니다. 규칙은 placeos main(2026-11-25)의 구현과 결정 문서(decision-founder-brief-2026-11-21 · decision-owner-direct-matching-2026-11-18)를 따랐습니다.</footer>
+</main>
+
+<dialog id="confirmDlg" aria-labelledby="dlgTitle"><div class="dlg">
+  <h3 id="dlgTitle">이 건물주에게 보낼까요?</h3>
+  <p style="margin:0;font-size:13.5px" id="dlgTarget"></p>
+  <p style="margin:10px 0 2px;font-size:13px;font-weight:700">넘어가는 것</p><ul id="dlgSend"></ul>
+  <p style="margin:10px 0 2px;font-size:13px;font-weight:700">넘어가지 않는 것</p>
+  <ul><li>③ 비공개 칸(객단가 · 변동비율 · 고정비 · 영업일 · 목표 판매량)과 요구 판매량 계산</li><li>내 이름 · 이메일 · 연락처</li><li id="dlgNoB2">② 동의 공개 칸(체크하지 않았어요)</li></ul>
+  <p class="notice">누르는 순간이 동의입니다. 수수료는 없고, PlaceOS 는 조건을 대신 정하거나 권하지 않습니다.</p>
+  <div class="acts"><button type="button" class="btn ghost" id="dlgCancel">취소</button><button type="button" class="btn" id="dlgOk">보내기</button></div>
+</div></dialog>
+
+<script>
+(function(){
+"use strict";
+/* ── 합성 예시 데이터 — 실제 건물주 · 매물이 아니다 ── */
+var LISTINGS = {
+  here: [{ id:"ex-201", title:"가로수 예시빌딩 2층 201호", where:"이 층", area:66, floor:2, rent:185, deposit:5000, maint:20, exhaust:true, water:true, kw:20, popup:false, from:"2027-01" }],
+  near: [{ id:"ex-301", title:"가로수 예시빌딩 3층 301호", where:"같은 건물", area:72, floor:3, rent:160, deposit:4000, maint:18, exhaust:false, water:true, kw:15, popup:true, from:"2026-12" },
+         { id:"ex-b2", title:"신사동 예시타워 2층 203호", where:"같은 상권", area:58, floor:2, rent:230, deposit:8000, maint:25, exhaust:true, water:true, kw:25, popup:false, from:"2027-03" }],
+  none: []
+};
+var state = { scen:"here", pick:null, sent:false, b2open:false };
+var $ = function(id){ return document.getElementById(id); };
+function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function num(id){ var v=$(id).value; return v===""?null:Number(v); }
+function fmt(n){ return Number(n).toLocaleString("ko-KR"); }
+
+/* 7단계 「메뉴 설정」 계산 — 창업자 입력(③)만 쓴다. PlaceOS 추정 임대료는 쓰지 않는다 */
+function maxRentFromMyCalc(){
+  var price=num("pPrice"), v=num("pVar"), fix=num("pFix"), days=num("pDays"), daily=num("pTarget");
+  if(!price||v==null||fix==null||!days||!daily) return null;
+  var monthlySales = price*daily*days/10000;            // 만원
+  var margin = monthlySales*(1-v/100) - fix;             // 임대료 전 남는 돈
+  return Math.max(0, Math.floor(margin));
+}
+function needDaily(rent){
+  var price=num("pPrice"), v=num("pVar"), fix=num("pFix"), days=num("pDays");
+  if(!price||v==null||fix==null||!days) return null;
+  var perUnit = price*(1-v/100)/10000;                   // 한 잔이 남기는 만원
+  return perUnit>0 ? Math.ceil((rent+fix)/(perUnit*days)) : null;
+}
+
+function floorsChosen(){ var o=[]; if($("fF1").checked) o.push("1층"); if($("fFu").checked) o.push("2층 이상"); if($("fFb").checked) o.push("지하"); return o; }
+function required(){
+  var r=[["업종",!!$("fInd").value],["필요 면적",num("fAmin")!=null&&num("fAmax")!=null&&num("fAmin")<=num("fAmax")],
+         ["희망 층",floorsChosen().length>0],["월세 상한",num("fRent")!=null],["보증금 상한",num("fDep")!=null],["희망 시기",!!$("fStart").value],["희망 상권",true]];
+  return r;
+}
+function fitOf(l){
+  var out=[], rent=num("fRent"), amin=num("fAmin"), amax=num("fAmax");
+  out.push(rent==null?["q","월세 상한 비어 있음"]:(l.rent<=rent?["ok","월세 "+l.rent+" ≤ 상한 "+rent]:["no","월세 "+l.rent+" > 상한 "+rent]));
+  out.push(amin!=null&&amax!=null&&l.area>=amin&&l.area<=amax?["ok","면적 "+l.area+"㎡"]:["no","면적 "+l.area+"㎡ (희망 "+(amin||"?")+"~"+(amax||"?")+")"]);
+  var band = l.floor===1?"1층":(l.floor<0?"지하":"2층 이상");
+  out.push(floorsChosen().indexOf(band)>=0?["ok",l.floor+"층"]:["no",l.floor+"층(희망 층 아님)"]);
+  if($("fEx").checked) out.push(l.exhaust?["ok","배기 가능"]:["no","배기 없음"]);
+  var kw=num("fKw"); if(kw) out.push(l.kw>=kw?["ok","전력 "+l.kw+"kW"]:["no","전력 "+l.kw+"kW"]);
+  var dep=num("fDep"); out.push(dep==null?["q","보증금 상한 비어 있음"]:(l.deposit<=dep?["ok","보증금 "+fmt(l.deposit)]:["no","보증금 "+fmt(l.deposit)+" > "+fmt(dep)]));
+  return out;
+}
+function renderTargets(){
+  var box=$("targets"); box.textContent="";
+  var list=LISTINGS[state.scen];
+  if(!list.length){
+    var e=el("div","empty");
+    e.appendChild(el("b",null,"이 층 · 이 건물 · 이 상권에 건물주 확인 매물이 없어요."));
+    e.appendChild(el("p",null,"지금 PlaceOS 프로덕션에는 게시된 건물주 확인 매물이 아직 0건이에요(11-25 확인). 할 수 있는 것: 희망서를 「건물주에게 보이게」 올려 두면 희망 상권에 확인 매물이 생기는 건물주가 보고 먼저 제안할 수 있어요(지금은 볼 건물주 0명). PlaceOS 가 건물주에게 대신 연락하지는 않아요."));
+    box.appendChild(e); state.pick=null; return;
+  }
+  if(!state.pick || !list.some(function(l){return l.id===state.pick;})) state.pick=list[0].id;
+  list.forEach(function(l){
+    var row=el("label","listing"+(state.pick===l.id?" on":""));
+    var rb=document.createElement("input"); rb.type="radio"; rb.name="target"; rb.checked=state.pick===l.id;
+    rb.addEventListener("change",function(){ state.pick=l.id; render(); });
+    row.appendChild(rb);
+    var d=el("div");
+    d.appendChild(el("div","lt",l.title));
+    d.appendChild(el("div","lm",l.where+" · "+l.area+"㎡ · 보증금 "+fmt(l.deposit)+" · 월세 "+l.rent+"만원 · 관리비 "+l.maint+"만원 · 입주 "+l.from+(l.popup?" · 팝업 가능":"")));
+    var need=needDaily(l.rent);
+    d.appendChild(el("div","lm","내 계산(③): 이 월세면 하루 "+(need==null?"?":fmt(need))+"잔이면 본전"));
+    var ul=el("ul","fit"); fitOf(l).forEach(function(f){ ul.appendChild(el("li",f[0],f[1])); }); d.appendChild(ul);
+    row.appendChild(d); box.appendChild(row);
+  });
+}
+function renderPreview(){
+  var pv=$("preview"); pv.textContent="";
+  $("pvInd").textContent=$("fInd").options[$("fInd").selectedIndex].text;
+  var dl=document.createElement("dl");
+  function add(k,v){ dl.appendChild(el("dt",null,k)); dl.appendChild(el("dd",null,v)); }
+  add("필요 면적",(num("fAmin")||"?")+" ~ "+(num("fAmax")||"?")+"㎡");
+  add("희망 층",floorsChosen().join(" · ")||"—");
+  var eq=[]; if($("fEx").checked) eq.push("배기"); if($("fWa").checked) eq.push("급수"); if(num("fKw")) eq.push("전력 "+num("fKw")+"kW 이상");
+  add("필요 설비",eq.join(" · ")||"없음");
+  add("월세 상한",num("fRent")==null?"—":fmt(num("fRent"))+"만원");
+  add("보증금 상한",num("fDep")==null?"—":fmt(num("fDep"))+"만원");
+  add("희망 시기",$("fStart").value||"—");
+  var ds=["신사동 가로수길"]; if($("fD2").checked) ds.push("압구정로데오"); if($("fD3").checked) ds.push("한남동·용리단길");
+  add("희망 상권",ds.join(" · "));
+  add("팝업 먼저",$("fPop").checked?"예":"아니요");
+  pv.appendChild(el("div","sect","① 공개 칸"));
+  pv.appendChild(dl);
+  pv.appendChild(el("div","sect","② 동의 공개 칸"));
+  if($("openB2").checked){
+    var dl2=document.createElement("dl");
+    dl2.appendChild(el("dt",null,"사업 개요")); dl2.appendChild(el("dd",null,$("fSum").value||"—"));
+    dl2.appendChild(el("dt",null,"사업 단계")); dl2.appendChild(el("dd",null,$("fStage").options[$("fStage").selectedIndex].text));
+    dl2.appendChild(el("dt",null,"자금(본인 기재)")); dl2.appendChild(el("dd",null,"총 "+fmt(num("fFund")||0)+"만원 · 자기 "+fmt(num("fOwn")||0)+"만원"));
+    pv.appendChild(dl2);
+  } else pv.appendChild(el("p","hidden-row","창업자가 열지 않았어요 — 보이지 않아요"));
+  pv.appendChild(el("div","sect","③ 비공개 칸"));
+  pv.appendChild(el("p","hidden-row","건물주에게는 보이지 않아요(객단가 · 판매량 등)"));
+  var t=el("div","trust"); t.textContent="PlaceOS 가 확인한 것: 이메일 인증 계정 · 희망서 게시 0일째 — 창업자가 적은 것: 위 칸 전부. PlaceOS 는 창업자 신용을 평가하거나 점수 · 등급을 매기지 않아요.";
+  pv.appendChild(t);
+}
+function render(){
+  /* A. 건물주 등록 배지 */
+  var ob=$("ownBadge"); ob.textContent="";
+  var on = state.scen==="here";
+  var b=el("span","badge "+(on?"own-on":"own-off")); var i=el("i",null,on?"⌂":"·"); i.setAttribute("aria-hidden","true"); b.appendChild(i);
+  b.appendChild(document.createTextNode(on?"건물주 등록 1건 · 201호 · 월 185만원":(state.scen==="near"?"이 층은 등록 없음(같은 건물 · 상권에 있음)":"건물주 등록 없음")));
+  ob.appendChild(b);
+  var mine=maxRentFromMyCalc();
+  $("calcHint").textContent = mine==null?"":"내 계산: 하루 "+fmt(num("pTarget"))+"잔이면 월세 "+fmt(mine)+"만원까지 본전";
+  var est=needDaily(198);
+  $("needLine").textContent = "추정 월세 기준 하루 "+(est==null?"?":fmt(est))+"잔 · 목표 "+fmt(num("pTarget")||0)+"잔";
+  /* 필수 칸 */
+  var rl=$("reqList"); rl.textContent="";
+  var req=required(), missing=req.filter(function(x){return !x[1];});
+  req.forEach(function(x){ rl.appendChild(el("li",x[1]?"ok":"no",(x[1]?"✓ ":"✕ ")+x[0])); });
+  renderTargets(); renderPreview();
+  /* 제출 가능 여부 */
+  var list=LISTINGS[state.scen];
+  var why="";
+  if(state.sent) why="보냈어요 — 아래 「보낸 뒤」에서 진행을 볼 수 있어요.";
+  else if(!list.length) why="보낼 확인 매물이 없어요. 희망서를 건물주에게 보이게 올려 둘 수는 있어요.";
+  else if(missing.length) why="필수 칸을 채워 주세요: "+missing.map(function(x){return x[0];}).join(" · ");
+  $("sendBtn").disabled = state.sent || !list.length || missing.length>0;
+  $("publishBtn").disabled = missing.length>0;
+  $("sendWhy").textContent = why;
+}
+/* 이벤트 */
+document.querySelectorAll(".scen button").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    document.querySelectorAll(".scen button").forEach(function(x){ x.setAttribute("aria-pressed", x===btn?"true":"false"); });
+    state.scen=btn.getAttribute("data-s"); state.pick=null; state.sent=false; $("afterBox").hidden=true; render();
+  });
+});
+document.querySelectorAll("input,select,textarea").forEach(function(x){
+  x.addEventListener(x.type==="checkbox"||x.tagName==="SELECT"||x.type==="month"?"change":"input",render);
+});
+$("useCalc").addEventListener("click",function(){ var v=maxRentFromMyCalc(); if(v!=null){ $("fRent").value=v; render(); } });
+$("widen").addEventListener("click",function(){ var a=num("fAmin")||66; $("fAmin").value=Math.round(a*0.85); $("fAmax").value=Math.round((num("fAmax")||66)*1.15); render(); });
+var dlg=$("confirmDlg");
+$("sendBtn").addEventListener("click",function(){
+  var l=LISTINGS[state.scen].filter(function(x){return x.id===state.pick;})[0]; if(!l) return;
+  $("dlgTarget").textContent="보낼 곳: "+l.title+" (건물주 확인 매물)";
+  var ul=$("dlgSend"); ul.textContent="";
+  ul.appendChild(el("li",null,"희망서 ① 공개 칸(업종 · 면적 · 층 · 설비 · 월세 · 보증금 상한 · 시기 · 상권 · 팝업)"));
+  if($("openB2").checked) ul.appendChild(el("li",null,"희망서 ② 사업 개요 · 단계 · 자금 — 이 대화가 이어지는 동안만"));
+  ul.appendChild(el("li",null,"첫 메시지: "+$("fMsg").value.slice(0,80)));
+  $("dlgNoB2").hidden=$("openB2").checked;
+  if(typeof dlg.showModal==="function") dlg.showModal(); else doSend();
+});
+$("dlgCancel").addEventListener("click",function(){ dlg.close(); });
+$("dlgOk").addEventListener("click",function(){ dlg.close(); doSend(); });
+function doSend(){
+  state.sent=true; state.b2open=$("openB2").checked;
+  var tl=$("timeline"); tl.textContent="";
+  [["done","보냈어요 — 문의가 열리고 희망서 ①"+(state.b2open?" + ②":"")+"를 이 건물주가 볼 수 있어요"],
+   ["now","건물주 답을 기다려요 — 문의함에서 답장 · 방문 예약 제안이 와요"],
+   ["","조건 맞추기 — 조건 제안서(창업자가 적고 건물주가 받거나 거절 · 「받음」은 계약 아님) · 팝업 신청"],
+   ["","계약 진행 방법 고르기 — 당사자끼리 직접 또는 제휴 공인중개사(정액)"],
+   ["","결과 적기(계약함 / 안 함) — 대화가 끝나면 ② 동의는 서버가 거둬요"]].forEach(function(s,i){
+    var li=el("li",s[0]); li.appendChild(el("i",null,s[0]==="done"?"✓":String(i+1))); li.appendChild(el("span",null,s[1])); tl.appendChild(li);
+  });
+  $("revokeBtn").disabled=!state.b2open;
+  $("revokeBtn").textContent=state.b2open?"② 거두기":"② 는 열지 않았어요";
+  $("afterBox").hidden=false; render();
+  $("afterBox").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("revokeBtn").addEventListener("click",function(){ state.b2open=false; $("openB2").checked=false; $("revokeBtn").disabled=true; $("revokeBtn").textContent="② 를 거뒀어요"; render(); });
+$("publishBtn").addEventListener("click",function(){
+  $("sendWhy").textContent="희망서를 「건물주에게 보이는 중」으로 올렸어요(예시) — 희망 상권에 확인 매물이 있는 건물주만 보고, 90일 뒤에는 내려가요.";
+});
+render();
+})();
+</script>
+</body>
+</html>

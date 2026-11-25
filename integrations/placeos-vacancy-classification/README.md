@@ -44,7 +44,7 @@ PLACEOS_ROOT=/path/to/placeos .venv/bin/python build_report.py "../../mockups/pl
 - 건물주 매물은 만들 때 공개 API `GET https://placeos.co.kr/api/v1/direct/listings` 에서 읽는다(게시 중 + 소유자 확인 매물만 온다 · 소유자 정보는 오지 않는다).
 - 매칭 키는 앱과 같은 **건물 ID + 층**. 창업 가능 층과 겹치면 「건물주 직접 등록」, 아니면 매물마다 「이번 분류 밖」 이유(조건부·어려움 층 · 추정 층 · 지하 · 다른 층 · 목록에 없는 건물 · 건물 ID 없음)를 적는다.
 - API 가 503(직거래 DB 표 없음)이면 0 이 아니라 「올릴 수 없는 상태」로, 실패하면 「모름」으로 적는다.
-- 2026-11-23 21:38 KST 기준 API 503 — 건물주 매물 0건, 창업 가능 6,243층 모두 「자료로 찾은 빈 층」.
+- 2026-11-23 에는 API 503(직거래 표 없음)이었고, 2026-11-25 에는 **200 · 0건**(표는 준비됨 · 게시된 확인 매물 없음) — 창업 가능 6,243층(서로 다른 층 5,773) 모두 「자료로 찾은 빈 층」.
 
 ```bash
 PLACEOS_ROOT=/path/to/placeos .venv/bin/python owner_split.py "../../mockups/placeos-additions/PlaceOS 창업 가능 공실 건물주 등록 구분.html"

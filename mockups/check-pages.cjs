@@ -12,6 +12,7 @@
 //   ⑧ PlaceOS 참고.html(Case 1~5 한 파일): 원본과 같은 최신 내용인지, 카드 · 화면 안 메뉴 · 주소(#case4?s=C)로 화면이 바뀌는지.
 //   ⑨ PlaceOS 공실 창업 가능성 분류.html: 등급 합 = 층 수, 상권 표 줄 수, 층별 목록 거르기 · 이유 펼치기.
 //   ⑩ PlaceOS 창업 가능 공실 건물주 등록 구분.html: 출처 합 = 층 수, 창업 가능 등급만, 출처 거르기 · 건물주 등록 칸.
+//   ⑪ PlaceOS Posting 입점 희망서 제출 예시.html: 계산값은 버튼 전엔 비어 있음 · ②③ 동의 없이 안 보임 · 매물 없으면 보내기 막힘.
 // 선택: ROUTE_HOOK=경로.cjs 를 주면 그 모듈(async (page) => {})로 네트워크 경로를 바꿀 수 있습니다(CDN이 막힌 환경에서 로컬 사본을 쓸 때).
 const path = require('path');
 const fs = require('fs');
@@ -110,6 +111,14 @@ const PAGES = [
           && d.owner.length >= s[0]; })()`, '출처 수 합이 층 수와 다르거나 창업 가능 밖 등급이 섞임'],
       ['click', '#srcChips .chip'], ['click', '#srcChips .chip'], ['click', '#flist .fitem summary'],
       ['eval', `!!document.querySelector('#flist details[open] .owner-box') && !/NaN|undefined/.test(document.getElementById('flist').textContent)`, '건물주 등록 여부 칸이 그려지지 않음']] },
+  // Posting 입점 희망서 제출 예시: 계산값은 버튼 전엔 비어 있다(L16) · ② 는 체크해야 미리보기에 · ③ 은 미리보기에 없다 · 매물 없으면 보내기 막힘
+  { file: 'PlaceOS Posting 입점 희망서 제출 예시.html', must: ['#targets .listing', '#preview dl', '#reqList li'],
+    act: [['eval', `document.getElementById('fRent').value === '' && document.getElementById('sendBtn').disabled`, '월세 상한이 버튼 전부터 채워져 있거나 필수 칸 없이 보낼 수 있음'],
+      ['click', '#useCalc'],
+      ['eval', `(() => { document.getElementById('fDep').value = '6000'; document.getElementById('fDep').dispatchEvent(new Event('input')); return !document.getElementById('sendBtn').disabled
+        && !/사업 개요/.test(document.getElementById('preview').textContent) && !/객단가 5|5,000원/.test(document.getElementById('preview').textContent); })()`, '② · ③ 칸이 동의 없이 미리보기에 보이거나 보내기가 열리지 않음'],
+      ['click', '.scen button[data-s="none"]'],
+      ['eval', `document.getElementById('sendBtn').disabled && !!document.querySelector('#targets .empty')`, '확인 매물이 없는데 보내기가 열림']] },
 ];
 // 묶음 파일(PlaceOS 참고.html) 안 iframe에 요소가 생길 때까지 기다리는 식 (최대 15초)
 function WAIT_FRAME(id, sel){
